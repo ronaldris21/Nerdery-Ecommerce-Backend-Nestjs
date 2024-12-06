@@ -152,7 +152,6 @@ liked_at TIMESTAMP
 STRIPE_PAYMENTS
 -
 id UUID PK
-user_id UUID FK > USERS.id
 order_id UUID FK > ORDERS.id
 amount DECIMAL(10,2)
 currrency VARCHAR(3)

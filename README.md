@@ -11,14 +11,14 @@ Requirements:
 4. Add 2 kinds of users (Manager, Client)
 5. As a Manager I can:
     * Create products
-    * Update products and product details
-    * Delete products and product details
-    * Disable products and product details
+    * Update products and product variations
+    * Delete products and product variations
+    * Disable products and product variations
     * Show clients orders
     * Upload images per product.
 6. As a Client I can:
     * See products 
-    * See the product details
+    * See the product variations
     * Buy products
     * Add products to cart
     * Like products
