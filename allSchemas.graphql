@@ -1,0 +1,277 @@
+
+# FILE: CARTITEM.GRAPHQL BEFORE # QUERIES
+# CART ITEM DEFINITIONS
+type CartItem {
+  userId: ID!
+  productVariationId: ID!
+  quantity: Int!
+  user: User
+  productVariation: ProductVariation
+}
+
+# INPUTS
+input AddCartItemInput {
+  userId: ID!
+  productVariationId: ID!
+  quantity: Int!
+}
+
+input UpdateCartItemInput {
+  userId: ID!
+  quantity: Int!
+}
+
+input RemoveCartItemInput {
+  userId: ID!
+  productVariationId: ID!
+}
+
+
+# FILE: CATEGORY.GRAPHQL BEFORE # QUERIES
+
+# FILE: ORDER.GRAPHQL BEFORE # QUERIES
+# ORDER STATUS ENUM
+enum OrderStatus {
+  waiting_payment
+  payment_approved
+  canceled
+  completed
+}
+
+# ORDER DEFINITIONS
+type Order {
+  id: ID!
+  userId: ID!
+  user: User
+  currency: String!
+  subTotal: Float!
+  discount: Float!
+  total: Float!
+  status: OrderStatus!
+  createdAt: String!
+  updatedAt: String!
+  isDeleted: Boolean!
+  isStockReserved: Boolean!
+  items: [OrderItem!]
+  payments: [StripePayment!]
+  incidents: [OrderIncident!]
+}
+
+type ApprovedStatusPayload {
+  isApproved: Boolean!
+}
+
+type CreateOrderPayload {
+  order: Order!
+  stripePaymentId: String!
+}
+
+
+# QUERY FILTER INPUTS
+input OrderFilterInput {
+  status: OrderStatus
+  afterDate: String
+  beforeDate: String
+}
+
+
+# FILE: ORDERINCIDENT.GRAPHQL BEFORE # QUERIES
+# ORDER INCIDENT DEFINITIONS
+type OrderIncident {
+  id: ID!
+  managerId: ID!
+  clientId: ID!
+  orderId: ID!
+  withRestock: Boolean!
+  reason: String!
+  currency: String!
+  totalPrice: Float!
+  createdAt: String!
+  manager: User
+  client: User
+  order: Order
+}
+
+# INPUTS
+input CreateOrderIncidentInput {
+  orderId: ID!
+  reason: String!
+  withRestock: Boolean = true
+}
+
+
+# FILE: ORDERITEM.GRAPHQL BEFORE # QUERIES
+
+# FILE: PASSWORDRESET.GRAPHQL BEFORE # QUERIES
+
+# FILE: PERMISSION.GRAPHQL BEFORE # QUERIES
+
+# FILE: PRODUCT.GRAPHQL BEFORE # QUERIES
+
+# FILE: PRODUCTLIKE.GRAPHQL BEFORE # QUERIES
+# PRODUCT LIKE DEFINITIONS
+type ProductLike {
+  userId: ID!
+  productId: ID!
+  likedAt: String!
+  user: User
+  product: Product
+}
+
+
+# FILE: PRODUCTVARIATION.GRAPHQL BEFORE # QUERIES
+
+# FILE: REFRESHTOKEN.GRAPHQL BEFORE # QUERIES
+
+# FILE: ROLE.GRAPHQL BEFORE # QUERIES
+
+# FILE: ROLEPERMISSION.GRAPHQL BEFORE # QUERIES
+
+# FILE: STRIPEPAYMENT.GRAPHQL BEFORE # QUERIES
+
+# FILE: USER.GRAPHQL BEFORE # QUERIES
+
+# FILE: USERROLE.GRAPHQL BEFORE # QUERIES
+
+# FILE: VARIATIONIMAGE.GRAPHQL BEFORE # QUERIES
+
+# CONSOLIDATED QUERIES
+type Query {
+
+  # CARTITEM FILE QUERIES:
+  # Fetch all cart items for the authenticated user
+  cartItems(userId: ID!): [CartItem!]
+
+  # CATEGORY FILE QUERIES:
+
+  # ORDER FILE QUERIES:
+  # Get orders
+  # Managers: Can retrieve all orders applying optional filters.
+  # Clients: Can only access their own orders.
+  orders(filter: OrderFilterInput): [Order!]
+
+  # Get the order data and their items
+  # Managers can access any order
+  # Clients can only access their own order
+  order(id: ID!): Order
+
+  # Check all payment status from an order.
+  # Manager: Returns all payments
+  # Client: Returns only the last payment info generated
+  orderPayments(id: ID!): [StripePayment!]
+
+  # Check if payment was successfully approved from Stripe
+  # Managers and Clients can access their own orders
+  orderPaymentApprovedStatus(id: ID!): ApprovedStatusPayload!
+
+  # ORDERINCIDENT FILE QUERIES:
+  # Retrieves all incidents logs
+  # Managers only: If role=manager, can retrieve all incidents
+  # Optionally filter by userId (clientId)
+  orderIncidents(userId: ID): [OrderIncident!]
+
+  # Retrieves all incidents for a given orderId
+  # Managers only
+  orderIncidentsByOrderId(orderId: ID!): [OrderIncident!]
+
+  # ORDERITEM FILE QUERIES:
+
+  # PASSWORDRESET FILE QUERIES:
+
+  # PERMISSION FILE QUERIES:
+
+  # PRODUCT FILE QUERIES:
+
+  # PRODUCTLIKE FILE QUERIES:
+  """Fetch all liked products for the authenticated user"""
+  likedProducts: [Product!]
+
+  # PRODUCTVARIATION FILE QUERIES:
+
+  # REFRESHTOKEN FILE QUERIES:
+
+  # ROLE FILE QUERIES:
+
+  # ROLEPERMISSION FILE QUERIES:
+
+  # STRIPEPAYMENT FILE QUERIES:
+
+  # USER FILE QUERIES:
+
+  # USERROLE FILE QUERIES:
+
+  # VARIATIONIMAGE FILE QUERIES:
+}
+
+# CONSOLIDATED MUTATIONS
+type Mutation {
+
+  # CARTITEM FILE MUTATIONS:
+  # Add an item to the user's cart
+  addCartItem(input: AddCartItemInput!): CartItem!
+
+  # Update the quantity of an item in the user's cart
+  updateCartItem(input: UpdateCartItemInput!): CartItem!
+
+  # Remove an item from the user's cart
+  removeCartItem(input: RemoveCartItemInput!): Boolean!
+
+  # CATEGORY FILE MUTATIONS:
+
+  # ORDER FILE MUTATIONS:
+  # Make an order (Clients only)
+  # Transforms Cart-Items into an actual order and initiates payment.
+  createOrder: CreateOrderPayload!
+
+
+  # Replenishes failed orders stock back (Managers or via CRON JOB)
+  cleanupOrders: Boolean!
+
+  # Delete an order if payment is not completed
+  # Clients can only delete their own order if not paid
+  deleteOrder(id: ID!): Boolean!
+
+  # Set the order status (Managers Only)
+  # For example: from waiting_payment to payment_approved or completed
+  updateOrderStatus(id: ID!, newStatus: OrderStatus!): Order!
+
+  # Create another stripe_payment_id for an existing order (Clients or Managers)
+  # If not enough stock, returns an error and reverts partial stock to cart.
+  retryOrderPayment(id: ID!): CreateOrderPayload!
+
+  # ORDERINCIDENT FILE MUTATIONS:
+  # Creates an order incident and deletes the order
+  # Managers only
+  createOrderIncident(input: CreateOrderIncidentInput!): OrderIncident!
+
+  # ORDERITEM FILE MUTATIONS:
+
+  # PASSWORDRESET FILE MUTATIONS:
+
+  # PERMISSION FILE MUTATIONS:
+
+  # PRODUCT FILE MUTATIONS:
+
+  # PRODUCTLIKE FILE MUTATIONS:
+  """Like a product"""
+  likeProduct(productId: ID!): Boolean!
+
+  """Dislike (unlike) a product"""
+  dislikeProduct(productId: ID!): Boolean!
+
+  # PRODUCTVARIATION FILE MUTATIONS:
+
+  # REFRESHTOKEN FILE MUTATIONS:
+
+  # ROLE FILE MUTATIONS:
+
+  # ROLEPERMISSION FILE MUTATIONS:
+
+  # STRIPEPAYMENT FILE MUTATIONS:
+
+  # USER FILE MUTATIONS:
+
+  # USERROLE FILE MUTATIONS:
+
+  # VARIATIONIMAGE FILE MUTATIONS:
+}

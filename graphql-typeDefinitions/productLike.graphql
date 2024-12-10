@@ -1,0 +1,23 @@
+# PRODUCT LIKE DEFINITIONS
+type ProductLike {
+  userId: ID!
+  productId: ID!
+  likedAt: String!
+  user: User
+  product: Product
+}
+
+# QUERIES
+type Query {
+  """Fetch all liked products for the authenticated user"""
+  likedProducts: [Product!]
+}
+
+# MUTATIONS
+type Mutation {
+  """Like a product"""
+  likeProduct(productId: ID!): Boolean!
+
+  """Dislike (unlike) a product"""
+  dislikeProduct(productId: ID!): Boolean!
+}
