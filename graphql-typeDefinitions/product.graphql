@@ -6,15 +6,15 @@ type Product {
   thumbnailUrl: String
   categoryId: ID!
   description: String
-  isEnable: Boolean!
-
-  # Calculate values on likes, dislikes, productVariation (post, update, delete)
-  likesCount: Int
-  minPrice: Float
-  maxPrice: Float
-
+  isEnabled: Boolean!
+  isDeleted: Boolean!
   createdAt: DateTime!
   updatedAt: DateTime!
+
+  # Calculate values on likes, dislikes, productVariation (post, update, delete)
+  likesCount: Int!
+  minPrice: Float
+  maxPrice: Float
 
   myLike: Boolean! # @ResolvedField if requested
   category: Category!
@@ -30,25 +30,32 @@ input ProductInput {
   description: String
 }
 
-input PaginationInput {
-  page: Int = 1
-  limit: Int = 10
-}
 input ProductFiltersInput {
   gender: GenderEnum
   categoryId: ID
   slug: String
-  sortBy: SortingProductEnum
+  minPrice: Float
+  maxPrice: Float
+}
+
+# PAGINATION:
+input PaginationInput {
+  page: Int = 1
+  limit: Int = 10
 }
 
 type Query {
   products(
     pagination: PaginationInput
     filter: ProductFiltersInput
+    sortBy: SortingProductEnum
   ): [Product!]!
 
   # Clients only
-  likedProducts(filter: ProductFiltersInput): [Product!]!
+  likedProducts(
+    filter: ProductFiltersInput
+    sortBy: SortingProductEnum
+  ): [Product!]!
 
   product(id: ID!): Product!
 }

@@ -1,0 +1,53 @@
+# COMMON
+input ProductFiltersInput {
+  gender: GenderEnum
+  categoryId: ID
+  slug: String
+  minPrice: Float
+  maxPrice: Float
+}
+
+# SOLUTION 1: USING CURSORS
+# SOLUTION 1: USING CURSORS
+
+# PAGINATION
+type ProductEdge {
+  node: Product!
+  cursor: String!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+type ProductConnection {
+  edges: [ProductEdge]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type CursorPaginationQuery {
+  products(
+    first: Int
+    after: String
+    filter: ProductFilterInput
+    sortBy: SortingProductEnum = NONE
+  ): ProductConnection!
+}
+
+# SOLUTION 2: USING PAGES AND LIMITS
+# SOLUTION 2: USING PAGES AND LIMITS
+input PaginationInput {
+  page: Int = 1
+  limit: Int = 10
+}
+
+type PaginationPageLimitQuery {
+  products(
+    pagination: PaginationInput
+    filter: ProductFiltersInput
+    sortBy: SortingProductEnum
+  ): [Product!]!
+}
