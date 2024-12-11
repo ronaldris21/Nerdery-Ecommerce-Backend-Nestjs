@@ -1,43 +1,27 @@
-# CART ITEM DEFINITIONS
 type CartItem {
   userId: ID!
   productVariationId: ID!
   quantity: Int!
+
   user: User
   productVariation: ProductVariation
 }
 
-# INPUTS
-input AddCartItemInput {
-  userId: ID!
+input CartItemInput {
   productVariationId: ID!
   quantity: Int!
 }
 
-input UpdateCartItemInput {
-  userId: ID!
-  quantity: Int!
-}
-
-input RemoveCartItemInput {
-  userId: ID!
-  productVariationId: ID!
-}
-
-# QUERIES
 type Query {
-  # Fetch all cart items for the authenticated user
-  cartItems(userId: ID!): [CartItem!]
+  # Clients only
+  cartItems: [CartItem!]!
 }
 
-# MUTATIONS
 type Mutation {
-  # Add an item to the user's cart
-  addCartItem(input: AddCartItemInput!): CartItem!
-
-  # Update the quantity of an item in the user's cart
-  updateCartItem(input: UpdateCartItemInput!): CartItem!
-
-  # Remove an item from the user's cart
-  removeCartItem(input: RemoveCartItemInput!): Boolean!
+  # Clients only
+  addCartItem(input: CartItemInput!): CartItem!
+  # Clients only
+  updateCartItem(input: CartItemInput!): CartItem!
+  # Clients only
+  deleteCartItem(productVariationId: ID!): Boolean!
 }

@@ -1,25 +1,17 @@
-# ORDER STATUS ENUM
-enum OrderStatus {
-  waiting_payment
-  payment_approved
-  canceled
-  completed
-}
-
-# ORDER DEFINITIONS
 type Order {
   id: ID!
   userId: ID!
-  user: User
   currency: String!
   subTotal: Float!
   discount: Float!
   total: Float!
-  status: OrderStatus!
-  createdAt: String!
-  updatedAt: String!
+  status: OrderStatusEnum!
+  createdAt: DateTime!
+  updatedAt: DateTime!
   isDeleted: Boolean!
   isStockReserved: Boolean!
+
+  user: User
   items: [OrderItem!]
   payments: [StripePayment!]
   incidents: [OrderIncident!]
@@ -34,53 +26,48 @@ type CreateOrderPayload {
   stripePaymentId: String!
 }
 
-
 # QUERY FILTER INPUTS
 input OrderFilterInput {
-  status: OrderStatus
+  status: OrderStatusEnum
   afterDate: String
   beforeDate: String
 }
 
-# QUERIES
 type Query {
-  # Get orders
   # Managers: Can retrieve all orders applying optional filters.
   # Clients: Can only access their own orders.
-  orders(filter: OrderFilterInput): [Order!]
+  orders(filter: OrderFilterInput): [Order!]!
 
-  # Get the order data and their items
   # Managers can access any order
   # Clients can only access their own order
   order(id: ID!): Order
 
-  # Check all payment status from an order.
   # Manager: Returns all payments
   # Client: Returns only the last payment info generated
-  orderPayments(id: ID!): [StripePayment!]
+  orderPayments(id: ID!): [StripePayment!]!
 
   # Check if payment was successfully approved from Stripe
-  # Managers and Clients can access their own orders
+  # Managers can access to any order && Clients can access their own orders
   orderPaymentApprovedStatus(id: ID!): ApprovedStatusPayload!
 }
 
-# MUTATIONS
 type Mutation {
-  # Make an order (Clients only)
+  # Clients only
   # Transforms Cart-Items into an actual order and initiates payment.
   createOrder: CreateOrderPayload!
 
-
+  # Managers only
   # Replenishes failed orders stock back (Managers or via CRON JOB)
   cleanupOrders: Boolean!
 
+  # Clients only
   # Delete an order if payment is not completed
   # Clients can only delete their own order if not paid
   deleteOrder(id: ID!): Boolean!
 
-  # Set the order status (Managers Only)
+  # Managers only
   # For example: from waiting_payment to payment_approved or completed
-  updateOrderStatus(id: ID!, newStatus: OrderStatus!): Order!
+  updateOrderStatus(id: ID!, newStatus: OrderStatusEnum!): Order!
 
   # Create another stripe_payment_id for an existing order (Clients or Managers)
   # If not enough stock, returns an error and reverts partial stock to cart.

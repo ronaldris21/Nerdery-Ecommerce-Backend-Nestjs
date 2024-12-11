@@ -8,7 +8,8 @@ type OrderIncident {
   reason: String!
   currency: String!
   totalPrice: Float!
-  createdAt: String!
+  createdAt: DateTime!
+  
   manager: User
   client: User
   order: Order
@@ -21,21 +22,14 @@ input CreateOrderIncidentInput {
   withRestock: Boolean = true
 }
 
-# QUERIES
 type Query {
-  # Retrieves all incidents logs
-  # Managers only: If role=manager, can retrieve all incidents
-  # Optionally filter by userId (clientId)
-  orderIncidents(userId: ID): [OrderIncident!]
-
-  # Retrieves all incidents for a given orderId
   # Managers only
-  orderIncidentsByOrderId(orderId: ID!): [OrderIncident!]
+  # Optionally filter by userId (clientId) or orderId to get a specific order
+  orderIncidents(clientId: ID, orderId: ID): [OrderIncident!]!
 }
 
-# MUTATIONS
 type Mutation {
-  # Creates an order incident and deletes the order
   # Managers only
+  # Creates an order incident and set the order as deleted
   createOrderIncident(input: CreateOrderIncidentInput!): OrderIncident!
 }

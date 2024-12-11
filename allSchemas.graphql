@@ -1,57 +1,105 @@
 
-# FILE: CARTITEM.GRAPHQL BEFORE # QUERIES
-# CART ITEM DEFINITIONS
+# GENERIC FILE: _ENUMS.DEFINITIONS.GRAPHQL
+
+
+# ENUMS
+enum GenderEnum {
+  MALE
+  FEMALE
+  UNISEX
+}
+
+enum SortingProductEnum {
+  NONE
+  FROM_A_TO_Z
+  FROM_Z_TO_A
+  FROM_HIGHEST_PRICE
+  FROM_LOWEST_PRICE
+  RECENT_UPDATED
+  LATEST_UPDATED
+  MOST_POPULAR
+  LESS_POPULAR
+}
+
+enum DiscountTypeEnum {
+  NONE
+  PERCENTAGE # "%"
+  DOLLAR_SIGN # "$"
+}
+
+enum OrderStatusEnum {
+  WAITING_PAYMENT
+  PAYMENT_APPROVED
+  CANCELED
+  COMPLETED
+}
+
+enum StripePaymentIntentEnum {
+  REQUIRES_PAYMENT_METHOD
+  REQUIRES_CONFIRMATION
+  REQUIRES_ACTION
+  PROCESSING
+  SUCCEEDED
+  REQUIRES_CAPTURE
+  CANCELED
+  FAILED
+}
+
+# GENERIC FILE: _SCALARSDEFINITIONS.GRAPHQL
+
+
+# npm i graphql-scalars
+# https://the-guild.dev/graphql/scalars/docs/quick-start
+scalar DateTime
+
+
+# npm i  graphql-upload@14
+# https://dev.to/elbarryamine/how-to-upload-files-with-nestjs-and-graphql-2iig
+scalar Upload
+
+
+
 type CartItem {
   userId: ID!
   productVariationId: ID!
   quantity: Int!
+
   user: User
   productVariation: ProductVariation
 }
 
-# INPUTS
-input AddCartItemInput {
-  userId: ID!
+input CartItemInput {
   productVariationId: ID!
   quantity: Int!
 }
 
-input UpdateCartItemInput {
-  userId: ID!
-  quantity: Int!
+type Category {
+  id: ID!
+  name: String!
+  parentCategoryId: ID
+
+  parentCategory: Category
+  subcategories: [Category]
 }
 
-input RemoveCartItemInput {
-  userId: ID!
-  productVariationId: ID!
+type CategoryQuery {
+  # If no name is provided, return all categories.
+  categories(name: String): [Category!]!
 }
-
-
-# FILE: CATEGORY.GRAPHQL BEFORE # QUERIES
-
-# FILE: ORDER.GRAPHQL BEFORE # QUERIES
-# ORDER STATUS ENUM
-enum OrderStatus {
-  waiting_payment
-  payment_approved
-  canceled
-  completed
-}
-
-# ORDER DEFINITIONS
 type Order {
   id: ID!
   userId: ID!
-  user: User
   currency: String!
   subTotal: Float!
   discount: Float!
   total: Float!
-  status: OrderStatus!
-  createdAt: String!
-  updatedAt: String!
+  status: OrderStatusEnum!
+  createdAt: DateTime!
+  updatedAt: DateTime!
   isDeleted: Boolean!
   isStockReserved: Boolean!
+
+  user: User
   items: [OrderItem!]
   payments: [StripePayment!]
   incidents: [OrderIncident!]
@@ -66,16 +114,13 @@ type CreateOrderPayload {
   stripePaymentId: String!
 }
 
-
 # QUERY FILTER INPUTS
 input OrderFilterInput {
-  status: OrderStatus
+  status: OrderStatusEnum
   afterDate: String
   beforeDate: String
 }
 
-
-# FILE: ORDERINCIDENT.GRAPHQL BEFORE # QUERIES
 # ORDER INCIDENT DEFINITIONS
 type OrderIncident {
   id: ID!
@@ -86,7 +131,8 @@ type OrderIncident {
   reason: String!
   currency: String!
   totalPrice: Float!
-  createdAt: String!
+  createdAt: DateTime!
+  
   manager: User
   client: User
   order: Order
@@ -99,80 +145,221 @@ input CreateOrderIncidentInput {
   withRestock: Boolean = true
 }
 
+# ORDER ITEM DEFINITIONS
+type OrderItem {
+  id: ID!
+  orderId: ID!
+  productVariationId: ID!
+  unitPrice: Float!
+  quantity: Int!
+  subTotal: Float!
+  discount: Float!
+  total: Float!
 
-# FILE: ORDERITEM.GRAPHQL BEFORE # QUERIES
+  order: Order
+  productVariation: ProductVariation
+}
 
-# FILE: PASSWORDRESET.GRAPHQL BEFORE # QUERIES
+# No queries nor mutations needed
+# Data is retrieve from the Order Queries, using ResolveFields with DataLoaders to request all data avoiding n+1 problem
+# No types needed
+# This data is used by services only
+# No types needed
+# This data is used by services only
+# PRODUCT DEFINITIONS
+type Product {
+  id: ID!
+  name: String!
+  gender: GenderEnum!
+  thumbnailUrl: String
+  categoryId: ID!
+  description: String
+  isEnable: Boolean!
 
-# FILE: PERMISSION.GRAPHQL BEFORE # QUERIES
+  # Calculate values on likes, dislikes, productVariation (post, update, delete)
+  likesCount: Int
+  minPrice: Float
+  maxPrice: Float
 
-# FILE: PRODUCT.GRAPHQL BEFORE # QUERIES
+  createdAt: DateTime!
+  updatedAt: DateTime!
 
-# FILE: PRODUCTLIKE.GRAPHQL BEFORE # QUERIES
+  myLike: Boolean! # @ResolvedField if requested
+  category: Category!
+  productVariations: [ProductVariation!]!
+}
+
+# INPUTS
+
+input ProductInput {
+  name: String
+  gender: GenderEnum # male, female, unisex
+  categoryId: ID
+  description: String
+}
+
+input PaginationInput {
+  page: Int = 1
+  limit: Int = 10
+}
+input ProductFiltersInput {
+  gender: GenderEnum
+  categoryId: ID
+  slug: String
+  sortBy: SortingProductEnum
+}
+
 # PRODUCT LIKE DEFINITIONS
 type ProductLike {
   userId: ID!
   productId: ID!
-  likedAt: String!
+  likedAt: DateTime!
+
   user: User
   product: Product
 }
 
+# PRODUCT VARIATION DEFINITIONS
+type ProductVariation {
+  id: ID!
+  price: Float!
+  discount: Float
+  discountType: DiscountTypeEnum
+  size: String
+  color: String
+  stock: Int!
+  stockRefilledAt: String
+  isEnabled: Boolean!
+  isDeleted: Boolean!
 
-# FILE: PRODUCTVARIATION.GRAPHQL BEFORE # QUERIES
+  images: [String!]!
+  product: Product
+  variationImages: [VariationImage]
+}
 
-# FILE: REFRESHTOKEN.GRAPHQL BEFORE # QUERIES
+# INPUTS
+input ProductVariationInput {
+  price: Float!
+  discount: Float!
+  discountType: DiscountTypeEnum
+  size: String
+  color: String
+  stock: Int!
+}
 
-# FILE: ROLE.GRAPHQL BEFORE # QUERIES
+# No types needed
+# This data is used by services only
+# No types needed
+# This data is used by services only
+# No types needed
+# This data is used by services only
+# STRIPE PAYMENTS DEFINITIONS
+type StripePayment {
+  id: ID!
+  orderId: ID!
+  amount: Float!
+  currency: String!
+  stripePaymentId: String!
+  webhookPaymentIntent: StripePaymentIntentEnum!
+  webhookData: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
 
-# FILE: ROLEPERMISSION.GRAPHQL BEFORE # QUERIES
+  order: Order
+}
+type User {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  email: String!
+  passwordHash: String!
+  createdAt: DateTime!
+}
 
-# FILE: STRIPEPAYMENT.GRAPHQL BEFORE # QUERIES
+# AUTH PAYLOAD FOR SIGNIN/REFRESH
+type AuthPayload {
+  accessToken: String!
+  refreshToken: String!
+  exp: Int! # expiration time in seconds
+  loadView: [String!]!
+}
 
-# FILE: USER.GRAPHQL BEFORE # QUERIES
+# INPUTS
+input SignUpInput {
+  firstName: String!
+  lastName: String!
+  email: String!
+  password: String!
+}
 
-# FILE: USERROLE.GRAPHQL BEFORE # QUERIES
+input SignInInput {
+  email: String!
+  password: String!
+}
+input RefreshAccessTokenInput {
+  refreshToken: String!
+  accessToken: String!
+}
 
-# FILE: VARIATIONIMAGE.GRAPHQL BEFORE # QUERIES
+input ResetPasswordInput {
+  email: String!
+  resetToken: String!
+  newPassword: String!
+}
+
+# No types needed
+# This data is used by services only
+# scalar Upload
+# https://aws.plainenglish.io/building-graphql-api-for-effortless-file-uploads-to-aws-s3-cf9ba8b5bd12
+
+type VariationImage {
+  id: ID!
+  url: String!
+  productVariationId: ID!
+}
+
+# INPUTS
+input UploadThumbnailInput {
+  productId: ID!
+  file: Upload!
+}
+
+input UploadVariationImagesInput {
+  productVariationId: ID!
+  files: [Upload!]!
+}
+
 
 # CONSOLIDATED QUERIES
 type Query {
 
   # CARTITEM FILE QUERIES:
-  # Fetch all cart items for the authenticated user
-  cartItems(userId: ID!): [CartItem!]
+  # Clients only
+  cartItems: [CartItem!]!
 
   # CATEGORY FILE QUERIES:
 
   # ORDER FILE QUERIES:
-  # Get orders
   # Managers: Can retrieve all orders applying optional filters.
   # Clients: Can only access their own orders.
-  orders(filter: OrderFilterInput): [Order!]
+  orders(filter: OrderFilterInput): [Order!]!
 
-  # Get the order data and their items
   # Managers can access any order
   # Clients can only access their own order
   order(id: ID!): Order
 
-  # Check all payment status from an order.
   # Manager: Returns all payments
   # Client: Returns only the last payment info generated
-  orderPayments(id: ID!): [StripePayment!]
+  orderPayments(id: ID!): [StripePayment!]!
 
   # Check if payment was successfully approved from Stripe
-  # Managers and Clients can access their own orders
+  # Managers can access to any order && Clients can access their own orders
   orderPaymentApprovedStatus(id: ID!): ApprovedStatusPayload!
 
   # ORDERINCIDENT FILE QUERIES:
-  # Retrieves all incidents logs
-  # Managers only: If role=manager, can retrieve all incidents
-  # Optionally filter by userId (clientId)
-  orderIncidents(userId: ID): [OrderIncident!]
-
-  # Retrieves all incidents for a given orderId
   # Managers only
-  orderIncidentsByOrderId(orderId: ID!): [OrderIncident!]
+  # Optionally filter by userId (clientId) or orderId to get a specific order
+  orderIncidents(clientId: ID, orderId: ID): [OrderIncident!]!
 
   # ORDERITEM FILE QUERIES:
 
@@ -181,12 +368,22 @@ type Query {
   # PERMISSION FILE QUERIES:
 
   # PRODUCT FILE QUERIES:
+  products(
+    pagination: PaginationInput
+    filter: ProductFiltersInput
+  ): [Product!]!
+
+  # Clients only
+  likedProducts(filter: ProductFiltersInput): [Product!]!
+
+  product(id: ID!): Product!
 
   # PRODUCTLIKE FILE QUERIES:
-  """Fetch all liked products for the authenticated user"""
-  likedProducts: [Product!]
+  myLikedProducts: [Product!]
 
   # PRODUCTVARIATION FILE QUERIES:
+  ProductVariations(productId: ID!): [ProductVariation!]!
+  productVariation(id: ID!): ProductVariation
 
   # REFRESHTOKEN FILE QUERIES:
 
@@ -197,51 +394,53 @@ type Query {
   # STRIPEPAYMENT FILE QUERIES:
 
   # USER FILE QUERIES:
+  # Required JWT header
+  me: User!
 
   # USERROLE FILE QUERIES:
 
   # VARIATIONIMAGE FILE QUERIES:
+  variationImages(variationProductId: ID!): [VariationImage!]!
 }
 
 # CONSOLIDATED MUTATIONS
 type Mutation {
 
   # CARTITEM FILE MUTATIONS:
-  # Add an item to the user's cart
-  addCartItem(input: AddCartItemInput!): CartItem!
-
-  # Update the quantity of an item in the user's cart
-  updateCartItem(input: UpdateCartItemInput!): CartItem!
-
-  # Remove an item from the user's cart
-  removeCartItem(input: RemoveCartItemInput!): Boolean!
+  # Clients only
+  addCartItem(input: CartItemInput!): CartItem!
+  # Clients only
+  updateCartItem(input: CartItemInput!): CartItem!
+  # Clients only
+  deleteCartItem(productVariationId: ID!): Boolean!
 
   # CATEGORY FILE MUTATIONS:
 
   # ORDER FILE MUTATIONS:
-  # Make an order (Clients only)
+  # Clients only
   # Transforms Cart-Items into an actual order and initiates payment.
   createOrder: CreateOrderPayload!
 
-
+  # Managers only
   # Replenishes failed orders stock back (Managers or via CRON JOB)
   cleanupOrders: Boolean!
 
+  # Clients only
   # Delete an order if payment is not completed
   # Clients can only delete their own order if not paid
   deleteOrder(id: ID!): Boolean!
 
-  # Set the order status (Managers Only)
+  # Managers only
   # For example: from waiting_payment to payment_approved or completed
-  updateOrderStatus(id: ID!, newStatus: OrderStatus!): Order!
+  updateOrderStatus(id: ID!, newStatus: OrderStatusEnum!): Order!
 
   # Create another stripe_payment_id for an existing order (Clients or Managers)
   # If not enough stock, returns an error and reverts partial stock to cart.
   retryOrderPayment(id: ID!): CreateOrderPayload!
 
   # ORDERINCIDENT FILE MUTATIONS:
-  # Creates an order incident and deletes the order
   # Managers only
+  # Creates an order incident and set the order as deleted
   createOrderIncident(input: CreateOrderIncidentInput!): OrderIncident!
 
   # ORDERITEM FILE MUTATIONS:
@@ -251,15 +450,45 @@ type Mutation {
   # PERMISSION FILE MUTATIONS:
 
   # PRODUCT FILE MUTATIONS:
+  # Managers only
+  postProduct(input: ProductInput!): Product!
+
+  # Managers only
+  updateProduct(id: ID!, input: ProductInput!): Product!
+
+  # Managers only
+  deleteProduct(id: ID!): Boolean!
+
+  # Managers only
+  enableDisableProduct(id: ID!, isEnabled: Boolean!): Product!
 
   # PRODUCTLIKE FILE MUTATIONS:
-  """Like a product"""
+  # Clients only
   likeProduct(productId: ID!): Boolean!
 
-  """Dislike (unlike) a product"""
+  # Clients only
   dislikeProduct(productId: ID!): Boolean!
 
   # PRODUCTVARIATION FILE MUTATIONS:
+  # Managers only
+  addProductVariation(
+    productId: ID!
+    input: ProductVariationInput!
+  ): ProductVariation!
+
+  # Update an existing product variation (Managers only)
+  # Managers only
+  updateProductVariation(
+    id: ID!
+    productId: ID!
+    input: ProductVariationInput!
+  ): ProductVariation!
+
+  # Managers only
+  deleteProductVariation(id: ID!): Boolean!
+
+  # Managers only
+  enableDisableProductVariation(id: ID!, isEnabled: Boolean!): Boolean!
 
   # REFRESHTOKEN FILE MUTATIONS:
 
@@ -270,8 +499,30 @@ type Mutation {
   # STRIPEPAYMENT FILE MUTATIONS:
 
   # USER FILE MUTATIONS:
+  signUp(input: SignUpInput!): User!
+  signIn(input: SignInInput!): AuthPayload!
+
+  # Sends a reset Token to the user's email if it exists
+  forgotPassword(email: String!): Boolean!
+
+  #  Use the reset Token from above mutations and the new password for the user
+  resetPassword(input: ResetPasswordInput!): Boolean!
+
+  # Invalidate the provided refresh token from the database, and access token from the redis cache layer
+  signOut(input: RefreshAccessTokenInput!): Boolean!
+
+  # Returns new tokens
+  refreshToken(input: RefreshAccessTokenInput!): AuthPayload!
 
   # USERROLE FILE MUTATIONS:
 
   # VARIATIONIMAGE FILE MUTATIONS:
+  # Managers only
+  uploadProductThumbnail(input: UploadThumbnailInput!): Product!
+
+  # Managers only
+  uploadVariationImages(input: UploadVariationImagesInput!): [VariationImage!]!
+
+  # Managers only
+  deleteVariationImage(id: ID!): Boolean!
 }

@@ -2,22 +2,20 @@
 type ProductLike {
   userId: ID!
   productId: ID!
-  likedAt: String!
+  likedAt: DateTime!
+
   user: User
   product: Product
 }
 
-# QUERIES
 type Query {
-  """Fetch all liked products for the authenticated user"""
-  likedProducts: [Product!]
+  myLikedProducts: [Product!]
 }
 
-# MUTATIONS
 type Mutation {
-  """Like a product"""
+  # Clients only
   likeProduct(productId: ID!): Boolean!
 
-  """Dislike (unlike) a product"""
+  # Clients only
   dislikeProduct(productId: ID!): Boolean!
 }
