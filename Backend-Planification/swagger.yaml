@@ -372,6 +372,65 @@ paths:
                   $ref: "#/components/schemas/CategoryDTO"
 
   ## PRODUCTS CONTROLLER
+  /me/liked-products:
+    get:
+      summary: List products with pagination, sorting and filtering
+      tags:
+        - Products
+      security:
+        - apiKey: []
+      parameters:
+          #Pagination Params:
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination (default is 1)
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: integer
+            default: 10
+          description: Number of items per page (default is 10)
+          
+        - name: gender
+          in: query
+          required: false
+          description: Filter products by gender
+          schema:
+            $ref: "#/components/schemas/GenderEnum"
+        - name: categoryId
+          in: query
+          description: Category Id
+          required: false
+          schema:
+            type: string
+            format: uuid
+            example: "c017e524-135f-4e5c-b321-de57919cc80a"
+        - name: search
+          in: query
+          required: false
+          description: search param to search product names 
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          required: false
+          description: Sort products by
+          schema:
+            $ref: "#/components/schemas/SortingProductEnum"
+      responses:
+        "200":
+          description: List of products
+          content:
+            application/json:
+              schema:
+                  $ref: "#/components/schemas/PaginatedProducts"
+       
+
 
   /products:
     get:
@@ -401,14 +460,6 @@ paths:
           description: Filter products by gender
           schema:
             $ref: "#/components/schemas/GenderEnum"
-          
-        - name: onlyLikedProducts
-          in: query
-          description: filter products that I have liked as client.
-          required: false
-          schema:
-            type: boolean
-            default: false
         - name: categoryId
           in: query
           description: Category Id
@@ -460,7 +511,7 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
-
+  
 
   /products/{id}:
     get:
