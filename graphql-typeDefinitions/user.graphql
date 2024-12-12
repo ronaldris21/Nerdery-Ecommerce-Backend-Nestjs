@@ -3,16 +3,23 @@ type User {
   firstName: String!
   lastName: String!
   email: String!
-  passwordHash: String!
   createdAt: DateTime!
 }
 
-# AUTH PAYLOAD FOR SIGNIN/REFRESH
+# PAYLOADS
+type Me {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  email: String!
+  roles: [String!]!
+}
+
 type AuthPayload {
   accessToken: String!
   refreshToken: String!
   exp: Int! # expiration time in seconds
-  loadView: [String!]!
+  roles: [String!]!
 }
 
 # INPUTS
@@ -27,35 +34,35 @@ input SignInInput {
   email: String!
   password: String!
 }
-input RefreshAccessTokenInput {
+input RefreshAndAccessTokenInput {
   refreshToken: String!
   accessToken: String!
 }
 
 input ResetPasswordInput {
-  email: String!
   resetToken: String!
   newPassword: String!
 }
 
 type Query {
-  # Required JWT header
-  me: User!
+  # Get logged user data
+  me: Me
 }
 
 type Mutation {
-  signUp(input: SignUpInput!): User!
+  signUp(input: SignUpInput!): GenericResponse!
+
   signIn(input: SignInInput!): AuthPayload!
 
-  # Sends a reset Token to the user's email if it exists
-  forgotPassword(email: String!): Boolean!
-
-  #  Use the reset Token from above mutations and the new password for the user
-  resetPassword(input: ResetPasswordInput!): Boolean!
-
   # Invalidate the provided refresh token from the database, and access token from the redis cache layer
-  signOut(input: RefreshAccessTokenInput!): Boolean!
+  signOut(input: RefreshAndAccessTokenInput!): GenericResponse!
+
+  # Sends a reset Token to the user's email if it exists
+  forgotPassword(email: String!): GenericResponse!
+
+  #  Use the reset Token from forgotPassword email and sets the new password for the user
+  resetPassword(input: ResetPasswordInput!): AuthPayload!
 
   # Returns new tokens
-  refreshToken(input: RefreshAccessTokenInput!): AuthPayload!
+  refreshToken(input: RefreshAndAccessTokenInput!): AuthPayload!
 }

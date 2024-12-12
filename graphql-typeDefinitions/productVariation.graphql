@@ -4,26 +4,38 @@ type ProductVariation {
   price: Float!
   discount: Float
   discountType: DiscountTypeEnum
-  size: String
-  color: String
+  size: String!
+  color: String!
   stock: Int!
-  stockRefilledAt: String
+  stockRefilledAt: String!
   isEnabled: Boolean!
   isDeleted: Boolean!
 
-  images: [String!]!
-  product: Product
-  variationImages: [VariationImage]
+  images: [String!]! # Resolved field via DataLoader when parent is ProductVariation
+  product: Product! # Resolved field via DataLoader when parent is OrderItem or CartItem
+  variationImages: [VariationImage!]!
 }
 
 # INPUTS
-input ProductVariationInput {
+input AddProductVariationInput {
   price: Float!
-  discount: Float!
+  discount: Float
+  discountType: DiscountTypeEnum
+  size: String!
+  color: String!
+  stock: Int!
+  isEnabled: Boolean!
+}
+
+input UpdateProductVariationInput {
+  productId: ID
+  price: Float
+  discount: Float
   discountType: DiscountTypeEnum
   size: String
   color: String
-  stock: Int!
+  stock: Int
+  isEnabled: Boolean
 }
 
 type Query {
@@ -35,20 +47,15 @@ type Mutation {
   # Managers only
   addProductVariation(
     productId: ID!
-    input: ProductVariationInput!
+    input: AddProductVariationInput!
   ): ProductVariation!
 
-  # Update an existing product variation (Managers only)
   # Managers only
   updateProductVariation(
     id: ID!
-    productId: ID!
-    input: ProductVariationInput!
+    input: UpdateProductVariationInput!
   ): ProductVariation!
 
   # Managers only
-  deleteProductVariation(id: ID!): Boolean!
-
-  # Managers only
-  enableDisableProductVariation(id: ID!, isEnabled: Boolean!): Boolean!
+  deleteProductVariation(id: ID!): GenericResponse!
 }

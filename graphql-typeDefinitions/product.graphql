@@ -18,7 +18,7 @@ type Product {
 
   myLike: Boolean! # @ResolvedField if requested
   category: Category!
-  productVariations: [ProductVariation!]!
+  productVariations: [ProductVariation!]! # @ResolvedField if requested - DataLoaders needed 
 }
 
 type PaginationDetails {
@@ -35,12 +35,22 @@ type ProductPagination {
 
 # INPUTS
 
-input ProductInput {
+input AddProductInput {
+  name: String!
+  gender: GenderEnum!
+  categoryId: ID!
+  description: String!
+  isEnabled: Boolean!
+}
+
+input UpdateProductInput {
   name: String
   gender: GenderEnum
   categoryId: ID
   description: String
+  isEnabled: Boolean
 }
+
 
 input ProductFiltersInput {
   gender: GenderEnum
@@ -53,35 +63,33 @@ input ProductFiltersInput {
 # PAGINATION:
 input PaginationInput {
   page: Int = 1
-  limit: Int = 10
+  limit: Int = 20
 }
 
 type Query {
   products(
-    pagination: PaginationInput!
+    pagination: PaginationInput
     filter: ProductFiltersInput
     sortBy: SortingProductEnum
   ): ProductPagination!
 
   # Clients only
-  likedProducts(
+  myLikedProducts(
+    pagination: PaginationInput
     filter: ProductFiltersInput
     sortBy: SortingProductEnum
-  ): [Product!]!
+  ): ProductPagination!
 
   product(id: ID!): Product!
 }
 
 type Mutation {
   # Managers only
-  postProduct(input: ProductInput!): Product!
+  addProduct(input: AddProductInput!): Product!
 
   # Managers only
-  updateProduct(id: ID!, input: ProductInput!): Product!
+  updateProduct(id: ID!, input: UpdateProductInput!): Product!
 
   # Managers only
-  deleteProduct(id: ID!): Boolean!
-
-  # Managers only
-  enableDisableProduct(id: ID!, isEnabled: Boolean!): Product!
+  deleteProduct(id: ID!): GenericResponse!
 }

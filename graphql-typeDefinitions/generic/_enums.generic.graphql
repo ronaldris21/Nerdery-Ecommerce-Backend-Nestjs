@@ -6,7 +6,6 @@ enum GenderEnum {
 }
 
 enum SortingProductEnum {
-  NONE
   FROM_A_TO_Z
   FROM_Z_TO_A
   FROM_HIGHEST_PRICE
@@ -18,7 +17,6 @@ enum SortingProductEnum {
 }
 
 enum DiscountTypeEnum {
-  NONE
   PERCENTAGE # "%"
   DOLLAR_SIGN # "$"
 }

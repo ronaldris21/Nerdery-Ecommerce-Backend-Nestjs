@@ -12,9 +12,9 @@ type Order {
   isStockReserved: Boolean!
 
   user: User
-  items: [OrderItem!]
-  payments: [StripePayment!]
-  incidents: [OrderIncident!]
+  items: [OrderItem!]!
+  payments: [StripePayment!]!
+  incidents: [OrderIncident!]!
 }
 
 type ApprovedStatusPayload {
@@ -34,7 +34,7 @@ input OrderFilterInput {
 }
 
 type Query {
-  # Managers: Can retrieve all orders applying optional filters.
+  # Managers: Can retrieve all orders.
   # Clients: Can only access their own orders.
   orders(filter: OrderFilterInput): [Order!]!
 
@@ -56,19 +56,16 @@ type Mutation {
   # Transforms Cart-Items into an actual order and initiates payment.
   createOrder: CreateOrderPayload!
 
-  # Managers only
-  # Replenishes failed orders stock back (Managers or via CRON JOB)
-  cleanupOrders: Boolean!
-
   # Clients only
   # Delete an order if payment is not completed
   # Clients can only delete their own order if not paid
-  deleteOrder(id: ID!): Boolean!
+  deleteOrder(id: ID!): GenericResponse!
 
   # Managers only
   # For example: from waiting_payment to payment_approved or completed
   updateOrderStatus(id: ID!, newStatus: OrderStatusEnum!): Order!
 
+  # Managers or Clients
   # Create another stripe_payment_id for an existing order (Clients or Managers)
   # If not enough stock, returns an error and reverts partial stock to cart.
   retryOrderPayment(id: ID!): CreateOrderPayload!

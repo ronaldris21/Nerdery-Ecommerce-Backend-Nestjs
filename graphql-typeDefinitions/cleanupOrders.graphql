@@ -1,0 +1,22 @@
+# This is a dedicated endpoint for managing loose inventory items.
+# This endpoint is also called every 1 hours by a CRON JOB.
+# Its purpose is to replenish the stock of orders that have not been completed in more than 4 hours. Giving other customers the opportunity to buy the variation products
+# This endpoint can also be triggered by a manager.
+# There are high availability cases where holding stock for 4 hours is too much. Managers can make a request using the minutes query to clean up orders and restore stock from orders that have not been completed in more than X minutes. The minimun minutes accepted is 10.
+
+type RestoreItem {
+  productVariationId: ID!
+  quantity: Int!
+}
+
+type RestoreStockPayload {
+  OrderId: ID!
+  items: [RestoreItem!]!
+}
+
+type CleanUpMutation {
+  # Managers only
+  # Replenishes failed orders stock back (Managers or via CRON JOB)
+  # minutes (optional): How many minutes has the order been without payment. If more than the limit, stock is replenished.
+  cleanupOrders(minutes: Int): [RestoreStockPayload!]!
+}

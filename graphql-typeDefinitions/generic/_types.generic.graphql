@@ -1,0 +1,13 @@
+type ValidationError {
+  property: String!
+  constraint: [String!]!
+}
+
+type GenericResponse {
+  success: Boolean!
+  message: String
+  httpCode: Int!
+  errors: [ValidationError!]
+}
+
+

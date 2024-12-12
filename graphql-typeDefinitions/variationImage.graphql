@@ -27,8 +27,8 @@ type Mutation {
   uploadProductThumbnail(input: UploadThumbnailInput!): Product!
 
   # Managers only
-  uploadVariationImages(input: UploadVariationImagesInput!): [VariationImage!]!
+  uploadVariationImages(input: UploadVariationImagesInput!): VariationImage!
 
   # Managers only
-  deleteVariationImage(id: ID!): Boolean!
+  deleteVariationImage(id: ID!): GenericResponse!
 }
