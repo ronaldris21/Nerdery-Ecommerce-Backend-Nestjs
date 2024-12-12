@@ -1219,6 +1219,14 @@ paths:
       responses:
         "200":
           description: Payment was successfully confirmed from Stripe!
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  isApproved:
+                    type: boolean
+                    example: true
         "401":
           description: Unauthorized
         "403":
@@ -1303,7 +1311,7 @@ paths:
     delete:
       summary: This endpoint replenishes failed orders stock back.
       tags:
-        - Free inventory from failed orders
+        - Restore inventory stock from failed orders
       security:
         - apiKey: []
       description: |
@@ -1328,6 +1336,10 @@ paths:
       responses:
         "200":
           description: Cleanup done!
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RestoredStockDTO"
         "400":
           description: Bad Request - minues has to be a positive number bigger than 10. 
         "401":
@@ -2094,6 +2106,8 @@ components:
         stripePaymentId:
           type: string
           maxLength: 255
+        isStockReserved:
+          type: boolean
         createdAt:
           type: string
           format: date-time
@@ -2107,6 +2121,7 @@ components:
         total: 99.98
         status: "waiting_payment"
         stripePaymentId: "pi_3MtwBwLkdIwHu7ix28a3tqPa"
+        isStockReserved: true
         createdAt: "2024-11-28T14:30:00Z"
 
     ## TODO:
@@ -2135,6 +2150,8 @@ components:
           $ref: "#/components/schemas/OrderStatusEnum"
         stripePaymentId:
           type: string
+        isStockReserved:
+          type: boolean
         createdAt:
           type: string
           format: date-time
@@ -2151,6 +2168,7 @@ components:
         total: 99.98
         status: "waiting_payment"
         stripePaymentId: "pi_3MtwBwLkdIwHu7ix28a3tqPa"
+        isStockReserved: true
         createdAt: "2024-11-28T14:30:00Z"
         orderItems:
           - id: "440e8400-e29b-41d4-a716-4466554400001"
@@ -2217,6 +2235,28 @@ components:
         webhookData: '{"key1":"value1","key2":"value2"}'
         createdAt: "2024-11-28T14:30:00Z"
         updatedAt: "2024-12-01T10:00:00Z"
+        
+    RestoredStockDTO:
+      type: array
+      items:
+        type: object
+        properties:
+          orderId: 
+            type: string
+            format: uuid
+          items:
+            type: array
+            items:
+              type: object
+              properties:
+                variationId:
+                  type: string
+                  format: uuid
+                quantity:
+                  type: number
+                  example: 4
+      
+          
 
   securitySchemes:
     apiKey:
