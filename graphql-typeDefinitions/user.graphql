@@ -1,0 +1,61 @@
+type User {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  email: String!
+  passwordHash: String!
+  createdAt: DateTime!
+}
+
+# AUTH PAYLOAD FOR SIGNIN/REFRESH
+type AuthPayload {
+  accessToken: String!
+  refreshToken: String!
+  exp: Int! # expiration time in seconds
+  loadView: [String!]!
+}
+
+# INPUTS
+input SignUpInput {
+  firstName: String!
+  lastName: String!
+  email: String!
+  password: String!
+}
+
+input SignInInput {
+  email: String!
+  password: String!
+}
+input RefreshAccessTokenInput {
+  refreshToken: String!
+  accessToken: String!
+}
+
+input ResetPasswordInput {
+  email: String!
+  resetToken: String!
+  newPassword: String!
+}
+
+type Query {
+  # Required JWT header
+  me: User!
+}
+
+type Mutation {
+  signUp(input: SignUpInput!): User!
+  signIn(input: SignInInput!): AuthPayload!
+
+  # Sends a reset Token to the user's email if it exists
+  forgotPassword(email: String!): Boolean!
+
+  #  Use the reset Token from above mutations and the new password for the user
+  resetPassword(input: ResetPasswordInput!): Boolean!
+
+  # Invalidate the provided refresh token from the database, and access token from the redis cache layer
+  signOut(input: RefreshAccessTokenInput!): Boolean!
+
+  # Returns new tokens
+  refreshToken(input: RefreshAccessTokenInput!): AuthPayload!
+}

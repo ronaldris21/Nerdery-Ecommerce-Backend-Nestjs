@@ -1,0 +1,547 @@
+
+# GENERIC FILE: _ENUMS.DEFINITIONS.GRAPHQL
+
+
+# ENUMS
+enum GenderEnum {
+  MALE
+  FEMALE
+  UNISEX
+}
+
+enum SortingProductEnum {
+  NONE
+  FROM_A_TO_Z
+  FROM_Z_TO_A
+  FROM_HIGHEST_PRICE
+  FROM_LOWEST_PRICE
+  RECENT_UPDATED
+  LATEST_UPDATED
+  MOST_POPULAR
+  LESS_POPULAR
+}
+
+enum DiscountTypeEnum {
+  NONE
+  PERCENTAGE # "%"
+  DOLLAR_SIGN # "$"
+}
+
+enum OrderStatusEnum {
+  WAITING_PAYMENT
+  PAYMENT_APPROVED
+  CANCELED
+  COMPLETED
+}
+
+enum StripePaymentIntentEnum {
+  REQUIRES_PAYMENT_METHOD
+  REQUIRES_CONFIRMATION
+  REQUIRES_ACTION
+  PROCESSING
+  SUCCEEDED
+  REQUIRES_CAPTURE
+  CANCELED
+  FAILED
+}
+
+# GENERIC FILE: _SCALARSDEFINITIONS.GRAPHQL
+
+
+# npm i graphql-scalars
+# https://the-guild.dev/graphql/scalars/docs/quick-start
+scalar DateTime
+
+
+# npm i  graphql-upload@14
+# https://dev.to/elbarryamine/how-to-upload-files-with-nestjs-and-graphql-2iig
+scalar Upload
+
+
+
+type CartItem {
+  userId: ID!
+  productVariationId: ID!
+  quantity: Int!
+
+  user: User
+  productVariation: ProductVariation
+}
+
+input CartItemInput {
+  productVariationId: ID!
+  quantity: Int!
+}
+
+type Category {
+  id: ID!
+  name: String!
+  parentCategoryId: ID
+
+  parentCategory: Category
+  subcategories: [Category]
+}
+
+type CategoryQuery {
+  # If no name is provided, return all categories.
+  categories(name: String): [Category!]!
+}
+type Order {
+  id: ID!
+  userId: ID!
+  currency: String!
+  subTotal: Float!
+  discount: Float!
+  total: Float!
+  status: OrderStatusEnum!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  isDeleted: Boolean!
+  isStockReserved: Boolean!
+
+  user: User
+  items: [OrderItem!]
+  payments: [StripePayment!]
+  incidents: [OrderIncident!]
+}
+
+type ApprovedStatusPayload {
+  isApproved: Boolean!
+}
+
+type CreateOrderPayload {
+  order: Order!
+  stripePaymentId: String!
+}
+
+# QUERY FILTER INPUTS
+input OrderFilterInput {
+  status: OrderStatusEnum
+  afterDate: String
+  beforeDate: String
+}
+
+# ORDER INCIDENT DEFINITIONS
+type OrderIncident {
+  id: ID!
+  managerId: ID!
+  clientId: ID!
+  orderId: ID!
+  withRestock: Boolean!
+  reason: String!
+  currency: String!
+  totalPrice: Float!
+  createdAt: DateTime!
+  
+  manager: User
+  client: User
+  order: Order
+}
+
+# INPUTS
+input CreateOrderIncidentInput {
+  orderId: ID!
+  reason: String!
+  withRestock: Boolean = true
+}
+
+# ORDER ITEM DEFINITIONS
+type OrderItem {
+  id: ID!
+  orderId: ID!
+  productVariationId: ID!
+  unitPrice: Float!
+  quantity: Int!
+  subTotal: Float!
+  discount: Float!
+  total: Float!
+
+  order: Order
+  productVariation: ProductVariation
+}
+
+# No queries nor mutations needed
+# Data is retrieve from the Order Queries, using ResolveFields with DataLoaders to request all data avoiding n+1 problem
+# No types needed
+# This data is used by services only
+# No types needed
+# This data is used by services only
+# PRODUCT DEFINITIONS
+type Product {
+  id: ID!
+  name: String!
+  gender: GenderEnum!
+  thumbnailUrl: String
+  categoryId: ID!
+  description: String
+  isEnabled: Boolean!
+  isDeleted: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+
+  # Calculate values on likes, dislikes, productVariation (post, update, delete)
+  likesCount: Int!
+  minPrice: Float
+  maxPrice: Float
+
+  myLike: Boolean! # @ResolvedField if requested
+  category: Category!
+  productVariations: [ProductVariation!]!
+}
+
+type PaginationDetails {
+  totalItems: Int!
+  totalPages: Int!
+  limit: Int!
+  page: Int!
+}
+
+type ProductPagination {
+  collection: [Product!]!
+  meta: PaginationDetails!
+}
+
+# INPUTS
+
+input ProductInput {
+  name: String
+  gender: GenderEnum
+  categoryId: ID
+  description: String
+}
+
+input ProductFiltersInput {
+  gender: GenderEnum
+  categoryId: ID
+  search: String
+  minPrice: Float
+  maxPrice: Float
+}
+
+# PAGINATION:
+input PaginationInput {
+  page: Int = 1
+  limit: Int = 10
+}
+
+# PRODUCT LIKE DEFINITIONS
+type ProductLike {
+  userId: ID!
+  productId: ID!
+  likedAt: DateTime!
+
+  user: User
+  product: Product
+}
+
+# PRODUCT VARIATION DEFINITIONS
+type ProductVariation {
+  id: ID!
+  price: Float!
+  discount: Float
+  discountType: DiscountTypeEnum
+  size: String
+  color: String
+  stock: Int!
+  stockRefilledAt: String
+  isEnabled: Boolean!
+  isDeleted: Boolean!
+
+  images: [String!]!
+  product: Product
+  variationImages: [VariationImage]
+}
+
+# INPUTS
+input ProductVariationInput {
+  price: Float!
+  discount: Float!
+  discountType: DiscountTypeEnum
+  size: String
+  color: String
+  stock: Int!
+}
+
+# No types needed
+# This data is used by services only
+# No types needed
+# This data is used by services only
+# No types needed
+# This data is used by services only
+# STRIPE PAYMENTS DEFINITIONS
+type StripePayment {
+  id: ID!
+  orderId: ID!
+  amount: Float!
+  currency: String!
+  stripePaymentId: String!
+  webhookPaymentIntent: StripePaymentIntentEnum!
+  webhookData: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+
+  order: Order
+}
+type User {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  email: String!
+  passwordHash: String!
+  createdAt: DateTime!
+}
+
+# AUTH PAYLOAD FOR SIGNIN/REFRESH
+type AuthPayload {
+  accessToken: String!
+  refreshToken: String!
+  exp: Int! # expiration time in seconds
+  loadView: [String!]!
+}
+
+# INPUTS
+input SignUpInput {
+  firstName: String!
+  lastName: String!
+  email: String!
+  password: String!
+}
+
+input SignInInput {
+  email: String!
+  password: String!
+}
+input RefreshAccessTokenInput {
+  refreshToken: String!
+  accessToken: String!
+}
+
+input ResetPasswordInput {
+  email: String!
+  resetToken: String!
+  newPassword: String!
+}
+
+# No types needed
+# This data is used by services only
+# scalar Upload
+# https://aws.plainenglish.io/building-graphql-api-for-effortless-file-uploads-to-aws-s3-cf9ba8b5bd12
+
+type VariationImage {
+  id: ID!
+  url: String!
+  productVariationId: ID!
+}
+
+# INPUTS
+input UploadThumbnailInput {
+  productId: ID!
+  file: Upload!
+}
+
+input UploadVariationImagesInput {
+  productVariationId: ID!
+  files: [Upload!]!
+}
+
+
+# CONSOLIDATED QUERIES
+type Query {
+
+  # CARTITEM FILE QUERIES:
+  # Clients only
+  cartItems: [CartItem!]!
+
+  # CATEGORY FILE QUERIES:
+
+  # ORDER FILE QUERIES:
+  # Managers: Can retrieve all orders applying optional filters.
+  # Clients: Can only access their own orders.
+  orders(filter: OrderFilterInput): [Order!]!
+
+  # Managers can access any order
+  # Clients can only access their own order
+  order(id: ID!): Order
+
+  # Manager: Returns all payments
+  # Client: Returns only the last payment info generated
+  orderPayments(id: ID!): [StripePayment!]!
+
+  # Check if payment was successfully approved from Stripe
+  # Managers can access to any order && Clients can access their own orders
+  orderPaymentApprovedStatus(id: ID!): ApprovedStatusPayload!
+
+  # ORDERINCIDENT FILE QUERIES:
+  # Managers only
+  # Optionally filter by userId (clientId) or orderId to get a specific order
+  orderIncidents(clientId: ID, orderId: ID): [OrderIncident!]!
+
+  # ORDERITEM FILE QUERIES:
+
+  # PASSWORDRESET FILE QUERIES:
+
+  # PERMISSION FILE QUERIES:
+
+  # PRODUCT FILE QUERIES:
+  products(
+    pagination: PaginationInput
+    filter: ProductFiltersInput
+    sortBy: SortingProductEnum
+  ): ProductPagination!
+
+  # Clients only
+  likedProducts(
+    filter: ProductFiltersInput
+    sortBy: SortingProductEnum
+  ): ProductPagination!
+
+  product(id: ID!): Product!
+
+  # PRODUCTLIKE FILE QUERIES:
+  myLikedProducts: [Product!]
+
+  # PRODUCTVARIATION FILE QUERIES:
+  ProductVariations(productId: ID!): [ProductVariation!]!
+  productVariation(id: ID!): ProductVariation
+
+  # REFRESHTOKEN FILE QUERIES:
+
+  # ROLE FILE QUERIES:
+
+  # ROLEPERMISSION FILE QUERIES:
+
+  # STRIPEPAYMENT FILE QUERIES:
+
+  # USER FILE QUERIES:
+  # Required JWT header
+  me: User!
+
+  # USERROLE FILE QUERIES:
+
+  # VARIATIONIMAGE FILE QUERIES:
+  variationImages(variationProductId: ID!): [VariationImage!]!
+}
+
+# CONSOLIDATED MUTATIONS
+type Mutation {
+
+  # CARTITEM FILE MUTATIONS:
+  # Clients only
+  addCartItem(input: CartItemInput!): CartItem!
+  # Clients only
+  updateCartItem(input: CartItemInput!): CartItem!
+  # Clients only
+  deleteCartItem(productVariationId: ID!): Boolean!
+
+  # CATEGORY FILE MUTATIONS:
+
+  # ORDER FILE MUTATIONS:
+  # Clients only
+  # Transforms Cart-Items into an actual order and initiates payment.
+  createOrder: CreateOrderPayload!
+
+  # Managers only
+  # Replenishes failed orders stock back (Managers or via CRON JOB)
+  cleanupOrders: Boolean!
+
+  # Clients only
+  # Delete an order if payment is not completed
+  # Clients can only delete their own order if not paid
+  deleteOrder(id: ID!): Boolean!
+
+  # Managers only
+  # For example: from waiting_payment to payment_approved or completed
+  updateOrderStatus(id: ID!, newStatus: OrderStatusEnum!): Order!
+
+  # Create another stripe_payment_id for an existing order (Clients or Managers)
+  # If not enough stock, returns an error and reverts partial stock to cart.
+  retryOrderPayment(id: ID!): CreateOrderPayload!
+
+  # ORDERINCIDENT FILE MUTATIONS:
+  # Managers only
+  # Creates an order incident and set the order as deleted
+  createOrderIncident(input: CreateOrderIncidentInput!): OrderIncident!
+
+  # ORDERITEM FILE MUTATIONS:
+
+  # PASSWORDRESET FILE MUTATIONS:
+
+  # PERMISSION FILE MUTATIONS:
+
+  # PRODUCT FILE MUTATIONS:
+  # Managers only
+  postProduct(input: ProductInput!): Product!
+
+  # Managers only
+  updateProduct(id: ID!, input: ProductInput!): Product!
+
+  # Managers only
+  deleteProduct(id: ID!): Boolean!
+
+  # Managers only
+  enableDisableProduct(id: ID!, isEnabled: Boolean!): Product!
+
+  # PRODUCTLIKE FILE MUTATIONS:
+  # Clients only
+  likeProduct(productId: ID!): Boolean!
+
+  # Clients only
+  dislikeProduct(productId: ID!): Boolean!
+
+  # PRODUCTVARIATION FILE MUTATIONS:
+  # Managers only
+  addProductVariation(
+    productId: ID!
+    input: ProductVariationInput!
+  ): ProductVariation!
+
+  # Update an existing product variation (Managers only)
+  # Managers only
+  updateProductVariation(
+    id: ID!
+    productId: ID!
+    input: ProductVariationInput!
+  ): ProductVariation!
+
+  # Managers only
+  deleteProductVariation(id: ID!): Boolean!
+
+  # Managers only
+  enableDisableProductVariation(id: ID!, isEnabled: Boolean!): Boolean!
+
+  # REFRESHTOKEN FILE MUTATIONS:
+
+  # ROLE FILE MUTATIONS:
+
+  # ROLEPERMISSION FILE MUTATIONS:
+
+  # STRIPEPAYMENT FILE MUTATIONS:
+
+  # USER FILE MUTATIONS:
+  signUp(input: SignUpInput!): User!
+  signIn(input: SignInInput!): AuthPayload!
+
+  # Sends a reset Token to the user's email if it exists
+  forgotPassword(email: String!): Boolean!
+
+  #  Use the reset Token from above mutations and the new password for the user
+  resetPassword(input: ResetPasswordInput!): Boolean!
+
+  # Invalidate the provided refresh token from the database, and access token from the redis cache layer
+  signOut(input: RefreshAccessTokenInput!): Boolean!
+
+  # Returns new tokens
+  refreshToken(input: RefreshAccessTokenInput!): AuthPayload!
+
+  # USERROLE FILE MUTATIONS:
+
+  # VARIATIONIMAGE FILE MUTATIONS:
+  # Managers only
+  uploadProductThumbnail(input: UploadThumbnailInput!): Product!
+
+  # Managers only
+  uploadVariationImages(input: UploadVariationImagesInput!): [VariationImage!]!
+
+  # Managers only
+  deleteVariationImage(id: ID!): Boolean!
+}

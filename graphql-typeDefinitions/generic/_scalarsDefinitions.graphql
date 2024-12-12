@@ -1,0 +1,9 @@
+# npm i graphql-scalars
+# https://the-guild.dev/graphql/scalars/docs/quick-start
+scalar DateTime
+
+
+# npm i  graphql-upload@14
+# https://dev.to/elbarryamine/how-to-upload-files-with-nestjs-and-graphql-2iig
+scalar Upload
+

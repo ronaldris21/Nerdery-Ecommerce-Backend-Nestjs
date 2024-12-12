@@ -1,0 +1,27 @@
+type CartItem {
+  userId: ID!
+  productVariationId: ID!
+  quantity: Int!
+
+  user: User
+  productVariation: ProductVariation
+}
+
+input CartItemInput {
+  productVariationId: ID!
+  quantity: Int!
+}
+
+type Query {
+  # Clients only
+  cartItems: [CartItem!]!
+}
+
+type Mutation {
+  # Clients only
+  addCartItem(input: CartItemInput!): CartItem!
+  # Clients only
+  updateCartItem(input: CartItemInput!): CartItem!
+  # Clients only
+  deleteCartItem(productVariationId: ID!): Boolean!
+}

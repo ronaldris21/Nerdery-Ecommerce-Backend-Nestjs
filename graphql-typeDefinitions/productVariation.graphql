@@ -1,0 +1,54 @@
+# PRODUCT VARIATION DEFINITIONS
+type ProductVariation {
+  id: ID!
+  price: Float!
+  discount: Float
+  discountType: DiscountTypeEnum
+  size: String
+  color: String
+  stock: Int!
+  stockRefilledAt: String
+  isEnabled: Boolean!
+  isDeleted: Boolean!
+
+  images: [String!]!
+  product: Product
+  variationImages: [VariationImage]
+}
+
+# INPUTS
+input ProductVariationInput {
+  price: Float!
+  discount: Float!
+  discountType: DiscountTypeEnum
+  size: String
+  color: String
+  stock: Int!
+}
+
+type Query {
+  ProductVariations(productId: ID!): [ProductVariation!]!
+  productVariation(id: ID!): ProductVariation
+}
+
+type Mutation {
+  # Managers only
+  addProductVariation(
+    productId: ID!
+    input: ProductVariationInput!
+  ): ProductVariation!
+
+  # Update an existing product variation (Managers only)
+  # Managers only
+  updateProductVariation(
+    id: ID!
+    productId: ID!
+    input: ProductVariationInput!
+  ): ProductVariation!
+
+  # Managers only
+  deleteProductVariation(id: ID!): Boolean!
+
+  # Managers only
+  enableDisableProductVariation(id: ID!, isEnabled: Boolean!): Boolean!
+}

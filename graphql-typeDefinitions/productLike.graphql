@@ -1,0 +1,21 @@
+# PRODUCT LIKE DEFINITIONS
+type ProductLike {
+  userId: ID!
+  productId: ID!
+  likedAt: DateTime!
+
+  user: User
+  product: Product
+}
+
+type Query {
+  myLikedProducts: [Product!]
+}
+
+type Mutation {
+  # Clients only
+  likeProduct(productId: ID!): Boolean!
+
+  # Clients only
+  dislikeProduct(productId: ID!): Boolean!
+}

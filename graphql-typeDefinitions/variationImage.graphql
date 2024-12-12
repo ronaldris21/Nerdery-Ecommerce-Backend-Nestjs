@@ -1,0 +1,34 @@
+# scalar Upload
+# https://aws.plainenglish.io/building-graphql-api-for-effortless-file-uploads-to-aws-s3-cf9ba8b5bd12
+
+type VariationImage {
+  id: ID!
+  url: String!
+  productVariationId: ID!
+}
+
+# INPUTS
+input UploadThumbnailInput {
+  productId: ID!
+  file: Upload!
+}
+
+input UploadVariationImagesInput {
+  productVariationId: ID!
+  files: [Upload!]!
+}
+
+type Query {
+  variationImages(variationProductId: ID!): [VariationImage!]!
+}
+
+type Mutation {
+  # Managers only
+  uploadProductThumbnail(input: UploadThumbnailInput!): Product!
+
+  # Managers only
+  uploadVariationImages(input: UploadVariationImagesInput!): [VariationImage!]!
+
+  # Managers only
+  deleteVariationImage(id: ID!): Boolean!
+}
