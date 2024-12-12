@@ -21,11 +21,23 @@ type Product {
   productVariations: [ProductVariation!]!
 }
 
+type PaginationDetails {
+  totalItems: Int!
+  totalPages: Int!
+  limit: Int!
+  page: Int!
+}
+
+type ProductPagination {
+  collection: [Product!]!
+  meta: PaginationDetails!
+}
+
 # INPUTS
 
 input ProductInput {
   name: String
-  gender: GenderEnum # male, female, unisex
+  gender: GenderEnum
   categoryId: ID
   description: String
 }
@@ -33,7 +45,7 @@ input ProductInput {
 input ProductFiltersInput {
   gender: GenderEnum
   categoryId: ID
-  slug: String
+  search: String
   minPrice: Float
   maxPrice: Float
 }
@@ -46,10 +58,10 @@ input PaginationInput {
 
 type Query {
   products(
-    pagination: PaginationInput
+    pagination: PaginationInput!
     filter: ProductFiltersInput
     sortBy: SortingProductEnum
-  ): [Product!]!
+  ): ProductPagination!
 
   # Clients only
   likedProducts(

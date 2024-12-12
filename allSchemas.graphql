@@ -174,39 +174,54 @@ type Product {
   thumbnailUrl: String
   categoryId: ID!
   description: String
-  isEnable: Boolean!
-
-  # Calculate values on likes, dislikes, productVariation (post, update, delete)
-  likesCount: Int
-  minPrice: Float
-  maxPrice: Float
-
+  isEnabled: Boolean!
+  isDeleted: Boolean!
   createdAt: DateTime!
   updatedAt: DateTime!
+
+  # Calculate values on likes, dislikes, productVariation (post, update, delete)
+  likesCount: Int!
+  minPrice: Float
+  maxPrice: Float
 
   myLike: Boolean! # @ResolvedField if requested
   category: Category!
   productVariations: [ProductVariation!]!
 }
 
+type PaginationDetails {
+  totalItems: Int!
+  totalPages: Int!
+  limit: Int!
+  page: Int!
+}
+
+type ProductPagination {
+  collection: [Product!]!
+  meta: PaginationDetails!
+}
+
 # INPUTS
 
 input ProductInput {
   name: String
-  gender: GenderEnum # male, female, unisex
+  gender: GenderEnum
   categoryId: ID
   description: String
 }
 
-input PaginationInput {
-  page: Int = 1
-  limit: Int = 10
-}
 input ProductFiltersInput {
   gender: GenderEnum
   categoryId: ID
-  slug: String
-  sortBy: SortingProductEnum
+  search: String
+  minPrice: Float
+  maxPrice: Float
+}
+
+# PAGINATION:
+input PaginationInput {
+  page: Int = 1
+  limit: Int = 10
 }
 
 # PRODUCT LIKE DEFINITIONS
@@ -371,10 +386,14 @@ type Query {
   products(
     pagination: PaginationInput
     filter: ProductFiltersInput
-  ): [Product!]!
+    sortBy: SortingProductEnum
+  ): ProductPagination!
 
   # Clients only
-  likedProducts(filter: ProductFiltersInput): [Product!]!
+  likedProducts(
+    filter: ProductFiltersInput
+    sortBy: SortingProductEnum
+  ): ProductPagination!
 
   product(id: ID!): Product!
 
