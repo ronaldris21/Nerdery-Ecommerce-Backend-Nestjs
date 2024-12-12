@@ -2,10 +2,29 @@ openapi: 3.0.0
 info:
   title: Sport Clothing API
   version: 1.0.0
-  description: >-
+  description: |
     API Guide to help you use it. Mainly covers auth and general endpoints, as
     endpoints for managers or customers only. API documentation for managing
     sport items, clothing, and orders.
+    
+    `This system has different roles:` 
+    
+    You can access to certain data about categories, products and its variations without an account. However, some endpoints are restricted to specific roles. A user can have multiple roles.
+    
+    `Client` is the role for customers. It's the default role you get access after signup.
+    
+    `Manager` is the role for people in charge of the ecommerce. You can not get this role by any endpoint. The role is manually set on the database.
+    
+    `Multiple roles considerations:` 
+    * There are endpoints available for multiple roles (e.g. /orders).  Whenever a user has more than one role and make a request on a multi-role endpoint,  the system assumes you are accessing the endpoint as **Client**. 
+    
+    * In a multi-role endpoint you have to specified the role in the header in order to avoid making requests as client. Check GET /orders for more reference.
+    
+    
+    `STATUS CODES:`
+    
+    
+    
 
   contact:
     name: Ronald Rios
@@ -25,33 +44,24 @@ servers:
         default: v1
         enum:
           - v1
-          - v2
 tags:
   - name: Authentication
     description: |
       Endpoints related to account authorization. Login, registration, password
       reset, etc
 
-      Later on, whenever you get a `401 Unauthorized` status code on a endpoint that requires authentification, keep in mind the `access token may be expired`  (it last only 4 hours). You have to refresh it using the `/account/refresh-Token` endpoint. `refresh_token` last 30 days.
+      Later on, whenever you get a `401 Unauthorized` status code on a endpoint that requires authentification, keep in mind the `access token may be expired`  (it last only 4 hours). You have to refresh it using the `/account/refresh-Token` endpoint. `refreshToken` last 30 days.
 
-  - name: Clients
-    description: |
-      API endpoints that `require auth as a CLIENT role` to be authorized to use them.
 
-      Keep in mind these endpoints also appear below on different tags. Endpoints are the same.
-  - name: Managers
-    description: |
-      API endpoints that `require auth as a MANAGER role` to be authorized to use them.
 
-      Keep in mind these endpoints also appear below on different tags. Endpoints are the same.
-  - name: Categories
-    description: Endpoints for managing categories
   - name: Products
     description: Endpoints for managing products
   - name: Product-Variations
     description: Endpoints for managing products variations
   - name: Images
     description: Endpoints for managing images on Product (thumbnail image) and Product-Variation (multiple images)
+  - name: Categories
+    description: Endpoints for managing categories
   - name: Likes
     description: Endpoints for managing product Likes
   - name: Cart
@@ -64,15 +74,13 @@ tags:
 paths:
   ## ACCOUNTS CONTROLLER
 
-  /account/me:
+  /users/me:
     get:
       summary: Get logged user data
       tags:
         - Authentication
-        - Clients
-        - Managers
       security:
-        - api_key: []
+        - apiKey: []
 
       responses:
         "401":
@@ -84,7 +92,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/AccountDTO"
 
-  /account/signup:
+  /signup:
     post:
       summary: Sign up a new user
       tags:
@@ -94,17 +102,21 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SignUpRequestDTO"
+              $ref: "#/components/schemas/SignUpRequestDTO"  
       responses:
         "201":
           description: User registered successfully. Now you can log in using your email and password
-        "400":
+        "422":
           description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestErrorDTO"
 
-  /account/signin:
+  /signin:
     post:
       summary: Log in a user
-      description: After validating user credential. You receive the access token, refresh token and the expiration time in seconds of the access token. `access_token` last only 4 hours, while `refresh_token` last for 30 days.
+      description: After validating user credential. You receive the access token, refresh token and the expiration time in seconds of the access token. `accessToken` last only 4 hours, while `refreshToken` last for 30 days.
       tags:
         - Authentication
       requestBody:
@@ -120,31 +132,39 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AuthDTO"
-        "400":
-          description: Bad request
+
         "404":
           description: Wrong credentials
+        "422":
+          description: Unprocessable credentials
 
-  /account/signout:
-    post:
+  /signout:
+    delete:
       summary: Log out a user
       tags:
         - Authentication
-      requestBody:
-        required: true
-        description: the token from the current session to be deleted/ logout
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AuthRequestDTO"
-
+      parameters:
+        - name: refreshToken
+          in: header
+          description: refresh token to avoid next refreshing this token on this device.
+          required: true
+          schema:
+            type: string  
+            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMzQ1Njc4OTAiLCJyb2xlIjoiTWFuYWdlciJ9.WdIOmSTqk91geKHwNvoSA1YIM-yNyRfgK4GxlskjEv"
+        - name: accessToken
+          in: header
+          description: the token from the current session to be deleted
+          required: true
+          schema:
+            type: string
+            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMzQ1Njc4OTAiLCJyb2xlIjoiTWFuYWdlciJ9"
       responses:
         "204":
           description: User logged out successfully
-        "400":
-          description: Bad request
+        "404":
+          description: Not found
 
-  /account/forgot-password:
+  /forgot-password:
     post:
       summary: Request a password reset
       tags:
@@ -161,36 +181,67 @@ paths:
         "404":
           description: Email not found
 
-  /account/reset-password:
+  /reset-password/{resetToken}:
     post:
       summary: Reset password using token
       tags:
         - Authentication
+      parameters:
+        - name: resetToken
+          in: path
+          description: token from the email receive through /forgot-password endpoint
+          required: true
+          schema:
+            type: string  
+            example: "123e4567-e89b-12d3-a456-426614174000"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ResetPasswordRequestDTO"
+              type: object
+              properties:
+                newPassword:
+                  type: string
+                  example:  "NewSecurePassword!456"   
       responses:
         "200":
-          description: Password updated successfully
+          description: Password updated successfully. All sessions were closed, except from this one.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthDTO"
         "400":
-          description: Bad request - wrong token
+          description: Bad request - 
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestErrorDTO"
+        "404":
+          description: Reset token not found or already used.
 
-  /account/refresh-token:
+  /refresh-token:
     post:
       summary: Refresh the access and refresh token from a specific user
-      description: Take in consideration that `access_token` last only 4 hours, while `refresh_token` last for 30 days.
+      description: Take in consideration that `accessToken` last only 4 hours, while `refreshToken` last for 30 days.
       tags:
         - Authentication
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AuthRequestDTO"
-
+      parameters:
+        - name: refreshToken
+          in: header
+          description: valid refresh token to get a new access token
+          required: true
+          schema:
+            type: string  
+            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMzQ1Njc4OTAiLCJyb2xlIjoiTWFuYWdlciJ9.WdIOmSTqk91geKHwNvoSA1YIM-yNyRfgK4GxlskjEv"
+        - name: accessToken
+          in: header
+          description: the token from the current session to be deleted
+          required: true
+          schema:
+            type: string
+            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMzQ1Njc4OTAiLCJyb2xlIjoiTWFuYWdlciJ9"
+      
       responses:
         "200":
           description: User logged in successfully
@@ -208,9 +259,8 @@ paths:
       summary: Get cart items for a user (Clients Only)
       tags:
         - Cart
-        - Clients
       security:
-        - api_key: []
+        - apiKey: []
 
       responses:
         "401":
@@ -228,9 +278,8 @@ paths:
       summary: Add item to cart (Clients Only)
       tags:
         - Cart
-        - Clients
       security:
-        - api_key: []
+        - apiKey: []
       requestBody:
         required: true
         content:
@@ -245,16 +294,15 @@ paths:
         "401":
           description: Unauthorized
 
-  /cart-items/{productVariationId}:
+  /cart-items/{variationId}:
     delete:
       summary: Removes item from the cart (Clients Only)
       tags:
         - Cart
-        - Clients
       security:
-        - api_key: []
+        - apiKey: []
       parameters:
-        - name: productVariationId
+        - name: variationId
           in: path
           required: true
           schema:
@@ -272,11 +320,10 @@ paths:
       summary: Update items quantity on cart (Clients Only)
       tags:
         - Cart
-        - Clients
       security:
-        - api_key: []
+        - apiKey: []
       parameters:
-        - name: productVariationId
+        - name: variationId
           in: path
           required: true
           schema:
@@ -301,16 +348,16 @@ paths:
 
   ## CATEGORIES CONTROLLER
 
-  /categories/{categoryNameLike}:
+  /categories:
     get:
-      summary: List categories like {categoryNameLike}
+      summary: List categories like "search" query param.
       tags:
         - Categories
       parameters:
-        - name: categoryNameLike
-          in: path
+        - name: search
+          in: query
           description: A word that matches the category names in the database using LIKE statement on queries
-          required: true
+          required: false
           schema:
             type: string
             default: ""
@@ -332,6 +379,7 @@ paths:
       tags:
         - Products
       parameters:
+          #Pagination Params:
         - name: page
           in: query
           required: true
@@ -346,13 +394,21 @@ paths:
             type: integer
             default: 10
           description: Number of items per page (default is 10)
+          
         - name: gender
           in: query
           required: false
           description: Filter products by gender
           schema:
             $ref: "#/components/schemas/GenderEnum"
-
+          
+        - name: onlyLikedProducts
+          in: query
+          description: filter products that I have liked as client.
+          required: false
+          schema:
+            type: boolean
+            default: false
         - name: categoryId
           in: query
           description: Category Id
@@ -361,16 +417,16 @@ paths:
             type: string
             format: uuid
             example: "c017e524-135f-4e5c-b321-de57919cc80a"
-        - name: slug
+        - name: search
           in: query
           required: false
-          description: search param to search product names like slug
+          description: search param to search product names 
           schema:
             type: string
         - name: sortBy
           in: query
           required: false
-          description: Filter products by
+          description: Sort products by
           schema:
             $ref: "#/components/schemas/SortingProductEnum"
       responses:
@@ -379,22 +435,20 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ProductDTO"
+                  $ref: "#/components/schemas/PaginatedProducts"
+                
     post:
       summary: Post a product (Manager only)
       tags:
         - Products
-        - Managers
       security:
-        - api_key: []
+        - apiKey: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ProductVariationRequestDTO" #TODO: revisar la forma en la que mando las imagenes - Hacer un DTO para esta request! o para cada request de POST y PUT
+              $ref: "#/components/schemas/ProductRequestDTO" 
       responses:
         "201":
           description: Product created successfully
@@ -407,55 +461,6 @@ paths:
         "403":
           description: Forbidden
 
-  /products/liked-by-me:
-    get:
-      summary: List all the products a user has liked with sorting and filtering (Clients only)
-      tags:
-        - Clients
-        - Products
-      security:
-        - api_key: []
-      parameters:
-        - name: gender
-          in: query
-          required: false
-          description: Filter products by gender
-          schema:
-            $ref: "#/components/schemas/GenderEnum"
-        - name: categoryId
-          in: query
-          description: Category Id
-          required: false
-          schema:
-            type: string
-            format: uuid
-            example: "c017e524-135f-4e5c-b321-de57919cc80a"
-        - name: slug
-          in: query
-          required: false
-          description: search param to search product names like slug
-          schema:
-            type: string
-        - name: sortBy
-          in: query
-          required: false
-          description: Sort product by
-          schema:
-            $ref: "#/components/schemas/SortingProductEnum"
-
-      responses:
-        "200":
-          description: List of products
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ProductDTO"
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
 
   /products/{id}:
     get:
@@ -480,13 +485,12 @@ paths:
         "404":
           description: Not found
 
-    put:
+    patch:
       summary: Update a product (Managers only)
       tags:
         - Products
-        - Managers
       security:
-        - api_key: []
+        - apiKey: []
       parameters:
         - name: id
           in: path
@@ -500,12 +504,14 @@ paths:
         content:
           application/json:
             schema:
-              type: array
-              items:
                 $ref: "#/components/schemas/ProductRequestDTO"
       responses:
         "200":
           description: Product updated successfully
+          content:
+            application/json:
+              schema:
+                  $ref: "#/components/schemas/ProductDTO"
         "401":
           description: Unauthorized
         "403":
@@ -515,12 +521,11 @@ paths:
 
     delete:
       summary: Delete a product (Managers only)
-      description: Set as delete the product and all its product variations
+      description: Set the product as deleted
       tags:
         - Products
-        - Managers
       security:
-        - api_key: []
+        - apiKey: []
       parameters:
         - name: id
           in: path
@@ -539,45 +544,6 @@ paths:
         "404":
           description: Not found
 
-  /products/{id}/disable:
-    patch:
-      summary: Enable/Disable a product (Managers only)
-      description: Enable/Disable a product (Managers only)
-      tags:
-        - Managers
-        - Products
-      security:
-        - api_key: []
-      parameters:
-        - name: id
-          in: path
-          description: product id
-          required: true
-          schema:
-            type: string
-            format: uuid
-            example: "c017e524-135f-4e5c-b321-de57919cc80a"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                is_enable:
-                  type: boolean
-            example:
-              is_disable: true
-
-      responses:
-        "200":
-          description: Product enable/disable
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
-        "404":
-          description: Not found
 
   ## PRODUCT VARIATIONS CONTROLLER
 
@@ -602,7 +568,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/ProductVariationDTO"
+                  $ref: "#/components/schemas/ProductVariationWithImagesDTO"
         "404":
           description: Not Found
 
@@ -610,9 +576,8 @@ paths:
       summary: Post a product variation (Manager only)
       tags:
         - Product-Variations
-        - Managers
       security:
-        - api_key: []
+        - apiKey: []
       parameters:
         - name: productId
           in: path
@@ -626,14 +591,15 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ProductVariationRequestDTO" #TODO: revisar la forma en la que mando las imagenes - Hacer un DTO para esta request! o para cada request de POST y PUT
+              $ref: "#/components/schemas/ProductVariationRequestDTO"
+              
       responses:
         "201":
           description: Product created successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProductVariationDTO" #TODO: revisar la forma en la que mando las imagenes - Hacer un DTO para esta request! o para cada request de POST y PUT
+                $ref: "#/components/schemas/ProductVariationDTO" 
         "401":
           description: Unauthorized
         "403":
@@ -665,7 +631,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProductVariationDTO"
+                $ref: "#/components/schemas/ProductVariationWithImagesDTO"
         "404":
           description: Not Found
 
@@ -673,9 +639,8 @@ paths:
       summary: Delete a product variation (Manager only)
       tags:
         - Product-Variations
-        - Managers
       security:
-        - api_key: []
+        - apiKey: []
       parameters:
         - name: productId
           in: path
@@ -701,13 +666,12 @@ paths:
         "404":
           description: Not Found
 
-    put:
+    patch:
       summary: Update a product variation (Manager only)
       tags:
         - Product-Variations
-        - Managers
       security:
-        - api_key: []
+        - apiKey: []
       parameters:
         - name: productId
           in: path
@@ -732,6 +696,10 @@ paths:
       responses:
         "200":
           description: Product variation updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductVariationDTO"
         "401":
           description: Unauthorized
         "403":
@@ -739,63 +707,17 @@ paths:
         "404":
           description: Not Found
 
-  /products/{productId}/variations/{variationId}/disable:
-    patch:
-      summary: Enable/Disable a product variation (Managers only)
-      description: Enable/Disable a product (Managers only)
-      tags:
-        - Managers
-        - Product-Variations
-      security:
-        - api_key: []
-      parameters:
-        - name: productId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-            example: "c017e524-135f-4e5c-b321-de57919cc80a"
-        - name: variationId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-            example: "c017e524-135f-4e5c-b321-de57919cc80a"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                is_enable:
-                  type: boolean
-            example:
-              is_disable: true
-
-      responses:
-        "200":
-          description: Product enable/disable
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
-        "404":
-          description: Not found
 
   ## LIKES CONTROLLER
 
-  /products/{id}/like:
+  /products/{id}/likes:
     post:
       summary: Likes a product (Clients only)
       description: Likes a product (Clients only)
       tags:
-        - Clients
         - Likes
       security:
-        - api_key: []
+        - apiKey: []
       parameters:
         - name: id
           in: path
@@ -814,10 +736,9 @@ paths:
     delete:
       summary: Dislike a product (Clients only)
       tags:
-        - Clients
         - Likes
       security:
-        - api_key: []
+        - apiKey: []
       parameters:
         - name: id
           in: path
@@ -840,19 +761,24 @@ paths:
       summary: Get orders
       tags:
         - Orders
-        - Managers
-        - Clients
       security:
-        - api_key: []
+        - apiKey: []
       description: |
-        This endpoint allows `Managers` to retrieve all orders with optional filtering by status.
-
+        `Managers` can access to all the orders
+        
         `Clients` can only access to their orders
 
         `Filters` can be applied to narrow down results, e.g., by `status`. 
 
         For accessing the order items use later the /orders/{id} endpoint
       parameters:
+        - name: role
+          in: header
+          description: if any role different that client
+          required: false
+          schema:
+            type: string
+            example: "Manager"
         - name: status
           in: query
           description: Filter orders by their status
@@ -896,9 +822,8 @@ paths:
       summary: Make an order (Clients only)
       tags:
         - Orders
-        - Clients
       security:
-        - api_key: []
+        - apiKey: []
       description: |
         This endpoint allows `Clients` to transform Product-Variation in the `Cart-Items` into an actual order.
 
@@ -906,9 +831,9 @@ paths:
 
         `1 active order with pending payment per user at the time` for better stock management and 
 
-        This endpoints initiates the stripe payment. Making the initial request using the total_price and setting the `payment_intent` as `requires_payment_method`.
+        This endpoints initiates the stripe payment. Making the initial request using the totalPrice and setting the `webhookPaymentIntent` as `requires_payment_method`.
 
-        This endpoint also returns the `stripe_payment_id` that needs to be proccessed on the client side.
+        This endpoint also returns the `stripePaymentId` that needs to be proccessed on the client side.
 
         `Payment has to be made in less than 4 hours` to be guarantee the products, otherwise products becomes available for another client.
       responses:
@@ -919,7 +844,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/OrderDTO"
         "400":
-          description: Bad Request
+          description: Bad Request - No items in the cart
         "401":
           description: Unauthorized
         "403":
@@ -927,43 +852,94 @@ paths:
         "409":
           description: Not enough items in stock
 
-  /orders/cleanup:
-    delete:
-      summary: This endpoint replenishes failed orders stock back.
+
+  /orders/{id}/incidents:
+    post:
+      summary: Creates an order incidence and delete the order (Managers Only)
       tags:
-        - Orders
-        - Managers
+        - Order-Incidents
       security:
-        - api_key: []
+        - apiKey: []
       description: |
-        This is a dedicated endpoint for managing loose inventory items.
-
-
-        This endpoint is also called `every 1 hours by a CRON JOB`.
-
-        Its purpose is to replenish the stock of orders that have not been completed in more than 4 hours. Giving other customers the opportunity to buy the variation products
-
-        This endpoint `can also be triggered by a manager`.
+        
+        Creates an order incident record and deletes the associated order. If withRestock is true, the stock of all items in the order is replenished. 
+        
+        This endpoint is for `managers` usage in case of refund or any inconvenient that was personally solved. 
+        
+        This process can or cannot restock the products base on `withRestock` property. If true, every order item quantity is added back to the product stock. 
+        
+        `withRefund` true means the order was already payed, but the refund was made to the client. If false, no refund is made to the client.
+        
+        `refund` is the amount of money that has been returned to the user. In the case of partial or full refunds.
+        
+        `currency` is the one use for the refund. Most of the time is 'usd', make sure to submit the one used on the actual refund if different. This currency is always 3 letters.
+        
+      parameters:
+        - name: id
+          in: path
+          description: Order Id to be deleted
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: "c017e524-135f-4e5c-b321-de57919cc80a"
+      requestBody:
+        description: reason and solution why the orders has been deletes and the incidence was made. Minimum 30 characters
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  example: "Customer requested cancellation due to incorrect item. Stripe refund successfully done"
+                withRestock:
+                  type: boolean
+                  example: true
+                withRefund:
+                  type: boolean
+                  example: true
+                refund:
+                  type: number
+                  format: float
+                  example: 199.99
+                currency:
+                  type: string
+                  example: "usd"
+              required:
+                - reason
+                - withRestock
+                - withRefund
+                - refund
+                - currency
       responses:
         "200":
-          description: Cleanup done!
+          description: Incidence made
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderIncidentDTO"
         "400":
-          description: Bad Request
+          description: Bad request - Reason not provide or too short. Minimum 30 characters. 
         "401":
           description: Unauthorized
         "403":
           description: Forbidden
+        "409":
+          description: Conflict - Order already has an incident. You can't create another on this order.
+        
+        
 
-  /orders/incidents:
+  /orders-incidents:
     get:
       summary: Retrieves all incidents logs from database (Managers only)
       tags:
         - Order-Incidents
-        - Managers
       security:
-        - api_key: []
+        - apiKey: []
       parameters:
-        - name: user_id
+        - name: userId
           in: query
           required: false
           description: Filter products by user id
@@ -980,26 +956,25 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/OrderIncidentDTO"
-        "400":
-          description: Bad Request
         "401":
           description: Unauthorized
         "403":
           description: Forbidden
 
-  /orders/{id}/incidents:
+
+        
+  /orders-incidents/{id}:
     get:
-      summary: Retrieves all incidents logs from database (Managers only)
+      summary: Retrieves the order incident with all its related data (Managers only)
       tags:
         - Order-Incidents
-        - Managers
       security:
-        - api_key: []
+        - apiKey: []
       parameters:
         - name: id
           in: path
           required: true
-          description: order id to be searched
+          description: order-incident id to be searched
           schema:
             type: string
             format: uuid
@@ -1026,59 +1001,11 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
-        "400":
+        "404":
           description: Not Found
+        
+          
 
-    post:
-      summary: Creates an order incidence and delete the order (Managers Only)
-      tags:
-        - Order-Incidents
-        - Managers
-      security:
-        - api_key: []
-      description: |
-        This endpoint is for `managers` usage in case of refund or any inconvenient that was personally solved. Keep in mind this process can or cannot restock the products base on `with_restock` property. If true, every order item quantity is added back to the product stock. An `order incident log` is created when a Manager deletes a order.
-      parameters:
-        - name: id
-          in: path
-          description: Order Id to be deleted
-          required: true
-          schema:
-            type: string
-            format: uuid
-            example: "c017e524-135f-4e5c-b321-de57919cc80a"
-        - name: with_restock
-          in: query
-          description: true means items are replenished, false items are lost
-          required: true
-          schema:
-            type: boolean
-            default: true
-      requestBody:
-        description: reason and solution why the orders has been deletes and the incidence was made. Minimum 30 characters
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                reason:
-                  type: string
-              required:
-                - reason
-      responses:
-        "200":
-          description: Incidence made
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OrderIncidentDTO"
-        "400":
-          description: Bad request - Reason not provide or too short. Minimum 30 characters
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
 
   /orders/{id}:
     get:
@@ -1086,10 +1013,8 @@ paths:
       description: Items data only contains most important properties (name, thumbnail image, size, color) from variation and product data.
       tags:
         - Orders
-        - Clients
-        - Managers
       security:
-        - api_key: []
+        - apiKey: []
       parameters:
         - name: id
           in: path
@@ -1119,9 +1044,8 @@ paths:
       summary: Delete an order if payment has not been completed (Clients only)
       tags:
         - Orders
-        - Clients
       security:
-        - api_key: []
+        - apiKey: []
       description: |
         A `Client` can only cancel its order if the payment has not being confirmed.
         Stock is replenished by default (if still reserved) and the order is set as deleted.
@@ -1150,9 +1074,8 @@ paths:
       description: Set the order as complete after the payment has been approved (Manager Only)
       tags:
         - Orders
-        - Managers
       security:
-        - api_key: []
+        - apiKey: []
       parameters:
         - name: id
           in: path
@@ -1194,14 +1117,12 @@ paths:
       summary: Check all payment status from an order.
       tags:
         - Orders
-        - Managers
-        - Clients
       security:
-        - api_key: []
+        - apiKey: []
       description: |
         `Manager` can access to any order payments. It returns an array with all the payments info.
 
-        `Clients` only access to the last payment info generated. This way it only receives the last stripe_payment_id generated.
+        `Clients` only access to the last payment info generated. This way it only receives the last stripePaymentId generated.
       parameters:
         - name: id
           in: path
@@ -1232,10 +1153,8 @@ paths:
       summary: Check payment status from an order.
       tags:
         - Orders
-        - Managers
-        - Clients
       security:
-        - api_key: []
+        - apiKey: []
       description: Check payment status from an order. You only care the status code is successful to confirm the backend has receive the stripe payment confirmation.
       parameters:
         - name: id
@@ -1256,22 +1175,24 @@ paths:
         "404":
           description: Not found
 
-  /orders/{id}/retry-payment:
+  /orders/{id}/new-stripe-payment-id:
     post:
-      summary: Create another stripe_payment_id for an existing order if stock is available
+      summary: Create another stripePaymentId for an existing order if stock is available
       tags:
         - Orders
-        - Managers
-        - Clients
       security:
-        - api_key: []
+        - apiKey: []
       description: |
-        This endpoint allows Clients or Managers to `create another stripe_payment_id`.
+        This endpoint allows Clients or Managers to `create another stripePaymentId:`.
+        
+        `Manager` can access to any order payments. It returns an array with all the payments info.
+
+        `Clients` only access to the last payment info generated. This way it only receives the last stripePaymentId generated.
 
         This endpoint also validates if there is enough stock for the products. 
 
 
-        If the product are still reserve it generates automatically a new stripe_payment. 
+        If the product are still reserve it generates automatically a new Stripe payment. 
 
         In case there is still enough stock, but not reserved, it reserves the stock again (reducing from the product variations stock the order-item's quantity ).
 
@@ -1295,12 +1216,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/OrderDTO"
-        "400":
-          description: Bad Request
         "401":
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          description: Order not found
         "409":
           description: Not enough items in stock, your order is deleted, items are sent back to the cart! Please check your products!
 
@@ -1310,25 +1231,68 @@ paths:
       tags:
         - Orders
       description: |
-        Endpoint listen and validates Stripes confirmation or changes on the payment_intent from all orders. `(stripe  ONLY)`
+        Endpoint listen and validates Stripes confirmation or changes on the paymentIntent from all orders. `(stripe  ONLY)`
 
         Internally validates request to confirm Stripe signature in order to be a valid request
       responses:
         "200":
           description: Webhook processed
+        "403":
+          description: Forbidden - Stripe signature not valid
+          
+          
+          
+          
+          
+          
+          
+          
+  ## CLEAN UP ORDER
+  /cleanup-orders:
+    delete:
+      summary: This endpoint replenishes failed orders stock back.
+      tags:
+        - Free inventory from failed orders
+      security:
+        - apiKey: []
+      description: |
+        This is a dedicated endpoint for managing loose inventory items.
+
+
+        This endpoint is also called `every 1 hours by a CRON JOB`.
+
+        Its purpose is to replenish the stock of orders that have not been completed in more than 4 hours. Giving other customers the opportunity to buy the variation products
+
+        This endpoint `can also be triggered by a manager`.
+        
+        `There are high availability cases where holding stock for 4 hours is too much`. Managers can make a request using the `minutes` query to clean up orders and restore stock from orders that have not been completed in more than **X minutes**. The minimun minutes accepted is 10.
+      parameters: 
+        - name: minutes
+          in: query
+          required: false
+          description: By default orders are clean up after 4 hours (240 minutes), you can change the minutes using this query param.
+          schema:
+            type: number
+            example: 30
+      responses:
+        "200":
+          description: Cleanup done!
         "400":
-          description: Bad request
+          description: Bad Request - minues has to be a positive number bigger than 10. 
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
 
   ## IMAGES CONTROLLER
-  /products/{productId}/thumbnail-image:
-    put:
+  /products/{productId}/thumbnail:
+    patch:
       summary: Update the thumbnail image of a product (Managers only)
       description: Uploads and updates the thumbnail image for a specific product.
       tags:
         - Images
-        - Managers
       security:
-        - api_key: []
+        - apiKey: []
       parameters:
         - name: productId
           in: path
@@ -1370,20 +1334,18 @@ paths:
         "500":
           description: Internal server error
 
-  /products/{productVariationId}/images:
+  /product-variations/{variationId}/images:
     post:
       summary: Uploads a image for a product variation (Managers only)
       description: Uploads a image for a product variation
       tags:
         - Images
-        - Managers
       security:
-        - api_key: []
+        - apiKey: []
       parameters:
-        - name: productVariationId
+        - name: variationId
           in: path
           required: true
-          description: Product-Variation-Id
           schema:
             type: string
             format: uuid
@@ -1422,24 +1384,15 @@ paths:
         "500":
           description: Internal server error
 
-  /products/{productVariationId}/images/{imageId}:
+  /product-variation-images/{imageId}:
     delete:
       summary: Delete a specific image from a product variation (Managers only)
       description: Delete a specific image from a product variation
       tags:
         - Images
-        - Managers
       security:
-        - api_key: []
+        - apiKey: []
       parameters:
-        - name: productVariationId
-          in: path
-          required: true
-          description: Product-Variation-Id
-          schema:
-            type: string
-            format: uuid
-            example: "c017e524-135f-4e5c-b321-de57919cc80a"
         - name: imageId
           in: path
           required: true
@@ -1543,9 +1496,6 @@ components:
         message: "Validation Error"
         statusCode: 400
         errors:
-          - property: "email"
-            constraint:
-              - "must be a valid email address"
           - property: "password"
             constraint:
               - "must be at least 8 characters long"
@@ -1564,23 +1514,19 @@ components:
           type: string
         email:
           type: string
-        passwordHash:
-          type: string
-        roleId:
-          type: string
-          format: uuid
-        createdAt:
-          type: string
-          format: date-time
+        roles:
+          type: array
+          items:
+            type: string
 
       example:
         id: "550e8400-e29b-41d4-a716-446655440000"
         lastName: "Ronald"
         firstName: "Rios"
         email: "ronald.rios@ravn.co"
-        passwordHash: "$2b$12$abcdefghijk"
-        roleId: "550e8400-e29b-41d4-a716-446655440001"
-        createdAt: "2024-11-28T14:30:00Z"
+        roles:
+          - "Manager"
+          - "Client"
 
     AuthRequestDTO:
       type: object
@@ -1588,29 +1534,34 @@ components:
         refreshToken:
           type: string
           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMzQ1Njc4OTAiLCJyb2xlIjoiTWFuYWdlciJ9.WdIOmSTqk91geKHwNvoSA1YIM-yNyRfgK4GxlskjEv"
+        accessToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMzQ1Njc4OTAiLCJyb2xlIjoiTWFuYWdlciJ9"
 
     AuthDTO:
       type: object
       properties:
-        accessToken:
-          type: string
-        refreshToken:
-          type: string
-        exp:
-          type: integer
-        loadView:
+        token:
+          type: object
+          properties:     
+            accessToken:
+              type: string
+            refreshToken:
+              type: string
+            exp:
+              type: integer
+        roles:
           type: array
           items:
             type: string
-            format: url
-
       example:
-        accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImRiNjgwMjQ2LTA4NmEtNGFkYy04YjU3LTg3MWFlYzE3ODAwNSJ9.WdlIDRVYXV14wvqGE7EjfyxA994D4uquEDtT12rhC2s"
-        refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImRiNjgwMjQ2LTA4NmEtNGFkYy04YjU3LTg3MWFlYzE3ODAwNSJ9.WdlIDRVYXV14wvqGE7EjfyxA994D4uquEDtT12rhC2s"
-        exp: 14400
-        loadView:
-          - "clientView"
-          - "ManagerView"
+        token:
+          accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImRiNjgwMjQ2LTA4NmEtNGFkYy04YjU3LTg3MWFlYzE3ODAwNSJ9.WdlIDRVYXV14wvqGE7EjfyxA994D4uquEDtT12rhC2s"
+          refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImRiNjgwMjQ2LTA4NmEtNGFkYy04YjU3LTg3MWFlYzE3ODAwNSJ9.WdlIDRVYXV14wvqGE7EjfyxA994D4uquEDtT12rhC2s"
+          exp: 14400
+        roles:
+          - "Manager"
+          - "Client"
 
     SignUpRequestDTO:
       type: object
@@ -1651,16 +1602,6 @@ components:
       example:
         email: "ronald.ris@ravn.co"
 
-    ResetPasswordRequestDTO:
-      type: object
-      properties:
-        resetToken:
-          type: string
-        newPassword:
-          type: string
-      example:
-        resetToken: "123e4567-e89b-12d3-a456-426614174000"
-        newPassword: "NewSecurePassword!456"
 
     ## CATEGORY SCHEMAS
     CategoryDTO:
@@ -1699,15 +1640,15 @@ components:
         id:
           type: string
           format: uuid
-        productVariationId:
+        variationId:
           type: string
           format: uuid
         imageURL:
           type: string
       example:
         id: "550e8400-e45b-41d4-a716-446655440000"
-        productVariationId: "550e8400-e29b-41d4-a716-4466ad440000"
-        thumbnailUrl: "https://example.com/images/product-1.jpg"
+        variationId: "550e8400-e29b-41d4-a716-4466ad440000"
+        imageUrl: "https://example.com/images/product-1.jpg"
 
     ProductDTO:
       type: object
@@ -1732,9 +1673,9 @@ components:
           type: boolean
         likesCount:
           type: integer
-        min_price:
+        minPrice:
           type: number
-        max_price:
+        maxPrice:
           type: number
         createdAt:
           type: string
@@ -1752,8 +1693,8 @@ components:
         isEnabled: true
         liked: true
         likesCount: 5551
-        min_price: 22.99
-        max_price: 44.49
+        minPrice: 22.99
+        maxPrice: 44.49
         createdAt: "2024-11-28T12:00:00Z"
         updatedAt: "2024-12-01T12:00:00Z"
 
@@ -1769,11 +1710,40 @@ components:
           format: uuid
         description:
           type: string
+        isEnabled:
+          type: boolean
       example:
         name: "Running Shoes"
         gender: "unisex"
         categoryId: "550e8400-e29b-41d4-a716-446655440000"
         description: "Lightweight and durable running shoes."
+        isEnabled: true
+        
+        
+        
+        
+    PaginatedProducts:
+      type: object
+      properties:
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              example: 1
+            limit: 
+              type: integer
+              example: 1
+            totalItems:
+              type: integer
+              example: 150
+            totalPages: 
+              type: integer
+              example: 150
+        collection:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductDTO"
 
     ## ProductVariation SCHEMAS
     ProductVariationDTO:
@@ -1802,11 +1772,8 @@ components:
         stockRefilledAt:
           type: string
           format: date-time
-        images:
-          type: array
-          items:
-            type: string
-            format: url
+        isEnabled: 
+          type: boolean
       example:
         id: "440e8400-e29b-41d4-a716-446655440000"
         price: 25
@@ -1816,10 +1783,56 @@ components:
         color: "Blue"
         stock: 15
         stockRefilledAt: "2024-11-28T12:00:00Z"
+        isEnabled: true
+          
+          
+    ProductVariationWithImagesDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        productId:
+          type: string
+          format: uuid
+        price:
+          type: number
+          format: float
+        discount:
+          type: number
+          format: float
+        discountType:
+          $ref: "#/components/schemas/discountType"
+        size:
+          type: string
+        color:
+          type: string
+        stock:
+          type: integer
+        stockRefilledAt:
+          type: string
+          format: date-time
+        isEnabled: 
+          type: boolean
         images:
-          - "https://example.com/images/product-1.jpg"
-          - "https://example.com/images/product-2.jpg"
-          - "https://example.com/images/product-3.png"
+          type: array
+          items:
+            $ref: "#/components/schemas/ImageDTO"
+      example:
+        id: "440e8400-e29b-41d4-a716-446655440000"
+        price: 25
+        discount: 5
+        discountType: "$"
+        size: "37"
+        color: "Blue"
+        stock: 15
+        stockRefilledAt: "2024-11-28T12:00:00Z"
+        isEnabled: true
+        images:
+          - id: "550e8400-e45b-41d4-a716-446655440000"
+            imageUrl: "https://example.com/images/blueshoes.jpg"
+          - id: "550e8400-e45b-41d4-a716-485623022151"
+            imageUrl: "https://example.com/images/shoes.jpg"
 
     ProductVariationRequestDTO:
       type: object
@@ -1841,6 +1854,8 @@ components:
           type: string
         stock:
           type: integer
+        isEnabled: 
+          type: boolean
       example:
         productId: "550e8400-e29b-41d4-a716-446655440000"
         price: 25
@@ -1849,6 +1864,7 @@ components:
         size: "37"
         color: "Blue"
         stock: 15
+        isEnabled: true
 
     ## CART SCHEMAS
 
@@ -1858,60 +1874,56 @@ components:
         userId:
           type: string
           format: uuid
-        productVariationId:
-          type: string
-          format: uuid
         quantity:
           type: integer
+        unitPrice:
+          type: number
+          format: float
+        subTotal:
+          type: number
+          format: float
+        discount:
+          type: number
+          format: float
+        total:
+          type: number
+          format: float
         data:
           type: object
           properties:
-            product:
-              $ref: "#/components/schemas/ProductDTO"
-            variation:
-              $ref: "#/components/schemas/ProductVariationDTO"
+            variationId:
+              type: string
+              format: uuid
+          
+            #others properties
       example:
         userId: "880e8400-e29b-41d4-a716-446655440000"
-        productVariationId: "550e8400-e29b-41d4-a716-446655440000"
         quantity: 2
+        unitPrice: 79.99
+        subTotal: 159.98
+        discount: 15.99
+        total: 143.99
         data:
-          variation:
-            id: "330e8400-e29b-41d4-a716-446655440000"
-            productId: "550e8400-e29b-41d4-a716-446655440000"
-            price: 79.99
-            discount: 10
-            discountType: "%"
-            size: "M"
-            color: "Black"
-            stock: 50
-            stockRefilledAt: "2024-11-28T12:00:00Z"
-            images:
-              - "https://example.com/images/product-1.jpg"
-              - "https://example.com/images/product-2.jpg"
-              - "https://example.com/images/product-3.png"
-          product:
-            id: "550e8400-e29b-41d4-a716-446655440000"
-            name: "Running Shoes"
-            gender: "unisex"
-            thumbnailUrl: "https://example.com/images/product-1.jpg"
-            categoryId: 5
-            description: "Lightweight and durable running shoes."
-            isEnabled: true
-            liked: true
-            likesCount: 5551
-            createdAt: "2024-11-28T12:00:00Z"
-            updatedAt: "2024-12-01T12:00:00Z"
+          variationId: "550e8400-e29b-41d4-a716-446655440000"
+          name: "Running Shoes"
+          gender: "unisex"
+          thumbnailUrl: "https://example.com/images/product-1.jpg"
+          size: "M"
+          color: "Black"
+          discount: 10
+          discountType: "%"
+
 
     CartItemRequestDTO:
       type: object
       properties:
-        productVariationId:
+        variationId:
           type: string
           format: uuid
         quantity:
           type: integer
       example:
-        productVariationId: "550e8400-e29b-41d4-a716-446655440000"
+        variationId: "550e8400-e29b-41d4-a716-446655440000"
         quantity: 2
 
     OrderItemDTO:
@@ -1923,7 +1935,7 @@ components:
         orderId:
           type: string
           format: uuid
-        productVariationId:
+        variationId:
           type: string
           format: uuid
         quantity:
@@ -1945,7 +1957,7 @@ components:
       example:
         id: "440e8400-e29b-41d4-a716-446655440000"
         orderId: "990e8400-e29b-41d4-a716-446655440000"
-        productVariationId: "550e8400-e29b-41d4-a716-446655440000"
+        variationId: "550e8400-e29b-41d4-a716-446655440000"
         quantity: 2
         unitPrice: 49.99
         subTotal: 99.98
@@ -1976,6 +1988,11 @@ components:
           format: uuid
         withRestock:
           type: boolean
+        withRefund:
+          type: boolean
+        refund:
+          type: number
+          format: float
         reason:
           type: string
         currency:
@@ -1993,8 +2010,10 @@ components:
         clientId: "550e8400-e29b-41d4-a716-446655440002"
         orderId: "c017e524-135f-4e5c-b321-de57919cc80a"
         withRestock: true
-        reason: "Customer requested cancellation due to incorrect item"
-        currency: "USD"
+        withRefund: true
+        refund: 199.99
+        reason: "Customer requested cancellation due to incorrect item. Stripe refund successfully done"
+        currency: "usd"
         totalPrice: 199.99
         createdAt: "2024-12-01T12:00:00Z"
 
@@ -2083,28 +2102,26 @@ components:
         stripePaymentId: "pi_3MtwBwLkdIwHu7ix28a3tqPa"
         createdAt: "2024-11-28T14:30:00Z"
         orderItems:
-          - id: "440e8400-e29b-41d4-a716-446655440000"
-            orderId: "990e8400-e29b-41d4-a716-446655440000"
-            productVariationId: "550e8400-e29b-41d4-a716-446655440001"
+          - id: "440e8400-e29b-41d4-a716-4466554400001"
             quantity: 1
             unitPrice: 10.00
             subTotal: 10
             discount: 0
             total: 10
             data:
+              variationId: "550e8400-e29b-41d4-a716-446655440001"
               name: "Ankle band"
               thumbnail: "https://example.com/images/product-3.png"
               size: ""
               color: "black"
-          - id: "440e8400-e29b-41d4-a716-446655440000"
-            orderId: "990e8400-e29b-41d4-a716-446655440000"
-            productVariationId: "550e8400-e29b-41d4-a716-446655440000"
+          - id: "440e8400-e29b-41d4-a716-4466554400002"
             quantity: 2
             unitPrice: 49.99
             subTotal: 99.98
             discount: 10
             total: 89.98
             data:
+              variationId: "550e8400-e29b-41d4-a716-4466554400002"
               name: "Nike running T-Shirts"
               thumbnail: "https://example.com/images/product-3.png"
               size: "44"
@@ -2151,7 +2168,7 @@ components:
         updatedAt: "2024-12-01T10:00:00Z"
 
   securitySchemes:
-    api_key:
+    apiKey:
       type: apiKey
       name: authorization
       in: header
