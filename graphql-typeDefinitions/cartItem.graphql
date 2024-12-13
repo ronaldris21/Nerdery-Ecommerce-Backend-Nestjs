@@ -1,10 +1,3 @@
-type CartItem {
-  # Database persisted fields
-  userId: ID!
-  productVariationId: ID!
-  quantity: Int!
-}
-
 type CartItemPayload {
   # Database persisted fields
   userId: ID!
@@ -42,9 +35,9 @@ type Query {
 
 type Mutation {
   # Clients only
-  addCartItem(input: CartItemInput!): CartItem!
+  addCartItem(input: CartItemInput!): CartItemPayload!
   # Clients only
-  updateCartItem(input: CartItemInput!): CartItem!
+  updateCartItem(input: CartItemInput!): CartItemPayload!
   # Clients only
   deleteCartItem(productVariationId: ID!): GenericResponse!
 }
