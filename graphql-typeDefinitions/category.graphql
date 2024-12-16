@@ -1,0 +1,13 @@
+type Category {
+  id: ID!
+  name: String!
+  parentCategoryId: ID
+
+  parentCategory: Category
+  subcategories: [Category]
+}
+
+type CategoryQuery {
+  # If no name is provided, return all categories.
+  categories(name: String): [Category!]!
+}

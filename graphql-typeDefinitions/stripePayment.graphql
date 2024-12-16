@@ -1,0 +1,14 @@
+# STRIPE PAYMENTS DEFINITIONS
+type StripePayment {
+  id: ID!
+  orderId: ID!
+  amount: Float!
+  currency: String!
+  stripePaymentId: String!
+  webhookPaymentIntent: StripePaymentIntentEnum!
+  webhookData: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+
+  order: Order
+}

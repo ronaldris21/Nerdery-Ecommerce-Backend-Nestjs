@@ -1,0 +1,35 @@
+# ORDER INCIDENT DEFINITIONS
+type OrderIncident {
+  id: ID!
+  managerId: ID!
+  clientId: ID!
+  orderId: ID!
+  withRestock: Boolean!
+  reason: String!
+  currency: String!
+  totalPrice: Float!
+  createdAt: DateTime!
+  
+  manager: User
+  client: User
+  order: Order
+}
+
+# INPUTS
+input CreateOrderIncidentInput {
+  orderId: ID!
+  reason: String!
+  withRestock: Boolean = true
+}
+
+type Query {
+  # Managers only
+  # Optionally filter by userId (clientId) or orderId to get a specific order
+  orderIncidents(clientId: ID, orderId: ID): [OrderIncident!]!
+}
+
+type Mutation {
+  # Managers only
+  # Creates an order incident and set the order as deleted
+  createOrderIncident(input: CreateOrderIncidentInput!): OrderIncident!
+}
