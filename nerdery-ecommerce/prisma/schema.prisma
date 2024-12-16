@@ -1,0 +1,267 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ENUM
+enum GenderEnum {
+  MALE
+  FEMALE
+  UNISEX
+  KIDS
+}
+
+enum DiscountTypeEnum {
+  NONE
+  PERCENTAGE
+  FIXED
+}
+
+enum OrderStatusEnum {
+  WAITING_PAYMENT
+  PAYMENT_APPROVED
+  CANCELED
+  COMPLETED
+}
+
+enum StripePaymentIntentEnum {
+  REQUIRES_PAYMENT_METHOD
+  REQUIRES_CONFIRMATION
+  REQUIRES_ACTION
+  PROCESSING
+  SUCCEEDED
+  REQUIRES_CAPTURE
+  CANCELED
+  FAILED
+}
+
+// PERMISSION RELATED MODELS
+
+model Permission {
+  id         String           @id @default(uuid()) @db.Uuid
+  entity     String
+  actionName String
+  roles      RolePermission[]
+}
+
+model Role {
+  id          String           @id @default(uuid()) @db.Uuid
+  name        String
+  permissions RolePermission[]
+  users       UserRole[]
+}
+
+model RolePermission {
+  roleId       String     @db.Uuid
+  permissionId String     @db.Uuid
+  role         Role       @relation(fields: [roleId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+}
+
+model UserRole {
+  userId String @db.Uuid
+  roleId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id])
+  role   Role   @relation(fields: [roleId], references: [id])
+
+  @@id([userId, roleId])
+}
+
+//USER RELATED MODELS
+
+model User {
+  id                      String          @id @default(uuid()) @db.Uuid
+  email                   String          @unique
+  firstName               String
+  lastName                String
+  passwordHash            String
+  createdAt               DateTime        @default(now())
+  refreshTokens           RefreshToken[]
+  passwordResets          PasswordReset[]
+  userRoles               UserRole[]
+  orders                  Order[]
+  likes                   ProductLike[]
+  CartItem                CartItem[]
+  OrderIncidentsAsManager OrderIncident[] @relation("ManagerIncidents")
+  OrderIncidents          OrderIncident[] @relation("ClientIncidents")
+}
+
+// Auth related models
+
+model RefreshToken {
+  id           String   @id @default(uuid()) @db.Uuid
+  refreshToken String   @unique
+  userId       String   @db.Uuid
+  validUntil   DateTime
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id])
+}
+
+model PasswordReset {
+  resetToken  String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  validUntil  DateTime
+  createdAt   DateTime @default(now())
+  alreadyUsed Boolean  @default(false)
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+// PRODUCT RELATED MODELS
+
+model Category {
+  id               String     @id @default(uuid()) @db.Uuid
+  name             String     @unique
+  parentCategoryId String?    @db.Uuid
+  parentCategory   Category?  @relation("CategoryParent", fields: [parentCategoryId], references: [id])
+  subCategories    Category[] @relation("CategoryParent")
+  product          Product[]
+
+  @@index([name], type: Hash)
+}
+
+model Product {
+  id                String             @id @default(uuid()) @db.Uuid
+  name              String             @db.VarChar(255)
+  gender            GenderEnum         @default(UNISEX)
+  thumbnailUrl      String             @db.VarChar(255)
+  categoryId        String             @db.Uuid
+  description       String?
+  isEnable          Boolean
+  isDeleted         Boolean
+  likesCount        Int
+  minPrice          Decimal            @db.Decimal(10, 2)
+  maxPrice          Decimal            @db.Decimal(10, 2)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  category          Category           @relation(fields: [categoryId], references: [id])
+  productVariations ProductVariation[]
+  productLike       ProductLike[]
+
+  //Sort search indexes
+  @@index([likesCount], type: BTree)
+  @@index([minPrice], type: BTree)
+  @@index([maxPrice], type: BTree)
+  //Exact search indexes
+  @@index([name], type: Hash)
+  @@index([gender], type: Hash)
+}
+
+model ProductVariation {
+  id              String           @id @default(uuid()) @db.Uuid
+  productId       String           @db.Uuid
+  price           Decimal          @db.Decimal(10, 2)
+  discount        Decimal          @default(0.0) @db.Decimal(10, 2)
+  discountType    DiscountTypeEnum @default(NONE)
+  size            String           @db.VarChar(10)
+  color           String           @db.VarChar(20)
+  stock           Int
+  stockRefilledAt DateTime?
+  isEnable        Boolean          @default(false)
+  isDeleted       Boolean          @default(false)
+  product         Product          @relation(fields: [productId], references: [id])
+  variationImages VariationImage[]
+  orderItems      OrderItem[]
+  cartItem        CartItem[]
+}
+
+model VariationImage {
+  id                 String           @id @default(uuid()) @db.Uuid
+  productVariationId String           @db.Uuid
+  imageUrl           String           @db.VarChar(255)
+  productVariation   ProductVariation @relation(fields: [productVariationId], references: [id])
+}
+
+model ProductLike {
+  userId    String   @db.Uuid
+  productId String   @db.Uuid
+  likedAt   DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@id([userId, productId])
+}
+
+model CartItem {
+  userId             String           @db.Uuid
+  productVariationId String           @db.Uuid
+  quantity           Int
+  user               User             @relation(fields: [userId], references: [id])
+  productVariation   ProductVariation @relation(fields: [productVariationId], references: [id])
+
+  @@id([userId, productVariationId])
+}
+
+// ORDER RELATED MODELS
+
+model Order {
+  id              String          @id @default(uuid()) @db.Uuid
+  userId          String          @db.Uuid
+  currency        String          @db.VarChar(3)
+  subTotal        Decimal         @db.Decimal(10, 2)
+  discount        Decimal         @db.Decimal(10, 2)
+  total           Decimal         @db.Decimal(10, 2)
+  status          OrderStatusEnum @default(WAITING_PAYMENT)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  isDeleted       Boolean
+  isStockReserved Boolean
+  user            User            @relation(fields: [userId], references: [id])
+  orderItems      OrderItem[]
+  stripePayments  StripePayment[]
+  orderIncidents  OrderIncident[]
+
+  @@index([status], type: Hash)
+}
+
+model OrderItem {
+  id                 String           @id @default(uuid()) @db.Uuid
+  orderId            String           @db.Uuid
+  productVariationId String           @db.Uuid
+  unitPrice          Decimal          @db.Decimal(10, 2)
+  quantity           Int
+  subTotal           Decimal          @db.Decimal(10, 2)
+  discount           Decimal          @db.Decimal(10, 2)
+  total              Decimal          @db.Decimal(10, 2)
+  order              Order            @relation(fields: [orderId], references: [id])
+  productVariation   ProductVariation @relation(fields: [productVariationId], references: [id])
+}
+
+model StripePayment {
+  id                   String                  @id @default(uuid()) @db.Uuid
+  orderId              String                  @db.Uuid
+  amount               Decimal                 @db.Decimal(10, 2)
+  currency             String                  @db.VarChar(3)
+  stripePaymentId      String                  @db.VarChar(255)
+  webhookPaymentIntent StripePaymentIntentEnum
+  webhookData          Json
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+  order                Order                   @relation(fields: [orderId], references: [id])
+}
+
+model OrderIncident {
+  id          String   @id @default(uuid()) @db.Uuid
+  managerId   String   @db.Uuid
+  clientId    String   @db.Uuid
+  orderId     String   @db.Uuid
+  withRestock Boolean
+  reason      String   @db.VarChar(2000)
+  currency    String   @db.VarChar(3)
+  totalPrice  Decimal  @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+  manager     User     @relation("ManagerIncidents", fields: [managerId], references: [id])
+  client      User     @relation("ClientIncidents", fields: [clientId], references: [id])
+  order       Order    @relation(fields: [orderId], references: [id])
+}
