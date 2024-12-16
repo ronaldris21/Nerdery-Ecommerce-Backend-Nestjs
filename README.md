@@ -33,8 +33,49 @@ Requirements:
 
 ```
 
+References:
+
+- Adidas website as reference for this backend and some adaptations based on above general requirements.
+
 ## Specifications:
 
 - on Backend-Planification folder you have the initial planning doc for the database and expected final API using openAPI - Swagger.
-    - DATABASE can be check on: https://databasediagram.com/app using the `database_diagram.erdl` or by using the `database_diagram.image`
-    - Rest API can be checked on https://editor.swagger.io/ using the `swagger.yaml` file
+    - DATABASE can be check on this website  using the **Backend-Planification/database_diagram.erdl**
+    
+    [Database Diagram Tool](https://databasediagram.com/app)
+    
+    - Rest API can be checked on this website  using the **Backend-Planification/swagger.yaml** file
+    
+    [Swagger Editor](https://editor.swagger.io/)
+    
+    - GRAPHQL can be checked on this link using: **allSchemas.graphql**
+    
+    [GraphQL Editor - Create backends from GraphQL schema](https://academy.graphqleditor.com/?lesson=tutorial)
+    
+
+# Nestjs Design Considerations - Doc
+
+## Auth - Roles
+
+- userId is fetched from JWT
+- GraphQL inputs DO NOT USE THE userId
+- Requesting as MANAGER or CLIENT
+    - by default if Auth validation is Okay, user is assume to be a CLIENT
+    - if MANAGER or another role, role must be specified on the HEADER:
+
+## GraphQL Schemas:
+
+This schemas are mainly created by having specific:
+
+- Enumerations (if needed)
+- Type definitions
+- Inputs
+- Queries
+- Mutations
+
+# CHECK BEFORE SEND:
+
+- [ ]  Pagination
+- [ ]  Inputs
+- [ ]  Mutations
+- [ ]  Graph Relations on  https://academy.graphqleditor.com/?lesson=tutorial

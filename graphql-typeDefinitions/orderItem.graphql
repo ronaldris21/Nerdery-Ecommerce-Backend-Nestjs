@@ -1,0 +1,17 @@
+# ORDER ITEM DEFINITIONS
+type OrderItem {
+  id: ID!
+  orderId: ID!
+  productVariationId: ID!
+  unitPrice: Float!
+  quantity: Int!
+  subTotal: Float!
+  discount: Float!
+  total: Float!
+
+  order: Order
+  productVariation: ProductVariation
+}
+
+# No queries nor mutations needed
+# Data is retrieve from the Order Queries, using ResolveFields with DataLoaders to request all data avoiding n+1 problem
