@@ -1,0 +1,16 @@
+TODO: feat/Auth-endpoints
+TODO: feat/cache-tokens-redis
+TODO: feat/roles-security
+TODO: feat/Upload-Images
+TODO: feat/products-graphql-queries
+TODO: feat/password-emails
+TODO: feat/product-likes-dislikes
+TODO: feat/low-stock-emails
+TODO: feat/Product-Mutations
+TODO: feat/ProductVariation-Mutations 
+TODO: feat/Cart-Items
+TODO: feat/Make-Order
+TODO: feat/stripe-integration
+TODO: feat/Order-Incidents
+TODO: feat/Cleanup-Failed-Orders
+TODO: feat/deploy
