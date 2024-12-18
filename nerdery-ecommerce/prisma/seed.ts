@@ -4,11 +4,12 @@ import {
   GenderEnum,
   DiscountTypeEnum,
 } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import * as bcrypt from 'bcrypt';
 
 const clientRoleName = 'Client';
-const managerRoleName = 'Manage';
+const managerRoleName = 'Manager';
+
+const prisma = new PrismaClient();
 
 const rolesData: Prisma.RoleCreateInput[] = [
   {
@@ -19,13 +20,19 @@ const rolesData: Prisma.RoleCreateInput[] = [
   },
 ];
 
-const usersWithRolesData = (managerRoleId: string, clientRoleId: string) => {
+const usersWithRolesData = async (
+  managerRoleId: string,
+  clientRoleId: string,
+) => {
+  const roundsOfHash =
+    parseInt(process.env.SECURITY_BCRYPT_SALT_OR_ROUND, 10) || 10;
+
   const usersData: Prisma.UserCreateInput[] = [
     {
       firstName: 'Ronald',
       lastName: 'Rios',
       email: 'ronaldrios@ravn.co',
-      passwordHash: 'xd',
+      password: await bcrypt.hash('25252525', roundsOfHash),
       createdAt: new Date(),
       userRoles: {
         create: {
@@ -41,7 +48,7 @@ const usersWithRolesData = (managerRoleId: string, clientRoleId: string) => {
       firstName: 'Ashley',
       lastName: 'Kai',
       email: 'ashley@ravn.co',
-      passwordHash: 'xdxd',
+      password: await bcrypt.hash('12345678', roundsOfHash),
       createdAt: new Date(),
       userRoles: {
         create: {
@@ -244,9 +251,12 @@ async function main() {
     await prisma.role.findFirst({ where: { name: managerRoleName } })
   ).id;
 
-  const users = usersWithRolesData(managerRoleId, clientRoleId);
+  const users = await usersWithRolesData(managerRoleId, clientRoleId);
   for (const user of users) {
     try {
+      if (await prisma.user.findFirst({ where: { email: user.email } })) {
+        continue;
+      }
       await prisma.user.create({ data: user });
     } catch (error) {
       console.error(error);
@@ -257,6 +267,17 @@ async function main() {
 
   for (const prod of productData) {
     try {
+      if (
+        await prisma.product.findFirst({
+          where: {
+            name: prod.name,
+            gender: prod.gender,
+            description: prod.description,
+          },
+        })
+      ) {
+        continue;
+      }
       await prisma.product.create({ data: prod });
     } catch (error) {
       console.error(error);

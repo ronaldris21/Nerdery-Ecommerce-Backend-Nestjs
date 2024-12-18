@@ -79,3 +79,14 @@ This schemas are mainly created by having specific:
 - [ ]  Inputs
 - [ ]  Mutations
 - [ ]  Graph Relations on  https://academy.graphqleditor.com/?lesson=tutorial
+
+
+# Useful commands
+````bash
+cd nerdery-ecommerce
+docker-compose up --build
+
+npx prisma migrate dev --name init
+npx prisma db seed
+
+```

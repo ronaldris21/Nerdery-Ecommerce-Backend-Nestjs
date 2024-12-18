@@ -86,7 +86,7 @@ model User {
   email                   String          @unique
   firstName               String
   lastName                String
-  passwordHash            String
+  password                String
   createdAt               DateTime        @default(now())
   refreshTokens           RefreshToken[]
   passwordResets          PasswordReset[]

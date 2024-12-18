@@ -1,11 +1,22 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { PrismaService } from './prisma/prisma.service';
+import { AuthModule } from './auth/auth.module';
+import config from './common/config/config';
 
 @Module({
-  imports: [],
+  imports: [
+    AuthModule,
+    ConfigModule.forRoot({
+      // If a variable is found in multiple files, the first one takes precedence.
+      envFilePath: ['.env.development', '.env'],
+      isGlobal: true,
+      load: [config],
+    }),
+  ],
   controllers: [AppController],
-  providers: [AppService, PrismaService],
+  providers: [AppService],
 })
 export class AppModule {}
