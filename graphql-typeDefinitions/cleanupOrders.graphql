@@ -1,0 +1,48 @@
+# This mutation is for managing loose inventory items
+
+# SERVICE: CLEANUP ORDERS
+#   The app has service to replenish the stock of orders that have not been completed within a certain time frame.
+#   If the payment is not confirmed, the stock is replenished. So new customers can buy the products.
+
+# WHAT ORDER ARE ELIGIBLE FOR CLEANUP?
+#   An order is considered eligible for cleanup if all the following conditions are met:
+#     The payment is not confirmed (Order.paymentStatus = WAITING_PAYMENT| CANCELED)
+#     and the order has been created for more than:
+#         4 hours by default
+#         X minutes from "cleanupOrders" Mutation
+#     Order.isStockReserved = true
+
+# SCHEDULE CLEANUP ORDERS
+#   The service is called every 15 minutes by a CRON JOB to run the Cleanup Service, default minutes is 240 minutes (4 hours).
+
+# MUTATION USAGE:
+#   By default the applications holds an order's stock for 4 hours.
+#   However, there are high availability cases where holding stock for 4 hours is too much.
+#   For example, a manager can release the stock from eligible orders that have not been completed in 30 minutes.
+#   This will allow other customers to buy the products.
+
+# MUTATION RESTRICTIONS:
+#   Only manager can use this mutation.
+#   The minimum "minutes" accepted is 10.
+
+type RestoreItem {
+  productVariationId: ID!
+  quantity: Int!
+
+  productVariation: ProductVariation!
+}
+
+type RestoreStockPayload {
+  OrderId: ID!
+  items: [RestoreItem!]!
+}
+
+input CleanUpMutationInput {
+  minutes: Int! # minimum 10 minutes
+}
+
+type CleanUpMutation {
+  # Managers only
+  # Replenishes the stock of eligible orders
+  cleanupOrders(input: CleanUpMutationInput!): [RestoreStockPayload!]!
+}

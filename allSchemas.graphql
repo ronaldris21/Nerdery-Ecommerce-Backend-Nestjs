@@ -1,51 +1,27 @@
 
-# GENERIC FILE: _ENUMS.DEFINITIONS.GRAPHQL
+# GENERIC FILE: _ENUMS.GENERIC.GRAPHQL
 
 
 # ENUMS
-enum GenderEnum {
+enum Gender {
   MALE
   FEMALE
   UNISEX
+  KIDS
 }
 
-enum SortingProductEnum {
-  NONE
-  FROM_A_TO_Z
-  FROM_Z_TO_A
-  FROM_HIGHEST_PRICE
-  FROM_LOWEST_PRICE
-  RECENT_UPDATED
-  LATEST_UPDATED
-  MOST_POPULAR
-  LESS_POPULAR
+# Create Generic Sort by property name
+enum SortOrder {
+  ASC
+  DESC
 }
 
-enum DiscountTypeEnum {
-  NONE
+enum DiscountType {
   PERCENTAGE # "%"
   DOLLAR_SIGN # "$"
 }
 
-enum OrderStatusEnum {
-  WAITING_PAYMENT
-  PAYMENT_APPROVED
-  CANCELED
-  COMPLETED
-}
-
-enum StripePaymentIntentEnum {
-  REQUIRES_PAYMENT_METHOD
-  REQUIRES_CONFIRMATION
-  REQUIRES_ACTION
-  PROCESSING
-  SUCCEEDED
-  REQUIRES_CAPTURE
-  CANCELED
-  FAILED
-}
-
-# GENERIC FILE: _SCALARSDEFINITIONS.GRAPHQL
+# GENERIC FILE: _SCALARS.GENERIC.GRAPHQL
 
 
 # npm i graphql-scalars
@@ -58,14 +34,67 @@ scalar DateTime
 scalar Upload
 
 
+# GENERIC FILE: _TYPES.GENERIC.GRAPHQL
 
-type CartItem {
+
+# PAGINATION:
+input PaginationInput {
+  page: Int = 1
+  limit: Int = 20
+}
+type PaginationMeta {
+  totalItems: Int!
+  totalPages: Int!
+  limit: Int!
+  page: Int!
+}
+
+# GENERIC SUCCESS RESPONSE
+type successResponse {
+  success: Boolean!
+  message: String
+  httpCode: Int!
+}
+
+# //TODO: give another check to send
+# //TODO: Generic success and failed responses
+
+type ValidationError {
+  property: String!
+  constraint: [String!]!
+}
+
+type GenericResponse {
+  success: Boolean!
+  message: String
+  httpCode: Int!
+  errors: [ValidationError!]
+}
+
+
+type CartItemPayload {
+  # Database persisted fields
   userId: ID!
   productVariationId: ID!
   quantity: Int!
 
-  user: User
-  productVariation: ProductVariation
+  # Calculated fields on the server
+  unitPrice: Float!
+  subTotal: Float!
+  discount: Float!
+  total: Float!
+
+  # Resolved field via DataLoader
+  productVariation: ProductVariation!
+}
+
+type CartPayload {
+  items: [CartItemPayload!]!
+
+  # Calculate fields on the server from all items in the cart
+  subTotal: Float!
+  discount: Float!
+  total: Float!
 }
 
 input CartItemInput {
@@ -73,6 +102,7 @@ input CartItemInput {
   quantity: Int!
 }
 
+# CATEGORY DEFINITIONS
 type Category {
   id: ID!
   name: String!
@@ -84,7 +114,55 @@ type Category {
 
 type CategoryQuery {
   # If no name is provided, return all categories.
-  categories(name: String): [Category!]!
+  categories(search: String): [Category!]!
+}
+# This mutation is for managing loose inventory items
+
+# SERVICE: CLEANUP ORDERS
+#   The app has service to replenish the stock of orders that have not been completed within a certain time frame.
+#   If the payment is not confirmed, the stock is replenished. So new customers can buy the products.
+
+# WHAT ORDER ARE ELIGIBLE FOR CLEANUP?
+#   An order is considered eligible for cleanup if all the following conditions are met:
+#     The payment is not confirmed (Order.paymentStatus = WAITING_PAYMENT| CANCELED)
+#     and the order has been created for more than:
+#         4 hours by default
+#         X minutes from "cleanupOrders" Mutation
+#     Order.isStockReserved = true
+
+# SCHEDULE CLEANUP ORDERS
+#   The service is called every 15 minutes by a CRON JOB to run the Cleanup Service, default minutes is 240 minutes (4 hours).
+
+# MUTATION USAGE:
+#   By default the applications holds an order's stock for 4 hours.
+#   However, there are high availability cases where holding stock for 4 hours is too much.
+#   For example, a manager can release the stock from eligible orders that have not been completed in 30 minutes.
+#   This will allow other customers to buy the products.
+
+# MUTATION RESTRICTIONS:
+#   Only manager can use this mutation.
+#   The minimum "minutes" accepted is 10.
+
+type RestoreItem {
+  productVariationId: ID!
+  quantity: Int!
+
+  productVariation: ProductVariation!
+}
+
+type RestoreStockPayload {
+  OrderId: ID!
+  items: [RestoreItem!]!
+}
+
+input CleanUpMutationInput {
+  minutes: Int! # minimum 10 minutes
+}
+
+type CleanUpMutation {
+  # Managers only
+  # Replenishes the stock of eligible orders
+  cleanupOrders(input: CleanUpMutationInput!): [RestoreStockPayload!]!
 }
 type Order {
   id: ID!
@@ -93,16 +171,24 @@ type Order {
   subTotal: Float!
   discount: Float!
   total: Float!
-  status: OrderStatusEnum!
+  status: OrderStatus!
   createdAt: DateTime!
   updatedAt: DateTime!
   isDeleted: Boolean!
   isStockReserved: Boolean!
 
-  user: User
-  items: [OrderItem!]
-  payments: [StripePayment!]
-  incidents: [OrderIncident!]
+  user: User!
+  items: [OrderItem!]!
+  payments: [StripePayment!]!
+  incidents: [OrderIncident!]!
+}
+
+# Accesible for the client
+enum OrderStatus {
+  WAITING_PAYMENT
+  CANCELED
+  PAYMENT_APPROVED
+  COMPLETED
 }
 
 type ApprovedStatusPayload {
@@ -116,7 +202,7 @@ type CreateOrderPayload {
 
 # QUERY FILTER INPUTS
 input OrderFilterInput {
-  status: OrderStatusEnum
+  status: OrderStatus
   afterDate: String
   beforeDate: String
 }
@@ -128,23 +214,64 @@ type OrderIncident {
   clientId: ID!
   orderId: ID!
   withRestock: Boolean!
+  withRefund: Boolean!
+  refund: Float!
   reason: String!
   currency: String!
   totalPrice: Float!
   createdAt: DateTime!
-  
+
   manager: User
   client: User
   order: Order
+}
+
+enum OrderIncidentSortableField {
+  REFUND
+  TOTAL_PRICE
+  CREATED_AT
+}
+
+# Filters
+# Filter overwriting rules:
+# incidentId: This is the most specific filter. If you have an incidentId, you are looking for a specific incident, making other filters like userId and orderId redundant.
+# orderId: This is less specific than incidentId but more specific than userId. If you have an orderId, you are looking for incidents related to a specific order, making the userId filter less relevant.
+input OrderIncidentFiltersInput {
+  clientId: ID
+  managerId: ID
+  orderId: ID #Order ID overrides userId filter
+  incidentId: ID #Incident ID overrides userId and orderId filters
+  reason: String
+  currency: String
+  minRefund: Float
+  maxRefund: Float
+  minTotalPrice: Float
+  maxTotalPrice: Float
+  withRestock: Boolean
+  withRefund: Boolean
+}
+
+type OrderIncidentPagination {
+  collection: [OrderIncident!]!
+  meta: PaginationMeta!
+}
+
+input OrderIncidentSortingInput {
+  field: OrderIncidentSortableField!
+  order: SortOrder!
 }
 
 # INPUTS
 input CreateOrderIncidentInput {
   orderId: ID!
   reason: String!
-  withRestock: Boolean = true
+  withRestock: Boolean!
+  withRefund: Boolean!
+  refund: Float!
+  currency: String!
 }
 
+# //TODO: This is going to be big! is it worth it to implement it using cursor based pagination?
 # ORDER ITEM DEFINITIONS
 type OrderItem {
   id: ID!
@@ -170,7 +297,7 @@ type OrderItem {
 type Product {
   id: ID!
   name: String!
-  gender: GenderEnum!
+  gender: Gender!
   thumbnailUrl: String
   categoryId: ID!
   description: String
@@ -186,42 +313,54 @@ type Product {
 
   myLike: Boolean! # @ResolvedField if requested
   category: Category!
-  productVariations: [ProductVariation!]!
-}
-
-type PaginationDetails {
-  totalItems: Int!
-  totalPages: Int!
-  limit: Int!
-  page: Int!
+  productVariations: [ProductVariation!]! # @ResolvedField if requested - DataLoaders needed
 }
 
 type ProductPagination {
   collection: [Product!]!
-  meta: PaginationDetails!
+  meta: PaginationMeta!
 }
 
 # INPUTS
 
-input ProductInput {
-  name: String
-  gender: GenderEnum
-  categoryId: ID
-  description: String
+input AddProductInput {
+  name: String!
+  gender: Gender!
+  categoryId: ID!
+  description: String!
+  isEnabled: Boolean!
 }
 
+input UpdateProductInput {
+  name: String
+  gender: Gender
+  categoryId: ID
+  description: String
+  isEnabled: Boolean
+}
+
+#Sorters for products
+enum ProductSortableField {
+  NAME
+  CREATED_AT
+  UPDATED_AT
+  LIKES_COUNT
+  PRICE #This property has to be manually implemented, because it is not a direct property of the Product entity
+}
+
+#Sorting
+input SortingProductInput {
+  field: ProductSortableField!
+  order: SortOrder!
+}
+
+#Filters
 input ProductFiltersInput {
-  gender: GenderEnum
+  gender: Gender
   categoryId: ID
   search: String
   minPrice: Float
   maxPrice: Float
-}
-
-# PAGINATION:
-input PaginationInput {
-  page: Int = 1
-  limit: Int = 10
 }
 
 # PRODUCT LIKE DEFINITIONS
@@ -229,37 +368,52 @@ type ProductLike {
   userId: ID!
   productId: ID!
   likedAt: DateTime!
-
-  user: User
-  product: Product
 }
 
+type likesMutation {
+  # Clients only
+  likeProduct(productId: ID!): GenericResponse!
+
+  # Clients only
+  dislikeProduct(productId: ID!): GenericResponse!
+}
 # PRODUCT VARIATION DEFINITIONS
 type ProductVariation {
   id: ID!
   price: Float!
   discount: Float
-  discountType: DiscountTypeEnum
-  size: String
-  color: String
+  discountType: DiscountType
+  size: String!
+  color: String!
   stock: Int!
-  stockRefilledAt: String
+  stockRefilledAt: String!
   isEnabled: Boolean!
   isDeleted: Boolean!
 
-  images: [String!]!
-  product: Product
-  variationImages: [VariationImage]
+  product: Product! # Resolved field via DataLoader when parent is OrderItem or CartItem
+  variationImages: [ProductVariationImage!]!
 }
 
 # INPUTS
-input ProductVariationInput {
+input AddProductVariationInput {
   price: Float!
-  discount: Float!
-  discountType: DiscountTypeEnum
+  discount: Float
+  discountType: DiscountType
+  size: String!
+  color: String!
+  stock: Int!
+  isEnabled: Boolean!
+}
+
+input UpdateProductVariationInput {
+  productId: ID
+  price: Float
+  discount: Float
+  discountType: DiscountType
   size: String
   color: String
-  stock: Int!
+  stock: Int
+  isEnabled: Boolean
 }
 
 # No types needed
@@ -275,28 +429,47 @@ type StripePayment {
   amount: Float!
   currency: String!
   stripePaymentId: String!
-  webhookPaymentIntent: StripePaymentIntentEnum!
-  webhookData: String
+  stripePaymentIntent: StripePaymentStatus!
+  stripeWebhookData: String
   createdAt: DateTime!
   updatedAt: DateTime!
 
   order: Order
+}
+
+# STRIPE PAYMENTS ENUMS
+enum StripePaymentStatus {
+  REQUIRES_PAYMENT_METHOD
+  REQUIRES_CONFIRMATION
+  REQUIRES_ACTION
+  PROCESSING
+  SUCCEEDED
+  REQUIRES_CAPTURE
+  CANCELED
+  FAILED
 }
 type User {
   id: ID!
   firstName: String!
   lastName: String!
   email: String!
-  passwordHash: String!
   createdAt: DateTime!
 }
 
-# AUTH PAYLOAD FOR SIGNIN/REFRESH
+# PAYLOADS
+type Me {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  email: String!
+  roles: [String!]!
+}
+
 type AuthPayload {
   accessToken: String!
   refreshToken: String!
   exp: Int! # expiration time in seconds
-  loadView: [String!]!
+  roles: [String!]!
 }
 
 # INPUTS
@@ -311,13 +484,12 @@ input SignInInput {
   email: String!
   password: String!
 }
-input RefreshAccessTokenInput {
+input RefreshAndAccessTokenInput {
   refreshToken: String!
   accessToken: String!
 }
 
 input ResetPasswordInput {
-  email: String!
   resetToken: String!
   newPassword: String!
 }
@@ -327,7 +499,7 @@ input ResetPasswordInput {
 # scalar Upload
 # https://aws.plainenglish.io/building-graphql-api-for-effortless-file-uploads-to-aws-s3-cf9ba8b5bd12
 
-type VariationImage {
+type ProductVariationImage {
   id: ID!
   url: String!
   productVariationId: ID!
@@ -339,7 +511,7 @@ input UploadThumbnailInput {
   file: Upload!
 }
 
-input UploadVariationImagesInput {
+input UploadProductVariationImagesInput {
   productVariationId: ID!
   files: [Upload!]!
 }
@@ -350,12 +522,17 @@ type Query {
 
   # CARTITEM FILE QUERIES:
   # Clients only
-  cartItems: [CartItem!]!
+  cart: CartPayload!
 
   # CATEGORY FILE QUERIES:
 
+  # CLEANUPORDERS FILE QUERIES:
+
   # ORDER FILE QUERIES:
-  # Managers: Can retrieve all orders applying optional filters.
+
+  //TODO: pagination may be needed here too! Managers are filled with tons of orders
+
+  # Managers: Can retrieve all orders.
   # Clients: Can only access their own orders.
   orders(filter: OrderFilterInput): [Order!]!
 
@@ -373,8 +550,12 @@ type Query {
 
   # ORDERINCIDENT FILE QUERIES:
   # Managers only
-  # Optionally filter by userId (clientId) or orderId to get a specific order
-  orderIncidents(clientId: ID, orderId: ID): [OrderIncident!]!
+  # If no parameters are provided, it returns all incidents
+  orderIncidents(
+    pagination: PaginationInput
+    filters: OrderIncidentFiltersInput
+    sortBy: OrderIncidentSortingInput
+  ): [OrderIncident!]!
 
   # ORDERITEM FILE QUERIES:
 
@@ -386,19 +567,19 @@ type Query {
   products(
     pagination: PaginationInput
     filter: ProductFiltersInput
-    sortBy: SortingProductEnum
+    sortBy: SortingProductInput
   ): ProductPagination!
 
   # Clients only
-  likedProducts(
-    filter: ProductFiltersInput
-    sortBy: SortingProductEnum
+  myLikedProducts(
+    pagination: PaginationInput
+    filters: ProductFiltersInput
+    sortBy: SortingProductInput
   ): ProductPagination!
 
   product(id: ID!): Product!
 
   # PRODUCTLIKE FILE QUERIES:
-  myLikedProducts: [Product!]
 
   # PRODUCTVARIATION FILE QUERIES:
   ProductVariations(productId: ID!): [ProductVariation!]!
@@ -413,13 +594,13 @@ type Query {
   # STRIPEPAYMENT FILE QUERIES:
 
   # USER FILE QUERIES:
-  # Required JWT header
-  me: User!
+  # Get logged user data
+  me: Me
 
   # USERROLE FILE QUERIES:
 
   # VARIATIONIMAGE FILE QUERIES:
-  variationImages(variationProductId: ID!): [VariationImage!]!
+  productVariationImages(productId: ID!): [ProductVariationImage!]!
 }
 
 # CONSOLIDATED MUTATIONS
@@ -427,32 +608,31 @@ type Mutation {
 
   # CARTITEM FILE MUTATIONS:
   # Clients only
-  addCartItem(input: CartItemInput!): CartItem!
+  addCartItem(input: CartItemInput!): CartItemPayload!
   # Clients only
-  updateCartItem(input: CartItemInput!): CartItem!
+  updateCartItem(input: CartItemInput!): CartItemPayload!
   # Clients only
-  deleteCartItem(productVariationId: ID!): Boolean!
+  deleteCartItem(productVariationId: ID!): GenericResponse!
 
   # CATEGORY FILE MUTATIONS:
+
+  # CLEANUPORDERS FILE MUTATIONS:
 
   # ORDER FILE MUTATIONS:
   # Clients only
   # Transforms Cart-Items into an actual order and initiates payment.
   createOrder: CreateOrderPayload!
 
-  # Managers only
-  # Replenishes failed orders stock back (Managers or via CRON JOB)
-  cleanupOrders: Boolean!
-
   # Clients only
   # Delete an order if payment is not completed
   # Clients can only delete their own order if not paid
-  deleteOrder(id: ID!): Boolean!
+  deleteOrder(id: ID!): GenericResponse!
 
   # Managers only
   # For example: from waiting_payment to payment_approved or completed
-  updateOrderStatus(id: ID!, newStatus: OrderStatusEnum!): Order!
+  updateOrderStatus(id: ID!, newStatus: OrderStatus!): Order!
 
+  # Managers or Clients
   # Create another stripe_payment_id for an existing order (Clients or Managers)
   # If not enough stock, returns an error and reverts partial stock to cart.
   retryOrderPayment(id: ID!): CreateOrderPayload!
@@ -470,44 +650,31 @@ type Mutation {
 
   # PRODUCT FILE MUTATIONS:
   # Managers only
-  postProduct(input: ProductInput!): Product!
+  addProduct(input: AddProductInput!): Product!
 
   # Managers only
-  updateProduct(id: ID!, input: ProductInput!): Product!
+  updateProduct(id: ID!, input: UpdateProductInput!): Product!
 
   # Managers only
-  deleteProduct(id: ID!): Boolean!
-
-  # Managers only
-  enableDisableProduct(id: ID!, isEnabled: Boolean!): Product!
+  deleteProduct(id: ID!): GenericResponse!
 
   # PRODUCTLIKE FILE MUTATIONS:
-  # Clients only
-  likeProduct(productId: ID!): Boolean!
-
-  # Clients only
-  dislikeProduct(productId: ID!): Boolean!
 
   # PRODUCTVARIATION FILE MUTATIONS:
   # Managers only
   addProductVariation(
     productId: ID!
-    input: ProductVariationInput!
+    input: AddProductVariationInput!
   ): ProductVariation!
 
-  # Update an existing product variation (Managers only)
   # Managers only
   updateProductVariation(
     id: ID!
-    productId: ID!
-    input: ProductVariationInput!
+    input: UpdateProductVariationInput!
   ): ProductVariation!
 
   # Managers only
-  deleteProductVariation(id: ID!): Boolean!
-
-  # Managers only
-  enableDisableProductVariation(id: ID!, isEnabled: Boolean!): Boolean!
+  deleteProductVariation(id: ID!): GenericResponse!
 
   # REFRESHTOKEN FILE MUTATIONS:
 
@@ -518,20 +685,21 @@ type Mutation {
   # STRIPEPAYMENT FILE MUTATIONS:
 
   # USER FILE MUTATIONS:
-  signUp(input: SignUpInput!): User!
+  signUp(input: SignUpInput!): GenericResponse!
+
   signIn(input: SignInInput!): AuthPayload!
 
-  # Sends a reset Token to the user's email if it exists
-  forgotPassword(email: String!): Boolean!
-
-  #  Use the reset Token from above mutations and the new password for the user
-  resetPassword(input: ResetPasswordInput!): Boolean!
-
   # Invalidate the provided refresh token from the database, and access token from the redis cache layer
-  signOut(input: RefreshAccessTokenInput!): Boolean!
+  signOut(input: RefreshAndAccessTokenInput!): GenericResponse!
+
+  # Sends a reset Token to the user's email if it exists
+  forgotPassword(email: String!): GenericResponse!
+
+  #  Use the reset Token from forgotPassword email and sets the new password for the user
+  resetPassword(input: ResetPasswordInput!): AuthPayload!
 
   # Returns new tokens
-  refreshToken(input: RefreshAccessTokenInput!): AuthPayload!
+  refreshToken(input: RefreshAndAccessTokenInput!): AuthPayload!
 
   # USERROLE FILE MUTATIONS:
 
@@ -540,8 +708,10 @@ type Mutation {
   uploadProductThumbnail(input: UploadThumbnailInput!): Product!
 
   # Managers only
-  uploadVariationImages(input: UploadVariationImagesInput!): [VariationImage!]!
+  uploadProductVariationImages(
+    input: UploadProductVariationImagesInput!
+  ): [ProductVariationImage!]!
 
   # Managers only
-  deleteVariationImage(id: ID!): Boolean!
+  deleteProductVariationImage(id: ID!): GenericResponse!
 }

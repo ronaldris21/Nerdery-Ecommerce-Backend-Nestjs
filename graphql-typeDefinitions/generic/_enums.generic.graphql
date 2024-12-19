@@ -1,0 +1,18 @@
+# ENUMS
+enum Gender {
+  MALE
+  FEMALE
+  UNISEX
+  KIDS
+}
+
+# Create Generic Sort by property name
+enum SortOrder {
+  ASC
+  DESC
+}
+
+enum DiscountType {
+  PERCENTAGE # "%"
+  DOLLAR_SIGN # "$"
+}

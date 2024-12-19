@@ -2,7 +2,7 @@
 type Product {
   id: ID!
   name: String!
-  gender: GenderEnum!
+  gender: Gender!
   thumbnailUrl: String
   categoryId: ID!
   description: String
@@ -18,70 +18,80 @@ type Product {
 
   myLike: Boolean! # @ResolvedField if requested
   category: Category!
-  productVariations: [ProductVariation!]!
-}
-
-type PaginationDetails {
-  totalItems: Int!
-  totalPages: Int!
-  limit: Int!
-  page: Int!
+  productVariations: [ProductVariation!]! # @ResolvedField if requested - DataLoaders needed
 }
 
 type ProductPagination {
   collection: [Product!]!
-  meta: PaginationDetails!
+  meta: PaginationMeta!
 }
 
 # INPUTS
 
-input ProductInput {
-  name: String
-  gender: GenderEnum
-  categoryId: ID
-  description: String
+input AddProductInput {
+  name: String!
+  gender: Gender!
+  categoryId: ID!
+  description: String!
+  isEnabled: Boolean!
 }
 
+input UpdateProductInput {
+  name: String
+  gender: Gender
+  categoryId: ID
+  description: String
+  isEnabled: Boolean
+}
+
+#Sorters for products
+enum ProductSortableField {
+  NAME
+  CREATED_AT
+  UPDATED_AT
+  LIKES_COUNT
+  PRICE #This property has to be manually implemented, because it is not a direct property of the Product entity
+}
+
+#Sorting
+input SortingProductInput {
+  field: ProductSortableField!
+  order: SortOrder!
+}
+
+#Filters
 input ProductFiltersInput {
-  gender: GenderEnum
+  gender: Gender
   categoryId: ID
   search: String
   minPrice: Float
   maxPrice: Float
 }
 
-# PAGINATION:
-input PaginationInput {
-  page: Int = 1
-  limit: Int = 10
-}
-
 type Query {
   products(
-    pagination: PaginationInput!
+    pagination: PaginationInput
     filter: ProductFiltersInput
-    sortBy: SortingProductEnum
+    sortBy: SortingProductInput
   ): ProductPagination!
 
   # Clients only
-  likedProducts(
-    filter: ProductFiltersInput
-    sortBy: SortingProductEnum
-  ): [Product!]!
+  myLikedProducts(
+    pagination: PaginationInput
+    filters: ProductFiltersInput
+    sortBy: SortingProductInput
+  ): ProductPagination!
 
   product(id: ID!): Product!
 }
 
 type Mutation {
   # Managers only
-  postProduct(input: ProductInput!): Product!
+  addProduct(input: AddProductInput!): Product!
 
   # Managers only
-  updateProduct(id: ID!, input: ProductInput!): Product!
+  updateProduct(id: ID!, input: UpdateProductInput!): Product!
 
   # Managers only
-  deleteProduct(id: ID!): Boolean!
-
-  # Managers only
-  enableDisableProduct(id: ID!, isEnabled: Boolean!): Product!
+  deleteProduct(id: ID!): GenericResponse!
 }
