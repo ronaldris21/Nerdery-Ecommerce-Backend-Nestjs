@@ -11,10 +11,45 @@ type OrderIncident {
   currency: String!
   totalPrice: Float!
   createdAt: DateTime!
-  
+
   manager: User
   client: User
   order: Order
+}
+
+enum OrderIncidentSortableField {
+  REFUND
+  TOTAL_PRICE
+  CREATED_AT
+}
+
+# Filters
+# Filter overwriting rules:
+# incidentId: This is the most specific filter. If you have an incidentId, you are looking for a specific incident, making other filters like userId and orderId redundant.
+# orderId: This is less specific than incidentId but more specific than userId. If you have an orderId, you are looking for incidents related to a specific order, making the userId filter less relevant.
+input OrderIncidentFiltersInput {
+  clientId: ID
+  managerId: ID
+  orderId: ID #Order ID overrides userId filter
+  incidentId: ID #Incident ID overrides userId and orderId filters
+  reason: String
+  currency: String
+  minRefund: Float
+  maxRefund: Float
+  minTotalPrice: Float
+  maxTotalPrice: Float
+  withRestock: Boolean
+  withRefund: Boolean
+}
+
+type OrderIncidentPagination {
+  collection: [OrderIncident!]!
+  meta: PaginationMeta!
+}
+
+input OrderIncidentSortingInput {
+  field: OrderIncidentSortableField!
+  order: SortOrder!
 }
 
 # INPUTS
@@ -27,11 +62,15 @@ input CreateOrderIncidentInput {
   currency: String!
 }
 
+# //TODO: This is going to be big! is it worth it to implement it using cursor based pagination?
 type Query {
   # Managers only
-  # Optionally filter by userId (clientId) or orderId to get a specific order
-  # if not provided, all incidents are returned
-  orderIncidents(clientId: ID, orderId: ID): [OrderIncident!]!
+  # If no parameters are provided, it returns all incidents
+  orderIncidents(
+    pagination: PaginationInput
+    filters: OrderIncidentFiltersInput
+    sortBy: OrderIncidentSortingInput
+  ): [OrderIncident!]!
 }
 
 type Mutation {

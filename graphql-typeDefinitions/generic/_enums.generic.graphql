@@ -1,40 +1,18 @@
 # ENUMS
-enum GenderEnum {
+enum Gender {
   MALE
   FEMALE
   UNISEX
+  KIDS
 }
 
-enum SortingProductEnum {
-  FROM_A_TO_Z
-  FROM_Z_TO_A
-  FROM_HIGHEST_PRICE
-  FROM_LOWEST_PRICE
-  RECENT_UPDATED
-  LATEST_UPDATED
-  MOST_POPULAR
-  LESS_POPULAR
+# Create Generic Sort by property name
+enum SortOrder {
+  ASC
+  DESC
 }
 
-enum DiscountTypeEnum {
+enum DiscountType {
   PERCENTAGE # "%"
   DOLLAR_SIGN # "$"
-}
-
-enum OrderStatusEnum {
-  WAITING_PAYMENT
-  PAYMENT_APPROVED
-  CANCELED
-  COMPLETED
-}
-
-enum StripePaymentIntentEnum {
-  REQUIRES_PAYMENT_METHOD
-  REQUIRES_CONFIRMATION
-  REQUIRES_ACTION
-  PROCESSING
-  SUCCEEDED
-  REQUIRES_CAPTURE
-  CANCELED
-  FAILED
 }

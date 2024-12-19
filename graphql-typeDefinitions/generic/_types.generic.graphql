@@ -1,3 +1,25 @@
+# PAGINATION:
+input PaginationInput {
+  page: Int = 1
+  limit: Int = 20
+}
+type PaginationMeta {
+  totalItems: Int!
+  totalPages: Int!
+  limit: Int!
+  page: Int!
+}
+
+# GENERIC SUCCESS RESPONSE
+type successResponse {
+  success: Boolean!
+  message: String
+  httpCode: Int!
+}
+
+# //TODO: give another check to send
+# //TODO: Generic success and failed responses
+
 type ValidationError {
   property: String!
   constraint: [String!]!
@@ -9,5 +31,3 @@ type GenericResponse {
   httpCode: Int!
   errors: [ValidationError!]
 }
-
-

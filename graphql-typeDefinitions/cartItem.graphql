@@ -30,7 +30,7 @@ input CartItemInput {
 
 type Query {
   # Clients only
-  myCart: CartPayload!
+  cart: CartPayload!
 }
 
 type Mutation {
@@ -40,4 +40,9 @@ type Mutation {
   updateCartItem(input: CartItemInput!): CartItemPayload!
   # Clients only
   deleteCartItem(productVariationId: ID!): GenericResponse!
+}
+
+type Subscription {
+  # Clients only
+  cartUpdated: CartPayload!
 }

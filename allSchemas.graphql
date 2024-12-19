@@ -3,44 +3,22 @@
 
 
 # ENUMS
-enum GenderEnum {
+enum Gender {
   MALE
   FEMALE
   UNISEX
+  KIDS
 }
 
-enum SortingProductEnum {
-  FROM_A_TO_Z
-  FROM_Z_TO_A
-  FROM_HIGHEST_PRICE
-  FROM_LOWEST_PRICE
-  RECENT_UPDATED
-  LATEST_UPDATED
-  MOST_POPULAR
-  LESS_POPULAR
+# Create Generic Sort by property name
+enum SortOrder {
+  ASC
+  DESC
 }
 
-enum DiscountTypeEnum {
+enum DiscountType {
   PERCENTAGE # "%"
   DOLLAR_SIGN # "$"
-}
-
-enum OrderStatusEnum {
-  WAITING_PAYMENT
-  PAYMENT_APPROVED
-  CANCELED
-  COMPLETED
-}
-
-enum StripePaymentIntentEnum {
-  REQUIRES_PAYMENT_METHOD
-  REQUIRES_CONFIRMATION
-  REQUIRES_ACTION
-  PROCESSING
-  SUCCEEDED
-  REQUIRES_CAPTURE
-  CANCELED
-  FAILED
 }
 
 # GENERIC FILE: _SCALARS.GENERIC.GRAPHQL
@@ -59,6 +37,28 @@ scalar Upload
 # GENERIC FILE: _TYPES.GENERIC.GRAPHQL
 
 
+# PAGINATION:
+input PaginationInput {
+  page: Int = 1
+  limit: Int = 20
+}
+type PaginationMeta {
+  totalItems: Int!
+  totalPages: Int!
+  limit: Int!
+  page: Int!
+}
+
+# GENERIC SUCCESS RESPONSE
+type successResponse {
+  success: Boolean!
+  message: String
+  httpCode: Int!
+}
+
+# //TODO: give another check to send
+# //TODO: Generic success and failed responses
+
 type ValidationError {
   property: String!
   constraint: [String!]!
@@ -70,8 +70,6 @@ type GenericResponse {
   httpCode: Int!
   errors: [ValidationError!]
 }
-
-
 
 
 type CartItemPayload {
@@ -118,15 +116,38 @@ type CategoryQuery {
   # If no name is provided, return all categories.
   categories(search: String): [Category!]!
 }
-# This is a dedicated endpoint for managing loose inventory items.
-# This endpoint is also called every 1 hours by a CRON JOB.
-# Its purpose is to replenish the stock of orders that have not been completed in more than 4 hours. Giving other customers the opportunity to buy the variation products
-# This endpoint can also be triggered by a manager.
-# There are high availability cases where holding stock for 4 hours is too much. Managers can make a request using the minutes query to clean up orders and restore stock from orders that have not been completed in more than X minutes. The minimun minutes accepted is 10.
+# This mutation is for managing loose inventory items
+
+# SERVICE: CLEANUP ORDERS
+#   The app has service to replenish the stock of orders that have not been completed within a certain time frame.
+#   If the payment is not confirmed, the stock is replenished. So new customers can buy the products.
+
+# WHAT ORDER ARE ELIGIBLE FOR CLEANUP?
+#   An order is considered eligible for cleanup if all the following conditions are met:
+#     The payment is not confirmed (Order.paymentStatus = WAITING_PAYMENT| CANCELED)
+#     and the order has been created for more than:
+#         4 hours by default
+#         X minutes from "cleanupOrders" Mutation
+#     Order.isStockReserved = true
+
+# SCHEDULE CLEANUP ORDERS
+#   The service is called every 15 minutes by a CRON JOB to run the Cleanup Service, default minutes is 240 minutes (4 hours).
+
+# MUTATION USAGE:
+#   By default the applications holds an order's stock for 4 hours.
+#   However, there are high availability cases where holding stock for 4 hours is too much.
+#   For example, a manager can release the stock from eligible orders that have not been completed in 30 minutes.
+#   This will allow other customers to buy the products.
+
+# MUTATION RESTRICTIONS:
+#   Only manager can use this mutation.
+#   The minimum "minutes" accepted is 10.
 
 type RestoreItem {
   productVariationId: ID!
   quantity: Int!
+
+  productVariation: ProductVariation!
 }
 
 type RestoreStockPayload {
@@ -134,11 +155,14 @@ type RestoreStockPayload {
   items: [RestoreItem!]!
 }
 
+input CleanUpMutationInput {
+  minutes: Int! # minimum 10 minutes
+}
+
 type CleanUpMutation {
   # Managers only
-  # Replenishes failed orders stock back (Managers or via CRON JOB)
-  # minutes (optional): How many minutes has the order been without payment. If more than the limit, stock is replenished.
-  cleanupOrders(minutes: Int): [RestoreStockPayload!]!
+  # Replenishes the stock of eligible orders
+  cleanupOrders(input: CleanUpMutationInput!): [RestoreStockPayload!]!
 }
 type Order {
   id: ID!
@@ -147,16 +171,24 @@ type Order {
   subTotal: Float!
   discount: Float!
   total: Float!
-  status: OrderStatusEnum!
+  status: OrderStatus!
   createdAt: DateTime!
   updatedAt: DateTime!
   isDeleted: Boolean!
   isStockReserved: Boolean!
 
-  user: User
+  user: User!
   items: [OrderItem!]!
   payments: [StripePayment!]!
   incidents: [OrderIncident!]!
+}
+
+# Accesible for the client
+enum OrderStatus {
+  WAITING_PAYMENT
+  CANCELED
+  PAYMENT_APPROVED
+  COMPLETED
 }
 
 type ApprovedStatusPayload {
@@ -170,7 +202,7 @@ type CreateOrderPayload {
 
 # QUERY FILTER INPUTS
 input OrderFilterInput {
-  status: OrderStatusEnum
+  status: OrderStatus
   afterDate: String
   beforeDate: String
 }
@@ -188,10 +220,45 @@ type OrderIncident {
   currency: String!
   totalPrice: Float!
   createdAt: DateTime!
-  
+
   manager: User
   client: User
   order: Order
+}
+
+enum OrderIncidentSortableField {
+  REFUND
+  TOTAL_PRICE
+  CREATED_AT
+}
+
+# Filters
+# Filter overwriting rules:
+# incidentId: This is the most specific filter. If you have an incidentId, you are looking for a specific incident, making other filters like userId and orderId redundant.
+# orderId: This is less specific than incidentId but more specific than userId. If you have an orderId, you are looking for incidents related to a specific order, making the userId filter less relevant.
+input OrderIncidentFiltersInput {
+  clientId: ID
+  managerId: ID
+  orderId: ID #Order ID overrides userId filter
+  incidentId: ID #Incident ID overrides userId and orderId filters
+  reason: String
+  currency: String
+  minRefund: Float
+  maxRefund: Float
+  minTotalPrice: Float
+  maxTotalPrice: Float
+  withRestock: Boolean
+  withRefund: Boolean
+}
+
+type OrderIncidentPagination {
+  collection: [OrderIncident!]!
+  meta: PaginationMeta!
+}
+
+input OrderIncidentSortingInput {
+  field: OrderIncidentSortableField!
+  order: SortOrder!
 }
 
 # INPUTS
@@ -204,6 +271,7 @@ input CreateOrderIncidentInput {
   currency: String!
 }
 
+# //TODO: This is going to be big! is it worth it to implement it using cursor based pagination?
 # ORDER ITEM DEFINITIONS
 type OrderItem {
   id: ID!
@@ -229,7 +297,7 @@ type OrderItem {
 type Product {
   id: ID!
   name: String!
-  gender: GenderEnum!
+  gender: Gender!
   thumbnailUrl: String
   categoryId: ID!
   description: String
@@ -245,26 +313,19 @@ type Product {
 
   myLike: Boolean! # @ResolvedField if requested
   category: Category!
-  productVariations: [ProductVariation!]! # @ResolvedField if requested - DataLoaders needed 
-}
-
-type PaginationDetails {
-  totalItems: Int!
-  totalPages: Int!
-  limit: Int!
-  page: Int!
+  productVariations: [ProductVariation!]! # @ResolvedField if requested - DataLoaders needed
 }
 
 type ProductPagination {
   collection: [Product!]!
-  meta: PaginationDetails!
+  meta: PaginationMeta!
 }
 
 # INPUTS
 
 input AddProductInput {
   name: String!
-  gender: GenderEnum!
+  gender: Gender!
   categoryId: ID!
   description: String!
   isEnabled: Boolean!
@@ -272,25 +333,34 @@ input AddProductInput {
 
 input UpdateProductInput {
   name: String
-  gender: GenderEnum
+  gender: Gender
   categoryId: ID
   description: String
   isEnabled: Boolean
 }
 
+#Sorters for products
+enum ProductSortableField {
+  NAME
+  CREATED_AT
+  UPDATED_AT
+  LIKES_COUNT
+  PRICE #This property has to be manually implemented, because it is not a direct property of the Product entity
+}
 
+#Sorting
+input SortingProductInput {
+  field: ProductSortableField!
+  order: SortOrder!
+}
+
+#Filters
 input ProductFiltersInput {
-  gender: GenderEnum
+  gender: Gender
   categoryId: ID
   search: String
   minPrice: Float
   maxPrice: Float
-}
-
-# PAGINATION:
-input PaginationInput {
-  page: Int = 1
-  limit: Int = 20
 }
 
 # PRODUCT LIKE DEFINITIONS
@@ -312,7 +382,7 @@ type ProductVariation {
   id: ID!
   price: Float!
   discount: Float
-  discountType: DiscountTypeEnum
+  discountType: DiscountType
   size: String!
   color: String!
   stock: Int!
@@ -320,16 +390,15 @@ type ProductVariation {
   isEnabled: Boolean!
   isDeleted: Boolean!
 
-  images: [String!]! # Resolved field via DataLoader when parent is ProductVariation
   product: Product! # Resolved field via DataLoader when parent is OrderItem or CartItem
-  variationImages: [VariationImage!]!
+  variationImages: [ProductVariationImage!]!
 }
 
 # INPUTS
 input AddProductVariationInput {
   price: Float!
   discount: Float
-  discountType: DiscountTypeEnum
+  discountType: DiscountType
   size: String!
   color: String!
   stock: Int!
@@ -340,7 +409,7 @@ input UpdateProductVariationInput {
   productId: ID
   price: Float
   discount: Float
-  discountType: DiscountTypeEnum
+  discountType: DiscountType
   size: String
   color: String
   stock: Int
@@ -360,12 +429,24 @@ type StripePayment {
   amount: Float!
   currency: String!
   stripePaymentId: String!
-  webhookPaymentIntent: StripePaymentIntentEnum!
-  webhookData: String
+  stripePaymentIntent: StripePaymentStatus!
+  stripeWebhookData: String
   createdAt: DateTime!
   updatedAt: DateTime!
 
   order: Order
+}
+
+# STRIPE PAYMENTS ENUMS
+enum StripePaymentStatus {
+  REQUIRES_PAYMENT_METHOD
+  REQUIRES_CONFIRMATION
+  REQUIRES_ACTION
+  PROCESSING
+  SUCCEEDED
+  REQUIRES_CAPTURE
+  CANCELED
+  FAILED
 }
 type User {
   id: ID!
@@ -418,7 +499,7 @@ input ResetPasswordInput {
 # scalar Upload
 # https://aws.plainenglish.io/building-graphql-api-for-effortless-file-uploads-to-aws-s3-cf9ba8b5bd12
 
-type VariationImage {
+type ProductVariationImage {
   id: ID!
   url: String!
   productVariationId: ID!
@@ -430,7 +511,7 @@ input UploadThumbnailInput {
   file: Upload!
 }
 
-input UploadVariationImagesInput {
+input UploadProductVariationImagesInput {
   productVariationId: ID!
   files: [Upload!]!
 }
@@ -441,13 +522,16 @@ type Query {
 
   # CARTITEM FILE QUERIES:
   # Clients only
-  myCart: CartPayload!
+  cart: CartPayload!
 
   # CATEGORY FILE QUERIES:
 
   # CLEANUPORDERS FILE QUERIES:
 
   # ORDER FILE QUERIES:
+
+  //TODO: pagination may be needed here too! Managers are filled with tons of orders
+
   # Managers: Can retrieve all orders.
   # Clients: Can only access their own orders.
   orders(filter: OrderFilterInput): [Order!]!
@@ -466,9 +550,12 @@ type Query {
 
   # ORDERINCIDENT FILE QUERIES:
   # Managers only
-  # Optionally filter by userId (clientId) or orderId to get a specific order
-  # if not provided, all incidents are returned
-  orderIncidents(clientId: ID, orderId: ID): [OrderIncident!]!
+  # If no parameters are provided, it returns all incidents
+  orderIncidents(
+    pagination: PaginationInput
+    filters: OrderIncidentFiltersInput
+    sortBy: OrderIncidentSortingInput
+  ): [OrderIncident!]!
 
   # ORDERITEM FILE QUERIES:
 
@@ -480,14 +567,14 @@ type Query {
   products(
     pagination: PaginationInput
     filter: ProductFiltersInput
-    sortBy: SortingProductEnum
+    sortBy: SortingProductInput
   ): ProductPagination!
 
   # Clients only
   myLikedProducts(
     pagination: PaginationInput
-    filter: ProductFiltersInput
-    sortBy: SortingProductEnum
+    filters: ProductFiltersInput
+    sortBy: SortingProductInput
   ): ProductPagination!
 
   product(id: ID!): Product!
@@ -513,7 +600,7 @@ type Query {
   # USERROLE FILE QUERIES:
 
   # VARIATIONIMAGE FILE QUERIES:
-  variationImages(variationProductId: ID!): [VariationImage!]!
+  productVariationImages(productId: ID!): [ProductVariationImage!]!
 }
 
 # CONSOLIDATED MUTATIONS
@@ -543,7 +630,7 @@ type Mutation {
 
   # Managers only
   # For example: from waiting_payment to payment_approved or completed
-  updateOrderStatus(id: ID!, newStatus: OrderStatusEnum!): Order!
+  updateOrderStatus(id: ID!, newStatus: OrderStatus!): Order!
 
   # Managers or Clients
   # Create another stripe_payment_id for an existing order (Clients or Managers)
@@ -621,8 +708,10 @@ type Mutation {
   uploadProductThumbnail(input: UploadThumbnailInput!): Product!
 
   # Managers only
-  uploadVariationImages(input: UploadVariationImagesInput!): VariationImage!
+  uploadProductVariationImages(
+    input: UploadProductVariationImagesInput!
+  ): [ProductVariationImage!]!
 
   # Managers only
-  deleteVariationImage(id: ID!): GenericResponse!
+  deleteProductVariationImage(id: ID!): GenericResponse!
 }

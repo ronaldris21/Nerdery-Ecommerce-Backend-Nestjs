@@ -3,7 +3,7 @@ type ProductVariation {
   id: ID!
   price: Float!
   discount: Float
-  discountType: DiscountTypeEnum
+  discountType: DiscountType
   size: String!
   color: String!
   stock: Int!
@@ -11,16 +11,15 @@ type ProductVariation {
   isEnabled: Boolean!
   isDeleted: Boolean!
 
-  images: [String!]! # Resolved field via DataLoader when parent is ProductVariation
   product: Product! # Resolved field via DataLoader when parent is OrderItem or CartItem
-  variationImages: [VariationImage!]!
+  variationImages: [ProductVariationImage!]!
 }
 
 # INPUTS
 input AddProductVariationInput {
   price: Float!
   discount: Float
-  discountType: DiscountTypeEnum
+  discountType: DiscountType
   size: String!
   color: String!
   stock: Int!
@@ -31,7 +30,7 @@ input UpdateProductVariationInput {
   productId: ID
   price: Float
   discount: Float
-  discountType: DiscountTypeEnum
+  discountType: DiscountType
   size: String
   color: String
   stock: Int
