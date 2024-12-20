@@ -32,7 +32,7 @@ export interface RedisConfig {
 
 
 export interface FrontentConfig {
-  resetPasswordUrl: string;
+  resetPasswordFrontendUrl: string;
 }
 
 export interface S3Config {
@@ -44,8 +44,11 @@ export interface S3Config {
 
 //TODO: may need editing
 export interface EmailConfig {
-  apiKey: string;
-  domain: string;
+  credentials: {
+    pass: string;
+    user: string;
+  };
+  host: string;
   from: string;
 }
 

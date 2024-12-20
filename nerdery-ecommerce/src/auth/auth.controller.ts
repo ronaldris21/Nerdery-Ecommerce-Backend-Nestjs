@@ -7,7 +7,7 @@ import {
   HttpCode,
   Res,
   Req,
-  UnauthorizedException,
+  BadRequestException,
 } from '@nestjs/common';
 
 import { AuthService } from './auth.service';
@@ -22,15 +22,15 @@ import { Response } from 'express';
 import { debug } from 'console';
 import { JwtService } from '@nestjs/jwt';
 import { GetAccessToken } from './decoratos/get-jwtPayload.decorator';
-import { ConfigService } from '@nestjs/config';
+import { Exception } from 'handlebars';
+import { ResetPasswordDto } from './dto/resetPassword.dto';
 
 @Controller()
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private jwtService: JwtService,
-    private configService: ConfigService,
-  ) {}
+  ) { }
 
   attachCookies(res: Response, cookieName: string, value: string) {
     res.cookie(cookieName, value, {
@@ -40,17 +40,38 @@ export class AuthController {
     });
   }
 
-  @Post('login')
-  @HttpCode(200)
-  async login(@Body() loginDto: LoginDto) {
-    return await this.authService.login(loginDto);
-  }
-
   @Get('me')
   @UseGuards(RestAccessTokenGuard)
   me(@GetUser() user: JwtPayloadDto) {
     return user;
   }
+
+  //TODO: test
+  @Post('logout')
+  @HttpCode(200) //TODO: does this makes sense, i dont want to return anything, just success code
+  logout(
+    @Body() refreshTokenDto: RefreshTokenDto,
+    @GetAccessToken() accessToken: string
+  ) {
+    //All requests are successful, even if the refresh token is invalid, if valid, session is closed 
+    // TODO: sHOULD ASSOCIATE THE REFRESH TOKEN WITH THE USER AND DELETE IT FROM CACHE MANUALY?
+    try {
+      const user: JwtPayloadDto = this.jwtService.decode(accessToken) as JwtPayloadDto;
+      this.authService.logout(refreshTokenDto.refreshToken, user);
+    } catch (error) {
+      this.authService.logout(refreshTokenDto.refreshToken);
+
+    }
+  }
+
+  @Post('login')
+  @HttpCode(200)
+  async login(@Body() loginDto: LoginDto, @Res() res: Response) {
+    const tokens = await this.authService.login(loginDto);
+    res.json(tokens);
+  }
+
+
 
   @Post('signup')
   signUp(@Body() signUpDto: SignUpDto) {
@@ -58,47 +79,28 @@ export class AuthController {
   }
 
   //TODO: test
+  @UseGuards(RestAccessTokenGuard)
+  @Post('refresh-token')
+  refreshToken(@Body() refreshTokenDto: RefreshTokenDto, @GetAccessToken() accessToken: string) {
+    try {
+      const user: JwtPayloadDto = this.jwtService.decode(accessToken) as JwtPayloadDto;
+      return this.authService.refreshToken(user, refreshTokenDto.refreshToken);
+    } catch (error) {
+      throw new BadRequestException('Invalid access token, or not sent');
+    }
+  }
+
   @Post('forgot-password')
+  @HttpCode(200)
   forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
     return this.authService.forgotPassword(forgotPasswordDto.email);
   }
 
-  //ACCESS TOKEN HAS TO BE PASSED EVEN IF IT IS EXPIRED in order to be removed from cache
-  private getAccessTokenPayload(@Req() req: any): JwtPayloadDto | null {
-    try {
-      const authHeader = req.headers['authorization'];
-      const accessToken = authHeader && authHeader.split(' ')[1];
-      return this.jwtService.decode(accessToken) as JwtPayloadDto;
-    } catch (e) {}
-    return null;
+  @Post('reset-password')
+  @HttpCode(200)
+  resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return this.authService.resetPassword(resetPasswordDto);
   }
 
-  @Post('logout')
-  @HttpCode(204)
-  logout(
-    @Body() refreshTokenDto: RefreshTokenDto,
-    @GetAccessToken() accessToken: string
-  ) {
-    // This is always 204 even if the token is not found
-    try {
-      const user = this.jwtService.decode(accessToken) as JwtPayloadDto;
-      return this.authService.logout(user, refreshTokenDto.refreshToken);
-    } catch (error) {}
-  }
 
-  //TODO: test
-  @Post('refresh-token')
-  refreshToken(
-    @Body() refreshTokenDto: RefreshTokenDto,
-    @GetAccessToken() accessToken: string,
-  ) {
-    try {
-      const user = this.jwtService.decode(accessToken) as JwtPayloadDto;
-      return this.authService.refreshToken(user, refreshTokenDto.refreshToken);
-    } catch (error) {
-      throw new UnauthorizedException(
-        'You are required to provide the access token even if it has expired. If you dont have it, please login again',
-      );
-    }
-  }
 }

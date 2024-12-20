@@ -15,7 +15,7 @@ export class PasswordService {
     return parseInt(SecurityConfig, 10);
   }
 
-  constructor(private configService: ConfigService) {}
+  constructor(private configService: ConfigService) { }
 
   async hashPassword(password: string): Promise<string> {
     return hash(password, this.bcryptSaltRounds);

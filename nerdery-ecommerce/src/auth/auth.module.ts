@@ -10,10 +10,12 @@ import { UsersService } from './services/users.service';
 import { AccessTokenStrategy } from './strategies/accessToken.strategy .ts';
 import { ConfigNames, JwtConfig } from 'src/common/config/config.interface';
 import { RedisService } from './services/redis.service';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   imports: [
     ConfigModule,
+    MailModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       useFactory: async (configService: ConfigService) => {
@@ -37,4 +39,4 @@ import { RedisService } from './services/redis.service';
   ],
   exports: [AccessTokenStrategy],
 })
-export class AuthModule {}
+export class AuthModule { }

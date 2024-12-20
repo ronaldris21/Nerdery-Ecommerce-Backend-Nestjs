@@ -25,6 +25,8 @@ import { SignUpDto } from './dto/signup.dto';
 import { PasswordService } from './services/password.service';
 import { UsersService } from './services/users.service';
 import { RedisService } from './services/redis.service';
+import { MailService } from 'src/mail/mail.service';
+import { ResetPasswordDto } from './dto/resetPassword.dto';
 
 @Injectable()
 export class AuthService {
@@ -34,6 +36,7 @@ export class AuthService {
     private jwtService: JwtService,
     private redisService: RedisService,
     private configService: ConfigService,
+    private mailService: MailService,
     private userService: UsersService,
   ) { }
 
@@ -79,7 +82,7 @@ export class AuthService {
     });
   }
 
-  async generateNewTokens(user: Omit<User,"createdAt"|"password">): Promise<AuthResponseDto> {
+  async generateNewTokens(user: Omit<User, "createdAt" | "password">): Promise<AuthResponseDto> {
     // Generate JWT - Access and Refresh Token
     const jwtConfig = this.configService.get<JwtConfig>(ConfigNames.jwt);
 
@@ -140,7 +143,10 @@ export class AuthService {
       throw new NotFoundException('Wrong email or password');
     }
 
-    if (!this.passwordService.validatePassword(login.password, user.password)) {
+    console.log('login.password', login.password);
+    console.log('login.email', login.email);
+
+    if (!await this.passwordService.validatePassword(login.password, user.password)) {
       throw new NotFoundException('Wrong email or password');
     }
 
@@ -191,14 +197,14 @@ export class AuthService {
     };
   }
 
-  async logout(user: JwtPayloadDto, refreshToken: string): Promise<void> {
+  async logout(refreshToken: string, user?: JwtPayloadDto): Promise<void> {
     await this.invalidateRefreshToken(refreshToken);
-    if(user){
+    if (user) {
       await this.removeAccessTokenFromCache(user.userId, user.iat);
     }
   }
 
-  async refreshToken(user: JwtPayloadDto, refreshToken: string): Promise<any> {
+  async refreshToken(user: JwtPayloadDto, refreshToken: string): Promise<AuthResponseDto> {
     // Validate refresh token
     const token = await this.getRefreshToken(refreshToken);
     if (!token) {
@@ -219,7 +225,7 @@ export class AuthService {
     });
   }
 
-  async forgotPassword(email: string): Promise<any> {
+  async forgotPassword(email: string): Promise<GenericResponse> {
     const user = await this.userService.getUserByEmail(email);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -229,27 +235,29 @@ export class AuthService {
     const resetPassword = await this.prisma.passwordReset.create({
       data: {
         userId: user.id,
-        validUntil: new Date(Date.now() + ms('1h')),
+        validUntil: new Date(Date.now() + ms('10s')),
       },
     });
 
     //Send email with reset password link
-    const link: string = `${this.configService.get<FrontentConfig>(ConfigNames.frontend).resetPasswordUrl}?token=${resetPassword.resetToken}`;
+    const resetURL: string = `${this.configService.get<FrontentConfig>(ConfigNames.frontend).resetPasswordFrontendUrl}?token=${resetPassword.resetToken}`;
+    await this.mailService.sendPasswordResetEmail(user, resetURL, resetPassword.resetToken);
 
-    //Email Service should be called here
+
 
     // TODO: modificar
     return {
-      link: link,
-      ...resetPassword,
+      success: true,
+      message: 'Password reset email sent',
     };
   }
 
-  async resetPassword(token: string, newPassword: string): Promise<any> {
-    throw new Error('Method not implemented.');
+  //TODO: generic responses types:
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<GenericResponse> {
     const resetPassword = await this.prisma.passwordReset.findUnique({
       where: {
-        resetToken: token,
+        resetToken: resetPasswordDto.resetToken,
       },
     });
 
@@ -261,7 +269,11 @@ export class AuthService {
       throw new UnauthorizedException('Token has expired');
     }
 
-    const hashedPassword = await this.passwordService.hashPassword(newPassword);
+    if (resetPassword.alreadyUsed) {
+      throw new UnauthorizedException('Token has already been used');
+    }
+
+    const hashedPassword = await this.passwordService.hashPassword(resetPasswordDto.password);
 
     await this.prisma.user.update({
       where: {
@@ -271,6 +283,16 @@ export class AuthService {
         password: hashedPassword,
       },
     });
+
+    await this.prisma.passwordReset.update({
+      where: {
+        resetToken: resetPassword.resetToken,
+      },
+      data: {
+        alreadyUsed: true,
+      },
+    });
+
 
     return {
       success: true,

@@ -1,6 +1,12 @@
 export interface GenericResponse {
   success: boolean;
   message: string;
-  data?: any;
-  errors?: string[];
 }
+
+export interface GenericFailureResponse extends GenericResponse {
+  statusCode: string;
+  error: string;
+}
+
+
+

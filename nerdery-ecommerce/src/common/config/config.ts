@@ -5,9 +5,12 @@ const config: Config = {
     enabled: true,
   },
   email: {
-    apiKey: process.env.EMAIL_API_KEY,
-    domain: process.env.EMAIL_DOMAIN,
-    from: process.env.EMAIL_FROM,
+    host: process.env.MAIL_HOST,
+    from: process.env.MAIL_FROM,
+    credentials: {
+      user: process.env.MAIL_USER,
+      pass: process.env.MAIL_PASS,
+    },
   },
   graphql: {
     playgroundEnabled: true,
@@ -32,7 +35,7 @@ const config: Config = {
     jwtRefreshSecret: process.env.JWT_REFRESH_SECRET,
   },
   frontend: {
-    resetPasswordUrl: process.env.FRONTEND_RESET_PASSWORD_URL,
+    resetPasswordFrontendUrl: process.env.FRONTEND_RESET_PASSWORD_URL,
   },
   redis: {
     host: process.env.REDIS_HOST,
