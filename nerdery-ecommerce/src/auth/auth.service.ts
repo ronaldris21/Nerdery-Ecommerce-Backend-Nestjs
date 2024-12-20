@@ -57,9 +57,13 @@ export class AuthService {
 
   async removeAccessTokenFromCache(userId: string, iat: number): Promise<void> {
     const redisKey = this.redisService.getAccessTokenKey(userId, iat);
-    const result = await this.redisService.del(redisKey);
-    // console.log(`DELETE: rediskey ${redisKey}: ${result}`);
+    await this.redisService.del(redisKey);
   }
+
+  async removeAccessTokenFromCacheByUserId(userId: string): Promise<void> {
+    await this.redisService.removeAllKeysByPattern(`user:${userId}:iat:*`);
+  }
+
 
   async invalidateRefreshToken(refreshToken: string): Promise<void> {
     try {
@@ -235,7 +239,7 @@ export class AuthService {
     const resetPassword = await this.prisma.passwordReset.create({
       data: {
         userId: user.id,
-        validUntil: new Date(Date.now() + ms('10s')),
+        validUntil: new Date(Date.now() + ms('1h')),
       },
     });
 
@@ -248,7 +252,7 @@ export class AuthService {
     // TODO: modificar
     return {
       success: true,
-      message: 'Password reset email sent',
+      message: 'Password reset email sent. You have 1 hour to reset your password',
     };
   }
 
@@ -293,10 +297,15 @@ export class AuthService {
       },
     });
 
+    //DELETE ALL USER SESSIONS
+    await this.invalidateAllRefreshTokens(resetPassword.userId);
+
+    //DELETE ALL ACCESS TOKENS FROM CACHE
+    await this.removeAccessTokenFromCacheByUserId(resetPassword.userId);
 
     return {
       success: true,
-      message: 'Password reset successfully',
+      message: 'Password reset successfully, now you can login using your new password',
     };
   }
 }

@@ -46,7 +46,7 @@ export class AuthController {
     return user;
   }
 
-  //TODO: test
+  //TODO: DOES THIS MAKES SENSE TO ALWAYS RETURN 200? ASK MENTOR
   @Post('logout')
   @HttpCode(200) //TODO: does this makes sense, i dont want to return anything, just success code
   logout(
