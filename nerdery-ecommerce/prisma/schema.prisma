@@ -167,7 +167,7 @@ model ProductVariation {
   size            String           @db.VarChar(10)
   color           String           @db.VarChar(20)
   stock           Int
-  stockRefilledAt DateTime?
+  stockRefilledAt DateTime?        @updatedAt
   isEnabled       Boolean          @default(false)
   isDeleted       Boolean          @default(false)
   product         Product          @relation(fields: [productId], references: [id])

@@ -6,6 +6,13 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
 import config from './common/config/config';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ProductsModule } from './products/products.module';
+import { CategoriesModule } from './categories/categories.module';
+import { ApolloDriver } from '@nestjs/apollo';
+import { ProductVariationsModule } from './product-variations/product-variations.module';
+import { BorrarModule } from './borrar/borrar.module';
+import { ProductVariationImagesModule } from './product-variation-images/product-variation-images.module';
 
 @Module({
   imports: [
@@ -17,6 +24,19 @@ import config from './common/config/config';
       load: [config],
     }),
     MailModule,
+    GraphQLModule.forRoot({
+      driver: ApolloDriver,
+      autoSchemaFile: true,
+      playground: true,
+      debug: true,
+      introspection: true,
+    }),
+    ProductsModule,
+    ProductVariationsModule,
+    CategoriesModule,
+    BorrarModule,
+    ProductVariationImagesModule,
+
   ],
   controllers: [AppController],
   providers: [AppService],

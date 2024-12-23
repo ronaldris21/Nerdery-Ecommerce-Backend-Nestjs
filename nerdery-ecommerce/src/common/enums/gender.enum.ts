@@ -1,10 +1,7 @@
 import { registerEnumType } from '@nestjs/graphql';
+import { GenderEnum } from '@prisma/client';
 
-export enum Gender {
-    MALE = 'MALE',
-    FEMALE = 'FEMALE',
-    UNISEX = 'UNISEX',
-    KIDS = 'KIDS',
-}
 
-registerEnumType(Gender, { name: 'Gender' });
+export { GenderEnum as Gender };
+
+registerEnumType(GenderEnum, { name: 'Gender' });
