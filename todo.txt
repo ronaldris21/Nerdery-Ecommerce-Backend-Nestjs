@@ -1,6 +1,6 @@
-TODO: feat/Auth-endpoints
-TODO: feat/cache-tokens-redis
-TODO: feat/roles-security
+TODO: feat/Auth-flows
+    TODO: feat/cache-tokens-redis
+    TODO: feat/roles-security
 TODO: feat/Upload-Images
 TODO: feat/products-graphql-queries
 TODO: feat/password-emails

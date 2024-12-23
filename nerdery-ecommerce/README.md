@@ -35,6 +35,9 @@ $ npm install
 ## Compile and run the project
 
 ```bash
+#Run container with redis and Database
+docker-compose up --build
+
 # development
 $ npm run start
 
