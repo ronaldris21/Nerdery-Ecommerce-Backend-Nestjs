@@ -32,14 +32,6 @@ export class AuthController {
     private jwtService: JwtService,
   ) { }
 
-  attachCookies(res: Response, cookieName: string, value: string) {
-    res.cookie(cookieName, value, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-      sameSite: 'strict',
-    });
-  }
-
   @Get('me')
   @UseGuards(RestAccessTokenGuard)
   me(@GetUser() user: JwtPayloadDto) {
@@ -55,20 +47,13 @@ export class AuthController {
   ) {
     //All requests are successful, even if the refresh token is invalid, if valid, session is closed 
     // TODO: sHOULD ASSOCIATE THE REFRESH TOKEN WITH THE USER AND DELETE IT FROM CACHE MANUALY?
-    try {
-      const user: JwtPayloadDto = this.jwtService.decode(accessToken) as JwtPayloadDto;
-      this.authService.logout(refreshTokenDto.refreshToken, user);
-    } catch (error) {
-      this.authService.logout(refreshTokenDto.refreshToken);
-
-    }
+    this.authService.logout(refreshTokenDto.refreshToken, accessToken);
   }
 
   @Post('login')
   @HttpCode(200)
   async login(@Body() loginDto: LoginDto, @Res() res: Response) {
-    const tokens = await this.authService.login(loginDto);
-    res.json(tokens);
+    return await this.authService.login(loginDto);
   }
 
 
@@ -82,12 +67,8 @@ export class AuthController {
   @UseGuards(RestAccessTokenGuard)
   @Post('refresh-token')
   refreshToken(@Body() refreshTokenDto: RefreshTokenDto, @GetAccessToken() accessToken: string) {
-    try {
-      const user: JwtPayloadDto = this.jwtService.decode(accessToken) as JwtPayloadDto;
-      return this.authService.refreshToken(user, refreshTokenDto.refreshToken);
-    } catch (error) {
-      throw new BadRequestException('Invalid access token, or not sent');
-    }
+    return this.authService.refreshToken(accessToken, refreshTokenDto.refreshToken);
+
   }
 
   @Post('forgot-password')
