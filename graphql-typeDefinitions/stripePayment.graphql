@@ -5,10 +5,22 @@ type StripePayment {
   amount: Float!
   currency: String!
   stripePaymentId: String!
-  webhookPaymentIntent: StripePaymentIntentEnum!
-  webhookData: String
+  stripePaymentIntent: StripePaymentStatus!
+  stripeWebhookData: String
   createdAt: DateTime!
   updatedAt: DateTime!
 
   order: Order
+}
+
+# STRIPE PAYMENTS ENUMS
+enum StripePaymentStatus {
+  REQUIRES_PAYMENT_METHOD
+  REQUIRES_CONFIRMATION
+  REQUIRES_ACTION
+  PROCESSING
+  SUCCEEDED
+  REQUIRES_CAPTURE
+  CANCELED
+  FAILED
 }
