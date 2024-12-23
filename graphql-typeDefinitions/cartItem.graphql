@@ -1,10 +1,26 @@
-type CartItem {
+type CartItemPayload {
+  # Database persisted fields
   userId: ID!
   productVariationId: ID!
   quantity: Int!
 
-  user: User
-  productVariation: ProductVariation
+  # Calculated fields on the server
+  unitPrice: Float!
+  subTotal: Float!
+  discount: Float!
+  total: Float!
+
+  # Resolved field via DataLoader
+  productVariation: ProductVariation!
+}
+
+type CartPayload {
+  items: [CartItemPayload!]!
+
+  # Calculate fields on the server from all items in the cart
+  subTotal: Float!
+  discount: Float!
+  total: Float!
 }
 
 input CartItemInput {
@@ -14,14 +30,19 @@ input CartItemInput {
 
 type Query {
   # Clients only
-  cartItems: [CartItem!]!
+  cart: CartPayload!
 }
 
 type Mutation {
   # Clients only
-  addCartItem(input: CartItemInput!): CartItem!
+  addCartItem(input: CartItemInput!): CartItemPayload!
   # Clients only
-  updateCartItem(input: CartItemInput!): CartItem!
+  updateCartItem(input: CartItemInput!): CartItemPayload!
   # Clients only
-  deleteCartItem(productVariationId: ID!): Boolean!
+  deleteCartItem(productVariationId: ID!): GenericResponse!
+}
+
+type Subscription {
+  # Clients only
+  cartUpdated: CartPayload!
 }

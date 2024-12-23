@@ -50,7 +50,7 @@ References:
     
     - GRAPHQL can be checked on this link using: **allSchemas.graphql**
     
-    [GraphQL Editor - Create backends from GraphQL schema](https://academy.graphqleditor.com/?lesson=tutorial)
+    [GraphQL Editor - Create backends from GraphQL schema](https://academy.graphqleditor.com/?lesson=graph)
     
 
 # Nestjs Design Considerations - Doc
@@ -75,10 +75,10 @@ This schemas are mainly created by having specific:
 
 # CHECK BEFORE SEND:
 
-- [ ]  Pagination
+- [x]  Pagination
 - [ ]  Inputs
 - [ ]  Mutations
-- [ ]  Graph Relations on  https://academy.graphqleditor.com/?lesson=tutorial
+- [ ]  Graph Relations on  https://academy.graphqleditor.com/?lesson=graph
 
 
 # Useful commands
@@ -88,5 +88,5 @@ docker-compose up --build
 
 npx prisma migrate dev --name init
 npx prisma db seed
-
 ```
+

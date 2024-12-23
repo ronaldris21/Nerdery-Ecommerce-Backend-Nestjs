@@ -3,19 +3,12 @@ type ProductLike {
   userId: ID!
   productId: ID!
   likedAt: DateTime!
-
-  user: User
-  product: Product
 }
 
-type Query {
-  myLikedProducts: [Product!]
-}
-
-type Mutation {
+type likesMutation {
   # Clients only
-  likeProduct(productId: ID!): Boolean!
+  likeProduct(productId: ID!): GenericResponse!
 
   # Clients only
-  dislikeProduct(productId: ID!): Boolean!
+  dislikeProduct(productId: ID!): GenericResponse!
 }
