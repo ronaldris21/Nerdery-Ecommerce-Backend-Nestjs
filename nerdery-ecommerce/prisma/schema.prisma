@@ -135,7 +135,7 @@ model Product {
   id                String             @id @default(uuid()) @db.Uuid
   name              String             @db.VarChar(255)
   gender            GenderEnum         @default(UNISEX)
-  thumbnailUrl      String             @default("https://via.placeholder.com/150") @db.VarChar(255)
+  thumbnailUrl      String             @default("https://picsum.photos/seed/0BPoSdVVje/200/300") @db.VarChar(255)
   categoryId        String             @db.Uuid
   description       String?
   isEnabled         Boolean            @default(false)

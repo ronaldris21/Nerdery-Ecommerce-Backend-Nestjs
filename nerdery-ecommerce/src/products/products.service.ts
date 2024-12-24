@@ -11,10 +11,15 @@ import { Prisma, Product } from '@prisma/client';
 import { CreateProductInput } from './dto/create-product.input';
 import { UpdateProductInput } from './dto/update-product.input';
 import { GenericResponse } from 'src/common/dto/generic.dto';
+import { ProductCalculationsService } from 'src/common/services/product-calculations.service';
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly prisma: PrismaService, private readonly categoriesService: CategoriesService) { }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly categoriesService: CategoriesService,
+    private readonly productCalculationsService: ProductCalculationsService,
+  ) { }
 
   async findAll(
     filters?: ProductFiltersInput,
@@ -144,12 +149,6 @@ export class ProductsService {
             id: categoryId
           }
         },
-        //Default values
-        thumbnailUrl: '',
-        isDeleted: false,
-        likesCount: 0,
-        minPrice: 0,
-        maxPrice: 0,
       }
     });
   }
@@ -192,47 +191,12 @@ export class ProductsService {
 
     await this.prisma.productVariation.updateMany({ where: { productId: id }, data: { isEnabled: isEnabled } });
     if (isEnabled) {
-      await this.recalculateMinMaxPriceAndLikesCount([id]);
+      await this.productCalculationsService.recalculateProductMinMaxPriceAndLikesCount([id]);
     }
     return await this.prisma.product.update({ where: { id }, data: { isEnabled: isEnabled }, include: { productVariations: true } });
   }
 
 
-  //TODO: maybe move to another service?
-  async recalculateMinMaxPriceAndLikesCount(productIds: string[]) {
-    //each id has to exists
-    const products = await this.prisma.product.findMany({
-      where: {
-        id: {
-          in: productIds,
-        },
-      },
-      include: { productVariations: true, productLikes: true },
-    });
-
-    const updatePromises = products.map(async (product) => {
-
-      const filteredProductVariations = product.productVariations.filter(p => p.isEnabled && !p.isDeleted);
-      const prices = filteredProductVariations.map(p => Number(p.price));
-
-      //TODO: Validate cart can't have a product without variations or with price being 0.00
-      const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
-      const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
-
-      let calculatedData = {};
-      if (minPrice) calculatedData['minPrice'] = minPrice;
-      if (maxPrice) calculatedData['maxPrice'] = maxPrice;
-      calculatedData['likesCount'] = product.productLikes.length;
-
-      await this.prisma.product.update({
-        where: { id: product.id },
-        data: calculatedData,
-      });
-    });
-
-    await Promise.all(updatePromises);
-
-  }
 
 
 
