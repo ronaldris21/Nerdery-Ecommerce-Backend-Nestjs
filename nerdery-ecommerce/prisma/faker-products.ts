@@ -12,7 +12,7 @@ export function generateFakeProduct() {
             isDeleted: false,
             likesCount: 0,
             minPrice: parseFloat(faker.commerce.price({ min: 50, max: 60 })),
-            maxPrice: parseFloat(faker.commerce.price({ min: 50, max: 60 })),
+            maxPrice: parseFloat(faker.commerce.price({ min: 71, max: 85 })),
             category: {
                 connectOrCreate: {
                     create: { name: 'Fake' },
@@ -83,7 +83,7 @@ export function generateFakeProduct() {
             isEnabled: true,
             isDeleted: false,
             likesCount: 0,
-            minPrice: parseFloat(faker.commerce.price({ min: 70, max: 80 })),
+            minPrice: parseFloat(faker.commerce.price({ min: 50, max: 60 })),
             maxPrice: parseFloat(faker.commerce.price({ min: 70, max: 80 })),
             category: {
                 connectOrCreate: {

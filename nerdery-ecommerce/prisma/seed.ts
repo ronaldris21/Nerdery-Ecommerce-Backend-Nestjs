@@ -604,6 +604,7 @@ async function main() {
 
   for (let i = 0; i < 25; i++) {
     console.log(`Creating fake product round: ${i} ...`);
+    await setTimeout(() => { }, 1000);
     await insertProducts(generateFakeProduct());
   }
 
@@ -612,15 +613,13 @@ async function main() {
     include: { productVariations: true },
   });
 
-  for (const product of products) {
-    const minPrice = product.productVariations.reduce(
-      (min, p) => (p.price < min ? p.price : min),
-      product.minPrice,
-    );
-    const maxPrice = product.productVariations.reduce(
-      (max, p) => (p.price > max ? p.price : max),
-      product.maxPrice,
-    );
+  const updatePromises = products.map(async (product) => {
+
+    const prices = product.productVariations.map(p => Number(p.price));
+
+    const minPrice = prices.length > 0 ? Math.min(...prices) : product.minPrice;
+    const maxPrice = prices.length > 0 ? Math.max(...prices) : product.maxPrice;
+
 
     let newData = {};
     if (minPrice) newData['minPrice'] = minPrice;
@@ -630,7 +629,9 @@ async function main() {
       where: { id: product.id },
       data: newData,
     });
-  }
+  });
+
+  await Promise.all(updatePromises);
 
   console.log(`Seeding finished.`);
 }

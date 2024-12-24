@@ -11,7 +11,6 @@ import { ProductsModule } from './products/products.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ApolloDriver } from '@nestjs/apollo';
 import { ProductVariationsModule } from './product-variations/product-variations.module';
-import { BorrarModule } from './borrar/borrar.module';
 import { ProductVariationImagesModule } from './product-variation-images/product-variation-images.module';
 
 @Module({
@@ -34,7 +33,6 @@ import { ProductVariationImagesModule } from './product-variation-images/product
     ProductsModule,
     ProductVariationsModule,
     CategoriesModule,
-    BorrarModule,
     ProductVariationImagesModule,
 
   ],

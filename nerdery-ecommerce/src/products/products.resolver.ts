@@ -14,9 +14,9 @@ export class ProductsResolver {
 
   @Query(() => ProductsPagination)
   async products(
-    @Args('filter', { nullable: true }) filter: ProductFiltersInput,
-    @Args('sortBy', { nullable: true }) sortBy: SortingProductInput,
-    @Args('pagination', { nullable: true }) pagination: PaginationInput,
+    @Args('filter', { nullable: true }) filter?: ProductFiltersInput,
+    @Args('sortBy', { nullable: true }) sortBy?: SortingProductInput,
+    @Args('pagination', { nullable: true }) pagination?: PaginationInput,
   ) {
     return this.productsService.findAll(filter, sortBy, pagination);
   }
