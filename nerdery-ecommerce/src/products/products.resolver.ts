@@ -1,4 +1,4 @@
-import { Resolver, Query, Args } from '@nestjs/graphql';
+import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { PaginationInput } from 'src/common/pagination/pagination.input';
 
 import { ProductFiltersInput } from './dto/product-filters.input';
@@ -7,6 +7,8 @@ import { SortingProductInput } from './dto/sorting-product.input';
 import { Product } from './entities/product.entity';
 import { ProductsService } from './products.service';
 import { ParseUUIDPipe } from '@nestjs/common';
+import { CreateProductInput } from './dto/create-product.input';
+import { UpdateProductInput } from './dto/update-product.input';
 
 @Resolver(() => Product)
 export class ProductsResolver {
@@ -23,8 +25,38 @@ export class ProductsResolver {
 
   @Query(() => Product, { nullable: true })
   async productById(@Args('id', { type: () => String }, ParseUUIDPipe) id: string) {
-    return this.productsService.findById(id);
+    return this.productsService.findOne(id);
   }
+
+
+  @Mutation(() => Product)
+  async createProduct(@Args('input') input: CreateProductInput) {
+    return this.productsService.create(input);
+  }
+
+  @Mutation(() => Product)
+  async updateProduct(
+    @Args('input') input: UpdateProductInput,
+  ) {
+    return this.productsService.update(input);
+  }
+
+  @Mutation(() => Product)
+  async deleteProduct(
+    @Args('id', { type: () => String }, ParseUUIDPipe) id: string
+  ) {
+    return await this.productsService.delete(id);
+  }
+
+  @Mutation(() => Product)
+  async toggleProductEnable(
+    @Args('id', { type: () => String }, ParseUUIDPipe) id: string,
+    @Args('isEnabled') isEnabled: boolean
+  ) {
+    return await this.productsService.toggleIsEnabled(id, isEnabled);
+  }
+
+
 
 
 }

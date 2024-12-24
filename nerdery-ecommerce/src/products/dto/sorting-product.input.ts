@@ -18,11 +18,13 @@ registerEnumType(ProductSortableField, { name: 'ProductSortableField' });
 
 @InputType()
 export class SortingProductInput {
-    @Field(() => ProductSortableField)
+    @Field(() => ProductSortableField, { defaultValue: ProductSortableField.NAME })
+    @IsOptional()
     @IsNotEmpty()
     field: ProductSortableField;
 
-    @Field(() => SortOrder)
+    @Field(() => SortOrder, { defaultValue: SortOrder.ASC })
+    @IsOptional()
     @IsNotEmpty()
     order: SortOrder;
 }
