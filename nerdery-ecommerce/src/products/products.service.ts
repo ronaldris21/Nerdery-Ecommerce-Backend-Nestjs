@@ -6,6 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 import { ProductFiltersInput } from './dto/product-filters.input';
 import { ProductSortableField, SortingProductInput } from './dto/sorting-product.input';
+import { Product } from '@prisma/client';
 
 @Injectable()
 export class ProductsService {
@@ -93,4 +94,26 @@ export class ProductsService {
       include: { category: true, productVariations: true },
     });
   }
+
+  async findByIds(ids: string[]) {
+    return await this.prisma.product.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    });
+  }
+
+  async findByCategoryIds(categoryIds: string[]) {
+    return await this.prisma.product.findMany({
+      where: {
+        categoryId: {
+          in: categoryIds,
+        },
+      },
+    });
+  }
+
+
 }

@@ -23,4 +23,15 @@ export class CategoriesService {
     });
   }
 
+  async findByIds(ids: string[]) {
+    return this.prisma.category.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    });
+  }
+
+
 }
