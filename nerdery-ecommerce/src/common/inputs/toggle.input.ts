@@ -2,7 +2,7 @@ import { InputType, Field, Int } from '@nestjs/graphql';
 import { IsInt, IsOptional, IsPositive } from 'class-validator';
 
 @InputType()
-export class PaginationInput {
+export class ToggleInput {
     @Field(() => Int, { nullable: true, defaultValue: 1 })
     @IsInt()
     @IsOptional()

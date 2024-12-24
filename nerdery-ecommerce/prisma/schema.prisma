@@ -135,19 +135,19 @@ model Product {
   id                String             @id @default(uuid()) @db.Uuid
   name              String             @db.VarChar(255)
   gender            GenderEnum         @default(UNISEX)
-  thumbnailUrl      String             @db.VarChar(255)
+  thumbnailUrl      String             @default("https://via.placeholder.com/150") @db.VarChar(255)
   categoryId        String             @db.Uuid
   description       String?
-  isEnabled         Boolean
-  isDeleted         Boolean
-  likesCount        Int
-  minPrice          Decimal            @db.Decimal(10, 2)
-  maxPrice          Decimal            @db.Decimal(10, 2)
+  isEnabled         Boolean            @default(false)
+  isDeleted         Boolean            @default(false)
+  likesCount        Int                @default(0)
+  minPrice          Decimal            @default(0.0) @db.Decimal(10, 2)
+  maxPrice          Decimal            @default(0.0) @db.Decimal(10, 2)
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   category          Category           @relation(fields: [categoryId], references: [id])
   productVariations ProductVariation[]
-  productLike       ProductLike[]
+  productLikes      ProductLike[]
 
   //Sort search indexes
   @@index([likesCount], type: BTree)
