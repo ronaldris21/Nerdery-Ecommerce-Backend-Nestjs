@@ -94,7 +94,7 @@ CREATE TABLE "Product" (
     "thumbnailUrl" VARCHAR(255) NOT NULL,
     "categoryId" UUID NOT NULL,
     "description" TEXT,
-    "isEnable" BOOLEAN NOT NULL,
+    "isEnabled" BOOLEAN NOT NULL,
     "isDeleted" BOOLEAN NOT NULL,
     "likesCount" INTEGER NOT NULL,
     "minPrice" DECIMAL(10,2) NOT NULL,
@@ -116,7 +116,7 @@ CREATE TABLE "ProductVariation" (
     "color" VARCHAR(20) NOT NULL,
     "stock" INTEGER NOT NULL,
     "stockRefilledAt" TIMESTAMP(3),
-    "isEnable" BOOLEAN NOT NULL DEFAULT false,
+    "isEnabled" BOOLEAN NOT NULL DEFAULT false,
     "isDeleted" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "ProductVariation_pkey" PRIMARY KEY ("id")

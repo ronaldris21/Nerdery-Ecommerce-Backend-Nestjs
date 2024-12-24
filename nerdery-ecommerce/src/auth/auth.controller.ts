@@ -28,8 +28,7 @@ import { ResetPasswordDto } from './dto/resetPassword.dto';
 @Controller()
 export class AuthController {
   constructor(
-    private readonly authService: AuthService,
-    private jwtService: JwtService,
+    private readonly authService: AuthService
   ) { }
 
   @Get('me')

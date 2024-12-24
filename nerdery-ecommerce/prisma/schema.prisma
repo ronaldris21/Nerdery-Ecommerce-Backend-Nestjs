@@ -126,7 +126,7 @@ model Category {
   parentCategoryId String?    @db.Uuid
   parentCategory   Category?  @relation("CategoryParent", fields: [parentCategoryId], references: [id])
   subCategories    Category[] @relation("CategoryParent")
-  product          Product[]
+  products         Product[]
 
   @@index([name], type: Hash)
 }
@@ -138,7 +138,7 @@ model Product {
   thumbnailUrl      String             @db.VarChar(255)
   categoryId        String             @db.Uuid
   description       String?
-  isEnable          Boolean
+  isEnabled         Boolean
   isDeleted         Boolean
   likesCount        Int
   minPrice          Decimal            @db.Decimal(10, 2)
@@ -167,8 +167,8 @@ model ProductVariation {
   size            String           @db.VarChar(10)
   color           String           @db.VarChar(20)
   stock           Int
-  stockRefilledAt DateTime?
-  isEnable        Boolean          @default(false)
+  stockRefilledAt DateTime?        @updatedAt
+  isEnabled       Boolean          @default(false)
   isDeleted       Boolean          @default(false)
   product         Product          @relation(fields: [productId], references: [id])
   variationImages VariationImage[]
