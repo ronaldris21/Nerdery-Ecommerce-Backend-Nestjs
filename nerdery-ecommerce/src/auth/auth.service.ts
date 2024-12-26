@@ -115,7 +115,7 @@ export class AuthService {
     await this.addAccessTokenToCache(
       user.id,
       this.jwtService.decode(accessToken).iat,
-      '1',
+      accessToken
     );
 
     // Refresh Token
@@ -170,7 +170,9 @@ export class AuthService {
       throw new NotFoundException('Wrong email or password');
     }
 
-    return await this.generateNewTokens(user);
+    const tokenAuthResponse = await this.generateNewTokens(user);
+    console.log('tokenAuthResponse', tokenAuthResponse);
+    return tokenAuthResponse;
   }
 
   async signUp(signUpDto: SignUpDto): Promise<GenericResponse> {
