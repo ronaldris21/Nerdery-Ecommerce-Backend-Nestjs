@@ -1,7 +1,7 @@
 import { InputType, Field } from '@nestjs/graphql';
 
 import { registerEnumType } from '@nestjs/graphql';
-import { IsNotEmpty, isNotEmpty, IsOptional } from 'class-validator';
+import { IsEnum, IsNotEmpty, isNotEmpty, IsOptional } from 'class-validator';
 import { SortOrder } from 'src/common/enums/sort-order.enum';
 
 //TODO: match field names with the actual fields in the Product entity
@@ -21,10 +21,12 @@ export class SortingProductInput {
     @Field(() => ProductSortableField, { defaultValue: ProductSortableField.NAME })
     @IsOptional()
     @IsNotEmpty()
+    @IsEnum(ProductSortableField)
     field: ProductSortableField;
 
     @Field(() => SortOrder, { defaultValue: SortOrder.ASC })
     @IsOptional()
     @IsNotEmpty()
+    @IsEnum(SortOrder)
     order: SortOrder;
 }
