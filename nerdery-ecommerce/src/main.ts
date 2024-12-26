@@ -36,9 +36,12 @@ In a multi-role endpoint you have to specified the role in the header in order t
 
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
       transform: true,
+      forbidNonWhitelisted: true,
+      transformOptions: {
+        exposeDefaultValues: true,
+        enableImplicitConversion: true, //TODO: CHECK
+      }
     }),
   );
 

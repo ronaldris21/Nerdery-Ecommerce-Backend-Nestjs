@@ -29,6 +29,7 @@ import { ProductVariationImagesModule } from './product-variation-images/product
       playground: true,
       debug: true,
       introspection: true,
+
     }),
     ProductsModule,
     ProductVariationsModule,

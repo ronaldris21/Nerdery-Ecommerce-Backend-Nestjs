@@ -33,5 +33,14 @@ export class CategoriesService {
     });
   }
 
+  async doesCategoryExist(id: string): Promise<boolean> {
+    return (await this.prisma.category.count({
+      where: {
+        id,
+      },
+    })) > 0;
+  }
+
+
 
 }
