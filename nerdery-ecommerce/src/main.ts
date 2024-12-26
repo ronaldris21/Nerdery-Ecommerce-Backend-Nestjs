@@ -40,7 +40,7 @@ In a multi-role endpoint you have to specified the role in the header in order t
       forbidNonWhitelisted: true,
       transformOptions: {
         exposeDefaultValues: true,
-
+        enableImplicitConversion: true, //TODO: CHECK
       }
     }),
   );

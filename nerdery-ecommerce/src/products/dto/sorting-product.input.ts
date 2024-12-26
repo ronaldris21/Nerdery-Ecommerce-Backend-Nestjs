@@ -20,13 +20,11 @@ registerEnumType(ProductSortableField, { name: 'ProductSortableField' });
 export class SortingProductInput {
     @Field(() => ProductSortableField, { defaultValue: ProductSortableField.NAME })
     @IsOptional()
-    @IsNotEmpty()
     @IsEnum(ProductSortableField)
     field: ProductSortableField;
 
     @Field(() => SortOrder, { defaultValue: SortOrder.ASC })
     @IsOptional()
-    @IsNotEmpty()
     @IsEnum(SortOrder)
     order: SortOrder;
 }

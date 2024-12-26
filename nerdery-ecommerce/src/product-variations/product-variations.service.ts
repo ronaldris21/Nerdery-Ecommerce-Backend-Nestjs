@@ -87,6 +87,7 @@ export class ProductVariationsService {
     });
 
     await this.productsHelperService.recalculateProductMinMaxPrices([prodVariation.productId]);
+    //TODO: remove from cart if exists and not enabled
     return await this.findByIdAndValidate({ id });
   }
 
@@ -95,10 +96,11 @@ export class ProductVariationsService {
 
     await this.prisma.productVariation.update({
       where: { id },
-      data: { isDeleted: true },
+      data: { isDeleted: true, isEnabled: false },
     });
 
     await this.productsHelperService.recalculateProductMinMaxPrices([prodVariation.productId]);
+    //TODO: remove from cart if exists
     return await this.findByIdAndValidate({ id });
   }
 

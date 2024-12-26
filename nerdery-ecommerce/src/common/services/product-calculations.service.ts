@@ -8,8 +8,6 @@ export class ProductHelperService {
 
     async recalculateProductMinMaxPrices(productIds: string[]) {
 
-        console.log('\n\nproductIds', productIds);
-
         const products = await this.prisma.product.findMany({
             where: {
                 id: {
@@ -21,18 +19,16 @@ export class ProductHelperService {
             include: { productVariations: true },
         });
 
-        console.log('\n\nproducts', products);
-
         const updatePromises = products.map(async (product) => {
 
             const filteredProductVariations = product.productVariations.filter(p => p.isEnabled && !p.isDeleted);
             const prices = filteredProductVariations.map(p => Number(p.price));
 
-            //TODO: Validate cart can't have a product without variations or with price being 0.00
             const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
             const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
 
-            let calculatedData = {};
+            //If no valid product variations, prices are 0. So users can't add to cart, nor see the product on "products" query
+            let calculatedData = { minPrice, maxPrice };
             if (minPrice) calculatedData['minPrice'] = minPrice;
             if (maxPrice) calculatedData['maxPrice'] = maxPrice;
 
@@ -40,11 +36,9 @@ export class ProductHelperService {
                 where: { id: product.id },
                 data: calculatedData,
             });
-            console.log('\ncalculatedData', calculatedData);
         });
 
-        const result = await Promise.allSettled(updatePromises);
-        console.log('\n\nallSettled', result);
+        await Promise.allSettled(updatePromises);
     }
 
     async recalculateProductLikesCount(productIds: string[]) {
