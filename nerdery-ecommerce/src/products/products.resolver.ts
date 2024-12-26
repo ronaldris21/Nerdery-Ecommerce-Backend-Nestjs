@@ -6,7 +6,11 @@ import { ProductsPagination } from './dto/products-pagination.object';
 import { SortingProductInput } from './dto/sorting-product.input';
 import { Product } from './entities/product.entity';
 import { ProductsService } from './products.service';
-import { ParseUUIDPipe } from '@nestjs/common';
+import { ParseUUIDPipe, UseGuards } from '@nestjs/common';
+import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
+import { ROLES } from 'src/common/constants';
+import { Roles } from 'src/auth/decoratos/roles.decorator';
+import { AccessTokenWithRolesGuard } from 'src/auth/guards/access-token-with-roles.guard';
 
 @Resolver(() => Product)
 export class ProductsResolver {
@@ -22,6 +26,7 @@ export class ProductsResolver {
   }
 
   @Query(() => Product, { nullable: true })
+
   async productById(@Args('id', { type: () => String }, ParseUUIDPipe) id: string) {
     return this.productsService.findById(id);
   }

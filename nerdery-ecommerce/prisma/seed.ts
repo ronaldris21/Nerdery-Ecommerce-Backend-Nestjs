@@ -568,7 +568,11 @@ async function main() {
   await prisma.orderItem.deleteMany();
   await prisma.order.deleteMany();
   await prisma.user.deleteMany();
+  await prisma.userRole.deleteMany();
+  await prisma.rolePermission.deleteMany();
   await prisma.permission.deleteMany();
+  await prisma.role.deleteMany();
+
 
   console.log(`Start seeding ...`);
 
