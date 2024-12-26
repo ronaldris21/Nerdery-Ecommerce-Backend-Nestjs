@@ -44,7 +44,6 @@ export class ProductVariationsService {
 
     await this.productsHelperService.findProductByIdAndValidate({ id: input.productId }, false, false);
     const { productId, ...rest } = input;
-    console.log('\n\nCreateProductVariationInput:', input);
 
     const prodVariation = await this.prisma.productVariation.create({
       data: {

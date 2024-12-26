@@ -18,7 +18,6 @@ export class MailService {
                     name, // pass variables to the template
                 },
             });
-            console.log(`Welcome email sent to ${to}`);
         } catch (error) {
             console.error('Error sending email:', error);
         }

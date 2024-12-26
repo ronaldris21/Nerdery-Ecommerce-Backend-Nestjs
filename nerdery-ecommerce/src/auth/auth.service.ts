@@ -55,7 +55,6 @@ export class AuthService {
     accessToken: string,
   ): Promise<void> {
     const redisKey = this.redisService.getAccessTokenKey(userId, iat);
-    // console.log('CREATED: redisKey', redisKey);
     const expiresIn = this.configService.get<JwtConfig>(
       ConfigNames.jwt,
     ).expiresIn;
@@ -161,9 +160,6 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException('Wrong email or password');
     }
-
-    console.log('login.password', login.password);
-    console.log('login.email', login.email);
 
     if (
       !(await this.passwordService.validatePassword(
