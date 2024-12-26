@@ -22,13 +22,12 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
 
-  // TODO: check if this method is executed then the accessToken exp is due to expire (1 minute test)
   async validate(payload: JwtPayloadDto): Promise<JwtPayloadDto> {
     const user = await this.usersService.findById(payload.userId);
     if (!user) {
       throw new UnauthorizedException('Invalid access token');
     }
-    
+
     //TODO: Validate using Redis Cache
     const redisKey = this.redisService.getAccessTokenKey(payload.userId, payload.iat);
     const isCached = await this.redisService.get(redisKey);

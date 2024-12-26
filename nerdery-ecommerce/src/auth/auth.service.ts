@@ -94,6 +94,19 @@ export class AuthService {
   async generateNewTokens(
     user: Omit<User, 'createdAt' | 'password'>,
   ): Promise<AuthResponseDto> {
+
+    // Get user roles
+    const userRoles = await this.prisma.userRole.findMany({
+      where: {
+        userId: user.id,
+      },
+      include: {
+        role: true,
+      },
+    });
+
+    const roles = userRoles.map((ur) => ur.role.name);
+
     // Generate JWT - Access and Refresh Token
     const jwtConfig = this.configService.get<JwtConfig>(ConfigNames.jwt);
 
@@ -102,6 +115,7 @@ export class AuthService {
     const accessPayload: Omit<JwtPayloadDto, 'exp'> = {
       userId: user.id,
       email: user.email,
+      roles: roles,
       iat: iat,
       firstName: user.firstName,
       lastName: user.lastName,
@@ -115,7 +129,7 @@ export class AuthService {
     await this.addAccessTokenToCache(
       user.id,
       this.jwtService.decode(accessToken).iat,
-      '1',
+      accessToken
     );
 
     // Refresh Token
@@ -130,16 +144,6 @@ export class AuthService {
       },
     });
 
-    const userRoles = await this.prisma.userRole.findMany({
-      where: {
-        userId: user.id,
-      },
-      include: {
-        role: true,
-      },
-    });
-
-    const roles = userRoles.map((ur) => ur.role.name);
 
     // note: all tokens are in seconds
     return {
