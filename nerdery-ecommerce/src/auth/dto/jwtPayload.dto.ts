@@ -3,6 +3,7 @@ export interface JwtPayloadDto {
   email: string;
   firstName: string;
   lastName: string;
+  roles: string[];
   iat: number; //  Issued at
   exp: number; // Expiration time
 }

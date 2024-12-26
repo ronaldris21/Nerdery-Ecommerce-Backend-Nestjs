@@ -7,7 +7,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { PasswordService } from './services/password.service';
 import { UsersService } from './services/users.service';
-import { AccessTokenStrategy } from './strategies/accessToken.strategy .ts';
+import { AccessTokenStrategy } from './strategies/access-token.strategy .ts';
 import { ConfigNames, JwtConfig } from 'src/common/config/config.interface';
 import { RedisService } from './services/redis.service';
 import { MailModule } from 'src/mail/mail.module';

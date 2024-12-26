@@ -1,14 +1,13 @@
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { PaginationInput } from 'src/common/pagination/pagination.input';
-
 import { ProductFiltersInput } from './dto/product-filters.input';
 import { ProductsPagination } from './dto/products-pagination.object';
 import { SortingProductInput } from './dto/sorting-product.input';
 import { Product } from './entities/product.entity';
 import { ProductsService } from './products.service';
-import { ParseUUIDPipe } from '@nestjs/common';
 import { CreateProductInput } from './dto/create-product.input';
 import { UpdateProductInput } from './dto/update-product.input';
+import { ParseUUIDPipe } from '@nestjs/common';
 
 @Resolver(() => Product)
 export class ProductsResolver {
@@ -55,8 +54,5 @@ export class ProductsResolver {
   ) {
     return await this.productsService.toggleIsEnabled(id, isEnabled);
   }
-
-
-
 
 }
