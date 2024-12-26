@@ -12,6 +12,7 @@ import { JwtPayloadDto } from '../dto/jwtPayload.dto';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { AccessTokenGuard } from './access-token.guard';
 import { ROLES_KEY } from '../decoratos/roles.decorator';
+import { getRequestFromContext } from 'src/common/helpers/context-request';
 
 @Injectable()
 export class AccessTokenWithRolesGuard extends AccessTokenGuard {
@@ -20,43 +21,30 @@ export class AccessTokenWithRolesGuard extends AccessTokenGuard {
     }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
-
-
-        const requiredRole = this.reflector.get<string>(
-            ROLES_KEY,
-            context.getHandler(),
-        );
-
-        console.log('requiredRole', requiredRole);
-        if (!requiredRole) {
-            return true;
-        }
-
+        //First check if the user is authenticated
         const isAuthenticated = await super.canActivate(context);
         if (!isAuthenticated) {
             return false;
         }
 
-        let request = null;
-        switch (context.getType()) {
-            case 'http':
-                request = context.switchToHttp().getRequest();
-                break;
-            case 'graphql' as ContextType:
-                const gqlContext = GqlExecutionContext.create(context);
-                request = gqlContext.getContext().req;
-                break;
+        //Then check if the user has the required role
+        const requiredRoles = this.reflector.get<string[]>(
+            ROLES_KEY,
+            context.getHandler(),
+        );
 
-            default:
-                throw new BadGatewayException('Invalid context type, only http or graphql');
+        if (requiredRoles.length === 0) {
+            return true;
         }
+
+        let request = getRequestFromContext(context);
 
         let user: JwtPayloadDto = request.user;
         if (!user) {
             throw new UnauthorizedException('User not authenticated');
         }
 
-        if (!user.roles.includes(requiredRole)) {
+        if (!user.roles.some(role => requiredRoles.includes(role))) {
             throw new ForbiddenException('User does not have the required role');
         }
 

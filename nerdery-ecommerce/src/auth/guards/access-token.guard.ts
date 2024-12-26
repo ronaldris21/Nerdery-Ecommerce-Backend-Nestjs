@@ -1,23 +1,10 @@
-import { Injectable, ExecutionContext, ContextType, BadGatewayException } from '@nestjs/common';
-import { GqlExecutionContext } from '@nestjs/graphql';
+import { Injectable, ExecutionContext } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { getRequestFromContext } from 'src/common/helpers/context-request';
 
 @Injectable()
 export class AccessTokenGuard extends AuthGuard('jwt') {
   getRequest(context: ExecutionContext) {
-    let request = null;
-    switch (context.getType()) {
-      case 'http':
-        request = context.switchToHttp().getRequest();
-        break;
-      case 'graphql' as ContextType:
-        const gqlContext = GqlExecutionContext.create(context);
-        request = gqlContext.getContext().req;
-        break;
-
-      default:
-        throw new BadGatewayException('Invalid context type, only http or graphql');
-    }
-    return request;
+    return getRequestFromContext(context);
   }
 }
