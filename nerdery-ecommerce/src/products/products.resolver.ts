@@ -7,7 +7,12 @@ import { Product } from './entities/product.entity';
 import { ProductsService } from './products.service';
 import { CreateProductInput } from './dto/create-product.input';
 import { UpdateProductInput } from './dto/update-product.input';
-import { ParseUUIDPipe } from '@nestjs/common';
+import { ParseUUIDPipe, UseGuards } from '@nestjs/common';
+import { AccessTokenWithRolesGuard } from 'src/auth/guards/access-token-with-roles.guard';
+import { Roles } from 'src/auth/decoratos/roles.decorator';
+import { ROLES } from 'src/common/constants';
+import { GetUser } from 'src/auth/decoratos/get-user.decorator';
+import { JwtPayloadDto } from 'src/auth/dto/jwtPayload.dto';
 
 @Resolver(() => Product)
 export class ProductsResolver {
@@ -22,6 +27,18 @@ export class ProductsResolver {
     return this.productsService.findAll(filter, sortBy, pagination);
   }
 
+
+  @Query(() => ProductsPagination)
+  @UseGuards(AccessTokenWithRolesGuard)
+  @Roles([ROLES.MANAGER])
+  async allProducts(
+    @Args('filter', { nullable: true }) filter?: ProductFiltersInput,
+    @Args('sortBy', { nullable: true }) sortBy?: SortingProductInput,
+    @Args('pagination', { nullable: true }) pagination?: PaginationInput,
+  ) {
+    return this.productsService.findAll(filter, sortBy, pagination, true);
+  }
+
   @Query(() => Product, { nullable: true })
   async productById(@Args('id', { type: () => String }, ParseUUIDPipe) id: string) {
     return this.productsService.findOne(id);
@@ -29,11 +46,15 @@ export class ProductsResolver {
 
 
   @Mutation(() => Product)
+  @UseGuards(AccessTokenWithRolesGuard)
+  @Roles([ROLES.MANAGER])
   async createProduct(@Args('input') input: CreateProductInput) {
     return this.productsService.create(input);
   }
 
   @Mutation(() => Product)
+  @UseGuards(AccessTokenWithRolesGuard)
+  @Roles([ROLES.MANAGER])
   async updateProduct(
     @Args('input') input: UpdateProductInput,
   ) {
@@ -41,6 +62,8 @@ export class ProductsResolver {
   }
 
   @Mutation(() => Product)
+  @UseGuards(AccessTokenWithRolesGuard)
+  @Roles([ROLES.MANAGER])
   async deleteProduct(
     @Args('id', { type: () => String }, ParseUUIDPipe) id: string
   ) {
@@ -48,6 +71,8 @@ export class ProductsResolver {
   }
 
   @Mutation(() => Product)
+  @UseGuards(AccessTokenWithRolesGuard)
+  @Roles([ROLES.MANAGER])
   async toggleProductEnable(
     @Args('id', { type: () => String }, ParseUUIDPipe) id: string,
     @Args('isEnabled') isEnabled: boolean

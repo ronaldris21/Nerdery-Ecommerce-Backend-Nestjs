@@ -20,4 +20,7 @@ export class CreateProductInput {
   @Field()
   @IsString()
   description: string;
+
+  @Field(() => Boolean, { defaultValue: false })
+  isEnabled: boolean;
 }

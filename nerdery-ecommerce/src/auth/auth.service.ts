@@ -313,7 +313,7 @@ export class AuthService {
     });
 
     if (!resetPassword) {
-      throw new NotFoundException('Invalid token');
+      throw new NotFoundException('Invalid reset token');
     }
 
     if (resetPassword.validUntil < new Date()) {

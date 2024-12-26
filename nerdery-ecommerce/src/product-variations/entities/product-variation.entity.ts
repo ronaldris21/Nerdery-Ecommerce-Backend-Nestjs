@@ -35,6 +35,9 @@ export class ProductVariation {
   @Field(() => Boolean)
   isDeleted: boolean;
 
+  @Field(() => String)
+  productId: string;
+
   @Field(() => Product)
   product: Product;
 

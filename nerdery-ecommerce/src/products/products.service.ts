@@ -4,31 +4,38 @@ import { Gender } from 'src/common/enums/gender.enum';
 import { PaginationMeta } from 'src/common/pagination/pagination-meta.object';
 import { PaginationInput } from 'src/common/pagination/pagination.input';
 import { PrismaService } from 'src/prisma/prisma.service';
-
 import { ProductFiltersInput } from './dto/product-filters.input';
 import { ProductSortableField, SortingProductInput } from './dto/sorting-product.input';
 import { Prisma, Product } from '@prisma/client';
 import { CreateProductInput } from './dto/create-product.input';
 import { UpdateProductInput } from './dto/update-product.input';
 import { GenericResponse } from 'src/common/dto/generic.dto';
-import { ProductCalculationsService } from 'src/common/services/product-calculations.service';
+import { ProductHelperService } from 'src/common/services/product-calculations.service';
 
 @Injectable()
+//TODO: remove include and use ResolveFields
+//TODO: add DataLoaders to avoid N+1 problem on ResolveFields
 export class ProductsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly categoriesService: CategoriesService,
-    private readonly productCalculationsService: ProductCalculationsService,
+    private readonly productsHelperService: ProductHelperService,
   ) { }
 
   async findAll(
     filters?: ProductFiltersInput,
     sorting?: SortingProductInput,
     pagination?: PaginationInput,
+    isManagerOrSimilar: boolean = false,
   ) {
     const { page = 1, limit = 20 } = pagination;
 
     const where = { isDeleted: false, isEnabled: true };
+    if (isManagerOrSimilar) {
+      delete where.isDeleted;
+      delete where.isEnabled;
+    }
+
     if (filters) {
       if (filters.gender) {
         if (filters.gender !== Gender.UNISEX) {
@@ -37,6 +44,11 @@ export class ProductsService {
       }
       if (filters.minPrice) {
         where['minPrice'] = { gte: filters.minPrice };
+      } else {
+        if (!isManagerOrSimilar) {
+          //We dont want to show products with 0 price to clients or general public
+          where['minPrice'] = { gt: 0 };
+        }
       }
       if (filters.maxPrice) {
         where['maxPrice'] = { lte: filters.maxPrice };
@@ -74,17 +86,22 @@ export class ProductsService {
       totalPages,
     };
 
-    console.log('meta', meta);
 
-    //TODO: remove include and use ResolveFields
-    //TODO: add DataLoaders to avoid N+1 problem on ResolveFields
-    const collection = await this.prisma.product.findMany({
+    let collection = await this.prisma.product.findMany({
       where: where,
       orderBy: orderBy,
       skip: (page - 1) * limit,
       take: limit,
       include: { category: true, productVariations: true },
     });
+
+    if (!isManagerOrSimilar) {
+      collection = collection.map((product) => {
+        const filteredProductVariations = product.productVariations.filter(p => p.isEnabled && !p.isDeleted);
+        product.productVariations = filteredProductVariations;
+        return product;
+      });
+    }
 
     return {
       meta,
@@ -93,21 +110,10 @@ export class ProductsService {
   }
 
   async findOne(id: string) {
-    return this.findByIdAndValidate({ id });
+    return this.productsHelperService.findProductByIdAndValidate({ id });
   }
 
-  async findByIdAndValidate(where: Prisma.ProductWhereUniqueInput, includeCategory: boolean = true, includeVariations: boolean = true) {
-    const product = this.prisma.product.findUnique({
-      where,
-      include: { category: includeCategory, productVariations: includeVariations },
-    });
 
-    if (!product) {
-      throw new NotFoundException('Product not found');
-    }
-
-    return product;
-  }
 
   async findByIds(ids: string[]) {
     return await this.prisma.product.findMany({
@@ -149,7 +155,8 @@ export class ProductsService {
             id: categoryId
           }
         },
-      }
+      },
+      include: { productVariations: true, category: true },
     });
   }
 
@@ -162,7 +169,7 @@ export class ProductsService {
       }
     }
 
-    await this.findByIdAndValidate({ id: input.id });
+    await this.productsHelperService.findProductByIdAndValidate({ id: input.id });
 
     return this.prisma.product.update({
       where: { id: input.id },
@@ -174,31 +181,25 @@ export class ProductsService {
           }
         },
       },
+      include: { productVariations: true, category: true },
     });
   }
 
   async delete(id: string) {
-
-    await this.findByIdAndValidate({ id });
+    await this.productsHelperService.findProductByIdAndValidate({ id }, false, false);
 
     await this.prisma.productVariation.updateMany({ where: { productId: id }, data: { isDeleted: true } });
     return await this.prisma.product.update({ where: { id }, data: { isDeleted: true } });
   }
 
   async toggleIsEnabled(id: string, isEnabled: boolean) {
-
-    await this.findByIdAndValidate({ id });
+    await this.productsHelperService.findProductByIdAndValidate({ id }, false, false);
 
     await this.prisma.productVariation.updateMany({ where: { productId: id }, data: { isEnabled: isEnabled } });
     if (isEnabled) {
-      await this.productCalculationsService.recalculateProductMinMaxPriceAndLikesCount([id]);
+      await this.productsHelperService.recalculateProductMinMaxPrices([id]);
     }
     return await this.prisma.product.update({ where: { id }, data: { isEnabled: isEnabled }, include: { productVariations: true } });
   }
-
-
-
-
-
 
 }

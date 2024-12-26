@@ -12,7 +12,6 @@ import { CategoriesModule } from './categories/categories.module';
 import { ApolloDriver } from '@nestjs/apollo';
 import { ProductVariationsModule } from './product-variations/product-variations.module';
 import { ProductVariationImagesModule } from './product-variation-images/product-variation-images.module';
-import { ProductCalculationsService } from './common/services/product-calculations.service';
 
 @Module({
   imports: [
