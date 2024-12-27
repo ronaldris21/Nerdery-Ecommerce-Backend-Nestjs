@@ -1,9 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
-export class ProductHelperService {
+export class ProductCalculatedFieldsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async recalculateProductMinMaxPrices(productIds: string[]) {
@@ -61,22 +60,5 @@ export class ProductHelperService {
       });
     });
     await Promise.all(updatePromises);
-  }
-
-  async findProductByIdAndValidate(
-    where: Prisma.ProductWhereUniqueInput,
-    includeCategory: boolean = true,
-    includeVariations: boolean = true,
-  ) {
-    const product = await this.prisma.product.findUnique({
-      where,
-      include: { category: includeCategory, productVariations: includeVariations },
-    });
-
-    if (!product) {
-      throw new NotFoundException('Product not found');
-    }
-
-    return product;
   }
 }

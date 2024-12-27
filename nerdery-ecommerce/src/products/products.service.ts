@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { Gender } from 'src/common/enums/gender.enum';
 import { PaginationMeta } from 'src/common/pagination/pagination-meta.object';
 import { PaginationInput } from 'src/common/pagination/pagination.input';
-import { ProductHelperService } from 'src/common/services/product-calculations.service';
+import { ProductCalculatedFieldsService } from 'src/common/services/product-calculations/product-calculated-fields.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import { CategoriesService } from './../categories/categories.service';
@@ -18,7 +18,7 @@ export class ProductsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly categoriesService: CategoriesService,
-    private readonly productsHelperService: ProductHelperService,
+    private readonly productsHelperService: ProductCalculatedFieldsService,
   ) {}
 
   async findAll(

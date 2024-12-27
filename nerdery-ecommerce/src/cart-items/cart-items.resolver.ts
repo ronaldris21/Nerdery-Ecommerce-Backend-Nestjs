@@ -12,11 +12,11 @@ import { CartItemObject } from './entities/cart-item.object';
 
 @Resolver(() => CartItemObject)
 export class CartItemsResolver {
-  constructor(private readonly cartItemsService: CartItemsService) { }
+  constructor(private readonly cartItemsService: CartItemsService) {}
 
   @Mutation(() => CartItemObject)
   @UseGuards(AccessTokenWithRolesGuard)
-  @Roles([ROLES.CLIENT, "xd"])
+  @Roles([ROLES.CLIENT, 'xd'])
   createCartItem(
     @Args('cartItemInput') cartItemInput: CartItemInput,
     @GetUser() user: JwtPayloadDto,

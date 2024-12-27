@@ -1,16 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { ProductHelperService } from './product-calculations.service';
+import { ProductCalculatedFieldsService } from './product-calculated-fields.service';
 
 describe('ProductCalculationsService', () => {
-  let provider: ProductHelperService;
+  let provider: ProductCalculatedFieldsService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [ProductHelperService],
+      providers: [ProductCalculatedFieldsService],
     }).compile();
 
-    provider = module.get<ProductHelperService>(ProductHelperService);
+    provider = module.get<ProductCalculatedFieldsService>(ProductCalculatedFieldsService);
   });
 
   it('should be defined', () => {

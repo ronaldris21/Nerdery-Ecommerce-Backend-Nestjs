@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
+import { PrismaClientExceptionFilter } from './common/exception-filters/prisma-exception.filter/prisma-exception.filter.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -44,6 +45,9 @@ In a multi-role endpoint you have to specified the role in the header in order t
     }),
   );
 
+  app.useGlobalFilters(new PrismaClientExceptionFilter());
+
   await app.listen(process.env.PORT ?? 3000);
 }
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();

@@ -5,7 +5,7 @@ import { CartObject } from './entities/cart.object';
 
 @Resolver(() => CartObject)
 export class CartResolver {
-  constructor(private readonly cartService: CartService) { }
+  constructor(private readonly cartService: CartService) {}
 
   // @Query(() => CartObject)
   // cart() {

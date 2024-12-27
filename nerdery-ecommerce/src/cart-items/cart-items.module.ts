@@ -7,4 +7,4 @@ import { CartItemsService } from './cart-items.service';
 @Module({
   providers: [CartItemsResolver, CartItemsService, PrismaService],
 })
-export class CartItemsModule { }
+export class CartItemsModule {}

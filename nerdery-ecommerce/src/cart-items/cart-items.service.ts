@@ -5,14 +5,16 @@ import { CartItemInput } from './dto/cart-item.input';
 
 @Injectable()
 export class CartItemsService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async create(input: CartItemInput, userId: string) {
     return await this.prisma.cartItem.create({
       data: {
         userId: userId,
+        // userId: userId,
+        // quantity: input.quantity,
         quantity: input.quantity,
-        productVariationId: input.productVariationId,
+        productVariationId: 'asda',
       },
       include: {
         productVariation: true,
