@@ -1,16 +1,15 @@
-import { CategoriesService } from './../categories/categories.service';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Gender } from 'src/common/enums/gender.enum';
 import { PaginationMeta } from 'src/common/pagination/pagination-meta.object';
 import { PaginationInput } from 'src/common/pagination/pagination.input';
+import { ProductHelperService } from 'src/common/services/product-calculations.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+
+import { CategoriesService } from './../categories/categories.service';
+import { CreateProductInput } from './dto/create-product.input';
 import { ProductFiltersInput } from './dto/product-filters.input';
 import { ProductSortableField, SortingProductInput } from './dto/sorting-product.input';
-import { Prisma, Product } from '@prisma/client';
-import { CreateProductInput } from './dto/create-product.input';
 import { UpdateProductInput } from './dto/update-product.input';
-import { GenericResponse } from 'src/common/dto/generic.dto';
-import { ProductHelperService } from 'src/common/services/product-calculations.service';
 
 @Injectable()
 //TODO: remove include and use ResolveFields
@@ -20,7 +19,7 @@ export class ProductsService {
     private readonly prisma: PrismaService,
     private readonly categoriesService: CategoriesService,
     private readonly productsHelperService: ProductHelperService,
-  ) { }
+  ) {}
 
   async findAll(
     filters?: ProductFiltersInput,
@@ -86,7 +85,6 @@ export class ProductsService {
       totalPages,
     };
 
-
     let collection = await this.prisma.product.findMany({
       where: where,
       orderBy: orderBy,
@@ -97,7 +95,9 @@ export class ProductsService {
 
     if (!isManagerOrSimilar) {
       collection = collection.map((product) => {
-        const filteredProductVariations = product.productVariations.filter(p => p.isEnabled && !p.isDeleted);
+        const filteredProductVariations = product.productVariations.filter(
+          (p) => p.isEnabled && !p.isDeleted,
+        );
         product.productVariations = filteredProductVariations;
         return product;
       });
@@ -112,8 +112,6 @@ export class ProductsService {
   async findOne(id: string) {
     return this.productsHelperService.findProductByIdAndValidate({ id });
   }
-
-
 
   async findByIds(ids: string[]) {
     return await this.prisma.product.findMany({
@@ -142,18 +140,17 @@ export class ProductsService {
       throw new BadRequestException('Category is required');
     }
 
-    if (!await this.categoriesService.doesCategoryExist(categoryId)) {
+    if (!(await this.categoriesService.doesCategoryExist(categoryId))) {
       throw new BadRequestException('Category does not exist');
     }
-
 
     return await this.prisma.product.create({
       data: {
         ...rest,
         category: {
           connect: {
-            id: categoryId
-          }
+            id: categoryId,
+          },
         },
       },
       include: { productVariations: true, category: true },
@@ -177,8 +174,8 @@ export class ProductsService {
         ...rest,
         category: {
           connect: {
-            id: categoryId
-          }
+            id: categoryId,
+          },
         },
       },
       include: { productVariations: true, category: true },
@@ -188,18 +185,27 @@ export class ProductsService {
   async delete(id: string) {
     await this.productsHelperService.findProductByIdAndValidate({ id }, false, false);
 
-    await this.prisma.productVariation.updateMany({ where: { productId: id }, data: { isDeleted: true } });
+    await this.prisma.productVariation.updateMany({
+      where: { productId: id },
+      data: { isDeleted: true },
+    });
     return await this.prisma.product.update({ where: { id }, data: { isDeleted: true } });
   }
 
   async toggleIsEnabled(id: string, isEnabled: boolean) {
     await this.productsHelperService.findProductByIdAndValidate({ id }, false, false);
 
-    await this.prisma.productVariation.updateMany({ where: { productId: id }, data: { isEnabled: isEnabled } });
+    await this.prisma.productVariation.updateMany({
+      where: { productId: id },
+      data: { isEnabled: isEnabled },
+    });
     if (isEnabled) {
       await this.productsHelperService.recalculateProductMinMaxPrices([id]);
     }
-    return await this.prisma.product.update({ where: { id }, data: { isEnabled: isEnabled }, include: { productVariations: true } });
+    return await this.prisma.product.update({
+      where: { id },
+      data: { isEnabled: isEnabled },
+      include: { productVariations: true },
+    });
   }
-
 }

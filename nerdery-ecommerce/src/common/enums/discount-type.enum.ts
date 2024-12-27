@@ -1,5 +1,5 @@
 import { registerEnumType } from '@nestjs/graphql';
-import { DiscountTypeEnum, GenderEnum, Prisma } from '@prisma/client';
+import { DiscountTypeEnum } from '@prisma/client';
 
 // export enum DiscountType {
 //     PERCENTAGE = 'PERCENTAGE',

@@ -1,6 +1,7 @@
 import { InputType, Field, PartialType } from '@nestjs/graphql';
-import { CreateProductVariationInput } from './create-product-variation.input';
 import { IsUUID } from 'class-validator';
+
+import { CreateProductVariationInput } from './create-product-variation.input';
 
 @InputType()
 export class UpdateProductVariationInput extends PartialType(CreateProductVariationInput) {

@@ -1,8 +1,6 @@
-import {
-  createParamDecorator,
-  ExecutionContext,
-  ContextType,
-} from '@nestjs/common';
+import { debug } from 'console';
+
+import { createParamDecorator, ExecutionContext, ContextType } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 
 //This is an alternative to get the user with the access token when it has expired or invalidated
@@ -24,7 +22,8 @@ export const GetAccessToken = createParamDecorator(
       const authHeader = request.headers['authorization'];
       return authHeader && authHeader.split(' ')[1];
     } catch (error) {
-      return "";
+      debug(error);
+      return '';
     }
   },
 );

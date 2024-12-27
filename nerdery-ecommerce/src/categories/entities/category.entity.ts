@@ -1,8 +1,8 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { Product } from 'src/products/entities/product.entity';
+import { ProductObject } from 'src/products/entities/product.entity';
 
 @ObjectType()
-export class Category {
+export class CategoryObject {
   @Field(() => ID)
   id: string;
 
@@ -12,9 +12,9 @@ export class Category {
   @Field(() => ID, { nullable: true })
   parentId?: string;
 
-  @Field(() => [Category], { nullable: true })
-  subCategories?: Category[];
+  @Field(() => [CategoryObject], { nullable: true })
+  subCategories?: CategoryObject[];
 
-  @Field(() => [Product])
-  products: Product[];
+  @Field(() => [ProductObject])
+  products: ProductObject[];
 }

@@ -1,16 +1,5 @@
 import { InputType, Field, Float } from '@nestjs/graphql';
-import {
-  IsBoolean,
-  IsDefined,
-  IsInt,
-  IsNotEmpty,
-  IsNotIn,
-  IsNumber,
-  IsPositive,
-  IsUUID,
-  Min,
-  ValidateIf,
-} from 'class-validator';
+import { IsInt, IsNotEmpty, IsNotIn, IsNumber, IsPositive, IsUUID, Min } from 'class-validator';
 import { DiscountType } from 'src/common/enums/discount-type.enum';
 
 @InputType()
@@ -52,6 +41,4 @@ export class CreateProductVariationInput {
 
   @Field(() => Boolean, { defaultValue: true })
   isEnabled: boolean;
-
-
 }

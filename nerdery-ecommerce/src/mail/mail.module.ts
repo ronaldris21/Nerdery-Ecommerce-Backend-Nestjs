@@ -1,10 +1,11 @@
 // src/mail/mail.module.ts
+import { join } from 'path';
+
 import { Module } from '@nestjs/common';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
-import { join } from 'path';
-import { MailService } from './mail.service';
 
+import { MailService } from './mail.service';
 
 //NOTE CHECK THE nest.cli.json file for the correct path:
 // "sourceRoot": "src",
@@ -40,4 +41,4 @@ import { MailService } from './mail.service';
   providers: [MailService],
   exports: [MailService],
 })
-export class MailModule { }
+export class MailModule {}

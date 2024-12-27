@@ -5,8 +5,8 @@ import { Strategy, ExtractJwt } from 'passport-jwt';
 import { ConfigNames, JwtConfig } from 'src/common/config/config.interface';
 
 import { JwtPayloadDto } from '../dto/jwtPayload.dto';
-import { UsersService } from '../services/users.service';
 import { RedisService } from '../services/redis.service';
+import { UsersService } from '../services/users.service';
 
 @Injectable()
 export class AccessTokenStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -20,7 +20,6 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, 'jwt') {
       secretOrKey: configService.get<JwtConfig>(ConfigNames.jwt).jwtAcccessSecret,
     });
   }
-
 
   async validate(payload: JwtPayloadDto): Promise<JwtPayloadDto> {
     const user = await this.usersService.findById(payload.userId);

@@ -1,14 +1,14 @@
-import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
+import { Resolver, Query, Args } from '@nestjs/graphql';
+
 import { CategoriesService } from './categories.service';
-import { Category } from './entities/category.entity';
+import { CategoryObject } from './entities/category.entity';
 
-@Resolver(() => Category)
+@Resolver(() => CategoryObject)
 export class CategoriesResolver {
-  constructor(private readonly categoriesService: CategoriesService) { }
+  constructor(private readonly categoriesService: CategoriesService) {}
 
-  @Query(() => [Category])
+  @Query(() => [CategoryObject])
   async categories(@Args('search', { nullable: true }) search: string) {
     return this.categoriesService.findBySearch(search);
   }
-
 }
