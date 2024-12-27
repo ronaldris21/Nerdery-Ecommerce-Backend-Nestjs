@@ -16,17 +16,14 @@ export class CartItemsResolver {
 
   @Mutation(() => CartItemObject)
   @UseGuards(AccessTokenWithRolesGuard)
-  @Roles([ROLES.CLIENT, 'xd'])
-  createCartItem(
+  @Roles([ROLES.CLIENT])
+  createOrUpdateCartItem(
     @Args('cartItemInput') cartItemInput: CartItemInput,
     @GetUser() user: JwtPayloadDto,
   ) {
-    return this.cartItemsService.create(cartItemInput, user.userId);
+    return this.cartItemsService.createOrUpdate(cartItemInput, user.userId);
   }
-  // @Mutation(() => CartItemInput)
-  // updateCartItem(@Args('cartItemInput') cartItemInput: CartItemInput) {
-  //   return this.cartItemsService.update(cartItemInput);
-  // }
+
   // @Mutation(() => CartItemInput)
   // removeCartItem(@Args('id', { type: () => String }) id: string) {
   //   return this.cartItemsService.remove(id, id);

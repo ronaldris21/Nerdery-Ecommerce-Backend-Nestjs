@@ -1,4 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { PriceSummaryInput } from 'src/common/dto/price-summary-input.dto ';
+import { PriceSummary } from 'src/common/dto/price-summary.dto';
+import { DiscountType } from 'src/common/enums/discount-type.enum';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -60,5 +63,29 @@ export class ProductCalculatedFieldsService {
       });
     });
     await Promise.all(updatePromises);
+  }
+
+  calculatePriceSummary(input: PriceSummaryInput): PriceSummary {
+    const { unitPrice, discountType, discount, quantity } = input;
+
+    const subTotal = unitPrice * quantity;
+
+    let calculatedDiscount = 0;
+    if (discountType === DiscountType.PERCENTAGE) {
+      calculatedDiscount = (subTotal * discount) / 100;
+    } else if (discountType === DiscountType.FIXED) {
+      calculatedDiscount = discount * quantity;
+    }
+
+    if (calculatedDiscount > subTotal) {
+      calculatedDiscount = subTotal;
+    }
+
+    return {
+      unitPrice,
+      subTotal,
+      discount: calculatedDiscount,
+      total: subTotal - calculatedDiscount,
+    };
   }
 }

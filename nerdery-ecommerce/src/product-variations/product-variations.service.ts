@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import { DiscountType } from 'src/common/enums/discount-type.enum';
 import { IdValidatorService } from 'src/common/services/id-validator/id-validator.service';
 import { ProductCalculatedFieldsService } from 'src/common/services/product-calculations/product-calculated-fields.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -49,7 +50,17 @@ export class ProductVariationsService {
 
   async update(input: UpdateProductVariationInput) {
     await this.idValidatorService.findUniqueProductById({ id: input.productId }, false, false);
-    await this.idValidatorService.findUniqueProductVariationById({ id: input.id }, false, false);
+    const prodVariation = await this.idValidatorService.findUniqueProductVariationById(
+      { id: input.id },
+      false,
+      false,
+    );
+
+    this.validateDiscount({
+      price: input.price ?? Number(prodVariation.price),
+      type: input.discountType ?? prodVariation.discountType,
+      discount: input.discount ?? Number(prodVariation.discount),
+    });
 
     const { productId, ...rest } = input;
     await this.prisma.productVariation.update({
@@ -102,5 +113,42 @@ export class ProductVariationsService {
     ]);
     //TODO: remove from cart if exists
     return await this.idValidatorService.findUniqueProductVariationById({ id });
+  }
+
+  validateDiscount({
+    type,
+    price,
+    discount,
+  }: {
+    type: DiscountType;
+    price: number;
+    discount?: number;
+  }): boolean {
+    if (!discount) return true;
+
+    if (type && type != DiscountType.NONE && !discount) {
+      throw new UnprocessableEntityException('Need a valid discount value');
+    }
+
+    if (type === DiscountType.PERCENTAGE) {
+      if (discount > 99 || discount < 0) {
+        throw new UnprocessableEntityException(
+          'PERCENTAGE discount needs a valid discount between 0-100',
+        );
+      }
+    }
+
+    if (type === DiscountType.FIXED) {
+      if (!price) {
+        throw new UnprocessableEntityException(`FIXED discount needs a price`);
+      }
+      if (discount >= price || discount < 0) {
+        throw new UnprocessableEntityException(
+          `FIXED discount needs a valid discount between 0 - ${price}`,
+        );
+      }
+    }
+
+    return true;
   }
 }
