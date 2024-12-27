@@ -11,8 +11,6 @@ import { CartItemsModule } from './cart-items/cart-items.module';
 import { CategoriesModule } from './categories/categories.module';
 import { CommonModule } from './common/common.module';
 import config from './common/config/config';
-import { IdValidatorService } from './common/id-validator/id-validator.service';
-import { IdValidatorServiceService } from './common/id-validator.service/id-validator.service.service';
 import { MailModule } from './mail/mail.module';
 import { ProductVariationImagesModule } from './product-variation-images/product-variation-images.module';
 import { ProductVariationsModule } from './product-variations/product-variations.module';
@@ -71,6 +69,6 @@ import { ProductsModule } from './products/products.module';
     CommonModule,
   ],
   controllers: [AppController],
-  providers: [AppService, IdValidatorServiceService, IdValidatorService],
+  providers: [AppService],
 })
 export class AppModule {}

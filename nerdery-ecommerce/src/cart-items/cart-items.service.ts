@@ -1,20 +1,24 @@
 import { Injectable } from '@nestjs/common';
+import { IdValidatorService } from 'src/common/services/id-validator/id-validator.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import { CartItemInput } from './dto/cart-item.input';
 
 @Injectable()
 export class CartItemsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly idValidatorService: IdValidatorService,
+  ) {}
 
   async create(input: CartItemInput, userId: string) {
+    await this.idValidatorService.findUniqueProductVariationById({ id: input.productVariationId });
+
     return await this.prisma.cartItem.create({
       data: {
         userId: userId,
-        // userId: userId,
-        // quantity: input.quantity,
         quantity: input.quantity,
-        productVariationId: 'asda',
+        productVariationId: input.productVariationId,
       },
       include: {
         productVariation: true,
