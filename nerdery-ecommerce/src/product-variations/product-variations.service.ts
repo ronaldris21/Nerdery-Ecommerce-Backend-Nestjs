@@ -1,17 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { UpdateProductVariationInput } from './dto/update-product-variation.input';
-import { CreateProductVariationInput } from './dto/create-product-variation.input';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { ProductHelperService } from 'src/common/services/product-calculations.service';
 import { Prisma } from '@prisma/client';
-import { fa } from '@faker-js/faker/.';
+import { ProductHelperService } from 'src/common/services/product-calculations.service';
+import { PrismaService } from 'src/prisma/prisma.service';
+
+import { CreateProductVariationInput } from './dto/create-product-variation.input';
+import { UpdateProductVariationInput } from './dto/update-product-variation.input';
 
 @Injectable()
 export class ProductVariationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly productsHelperService: ProductHelperService,
-  ) { }
+  ) {}
 
   async findAll(productId: string) {
     const where = { isDeleted: false, isEnabled: true };
@@ -27,7 +27,11 @@ export class ProductVariationsService {
     return await this.findByIdAndValidate({ id, ...where });
   }
 
-  async findByIdAndValidate(where: Prisma.ProductVariationWhereUniqueInput, includeProduct: boolean = true, variationImages: boolean = true) {
+  async findByIdAndValidate(
+    where: Prisma.ProductVariationWhereUniqueInput,
+    includeProduct: boolean = true,
+    variationImages: boolean = true,
+  ) {
     const productVariation = await this.prisma.productVariation.findUnique({
       where,
       include: { product: includeProduct, variationImages: variationImages },
@@ -41,20 +45,23 @@ export class ProductVariationsService {
   }
 
   async create(input: CreateProductVariationInput) {
-
-    await this.productsHelperService.findProductByIdAndValidate({ id: input.productId }, false, false);
+    await this.productsHelperService.findProductByIdAndValidate(
+      { id: input.productId },
+      false,
+      false,
+    );
     const { productId, ...rest } = input;
 
     const prodVariation = await this.prisma.productVariation.create({
       data: {
         ...rest,
         product: {
-          connect: { id: input.productId },
+          connect: { id: productId },
         },
       },
     });
 
-    await this.productsHelperService.recalculateProductMinMaxPrices([input.productId]);
+    await this.productsHelperService.recalculateProductMinMaxPrices([productId]);
     return await this.findByIdAndValidate({ id: prodVariation.id });
   }
 
@@ -102,5 +109,4 @@ export class ProductVariationsService {
     //TODO: remove from cart if exists
     return await this.findByIdAndValidate({ id });
   }
-
 }

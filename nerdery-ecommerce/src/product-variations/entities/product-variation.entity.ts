@@ -1,10 +1,10 @@
 import { ObjectType, Field, ID, Float } from '@nestjs/graphql';
 import { DiscountType } from 'src/common/enums/discount-type.enum';
-import { ProductVariationImage } from 'src/product-variation-images/entities/product-variation-image.entity';
-import { Product } from 'src/products/entities/product.entity';
+import { ProductVariationImageObject } from 'src/product-variation-images/entities/product-variation-image.entity';
+import { ProductObject } from 'src/products/entities/product.entity';
 
 @ObjectType()
-export class ProductVariation {
+export class ProductVariationObject {
   @Field(() => ID)
   id: string;
 
@@ -38,9 +38,9 @@ export class ProductVariation {
   @Field(() => String)
   productId: string;
 
-  @Field(() => Product)
-  product: Product;
+  @Field(() => ProductObject)
+  product: ProductObject;
 
-  @Field(() => [ProductVariationImage])
-  variationImages: ProductVariationImage[];
+  @Field(() => [ProductVariationImageObject])
+  variationImages: ProductVariationImageObject[];
 }

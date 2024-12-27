@@ -3,7 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class CategoriesService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async findBySearch(search: string) {
     if (!search) {
@@ -17,7 +17,7 @@ export class CategoriesService {
         name: {
           contains: search,
           mode: 'insensitive',
-        }
+        },
       },
       include: { subCategories: true, products: true },
     });
@@ -34,13 +34,12 @@ export class CategoriesService {
   }
 
   async doesCategoryExist(id: string): Promise<boolean> {
-    return (await this.prisma.category.count({
-      where: {
-        id,
-      },
-    })) > 0;
+    return (
+      (await this.prisma.category.count({
+        where: {
+          id,
+        },
+      })) > 0
+    );
   }
-
-
-
 }

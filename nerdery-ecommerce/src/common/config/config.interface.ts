@@ -1,5 +1,3 @@
-import { env } from "process";
-
 export const ConfigNames = {
   s3: 's3',
   email: 'email',
@@ -11,7 +9,6 @@ export const ConfigNames = {
   redis: 'redis',
   env: 'env',
 };
-
 
 export interface Config {
   s3: S3Config;
@@ -29,7 +26,6 @@ export interface RedisConfig {
   host: string;
   port: number;
 }
-
 
 export interface FrontentConfig {
   resetPasswordFrontendUrl: string;

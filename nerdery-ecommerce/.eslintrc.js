@@ -16,7 +16,7 @@ module.exports = {
     'plugin:import/typescript',
     'plugin:jest/recommended',
     'plugin:prettier/recommended', // Ensures Prettier overrides ESLint rules
-    'prettier' // Turns off ESLint rules that conflict with Prettier
+    'prettier', // Turns off ESLint rules that conflict with Prettier
   ],
   root: true,
   env: {
@@ -32,15 +32,27 @@ module.exports = {
     'import/order': [
       'error',
       {
-        'groups': ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
+        groups: [
+          'builtin',
+          'external',
+          'internal',
+          'parent',
+          'sibling',
+          'index',
+        ],
         'newlines-between': 'always',
-        'alphabetize': { order: 'asc', caseInsensitive: true },
+        alphabetize: { order: 'asc', caseInsensitive: true },
       },
     ],
     'unused-imports/no-unused-imports': 'error',
     'unused-imports/no-unused-vars': [
       'warn',
-      { vars: 'all', varsIgnorePattern: '^_', args: 'after-used', argsIgnorePattern: '^_' },
+      {
+        vars: 'all',
+        varsIgnorePattern: '^_',
+        args: 'after-used',
+        argsIgnorePattern: '^_',
+      },
     ],
     '@typescript-eslint/no-floating-promises': 'error',
     // '@typescript-eslint/require-await': 'error',

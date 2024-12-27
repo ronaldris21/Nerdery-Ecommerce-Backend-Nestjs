@@ -7,6 +7,3 @@ export interface GenericFailureResponse extends GenericResponse {
   statusCode: string;
   error: string;
 }
-
-
-

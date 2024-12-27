@@ -1,9 +1,9 @@
-import { ObjectType, Field, Int } from '@nestjs/graphql';
-import { isNotEmpty, IsUrl, IsUUID } from 'class-validator';
-import { ProductVariation } from 'src/product-variations/entities/product-variation.entity';
+import { ObjectType, Field } from '@nestjs/graphql';
+import { IsUrl, IsUUID } from 'class-validator';
+import { ProductVariationObject } from 'src/product-variations/entities/product-variation.entity';
 
 @ObjectType()
-export class ProductVariationImage {
+export class ProductVariationImageObject {
   @Field()
   @IsUUID()
   id: string;
@@ -16,6 +16,6 @@ export class ProductVariationImage {
   @IsUUID()
   productVariationId: string;
 
-  @Field(() => ProductVariation)
-  productVariation: ProductVariation;
+  @Field(() => ProductVariationObject)
+  productVariation: ProductVariationObject;
 }

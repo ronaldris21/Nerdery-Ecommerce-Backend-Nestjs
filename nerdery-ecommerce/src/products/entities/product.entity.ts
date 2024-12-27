@@ -1,10 +1,11 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
+
+import { CategoryObject } from '../../categories/entities/category.entity';
 import { Gender } from '../../common/enums/gender.enum';
-import { Category } from '../../categories/entities/category.entity';
-import { ProductVariation } from '../../product-variations/entities/product-variation.entity';
+import { ProductVariationObject } from '../../product-variations/entities/product-variation.entity';
 
 @ObjectType()
-export class Product {
+export class ProductObject {
   @Field(() => ID)
   id: string;
 
@@ -44,9 +45,9 @@ export class Product {
   @Field()
   updatedAt: Date;
 
-  @Field(() => Category)
-  category: Category;
+  @Field(() => CategoryObject)
+  category: CategoryObject;
 
-  @Field(() => [ProductVariation], { nullable: true })
-  productVariations?: ProductVariation[];
+  @Field(() => [ProductVariationObject], { nullable: true })
+  productVariations?: ProductVariationObject[];
 }

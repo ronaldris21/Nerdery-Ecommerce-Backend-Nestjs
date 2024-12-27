@@ -39,5 +39,4 @@ export class RedisService {
       await this.redisClient.del(...keys);
     }
   }
-
 }

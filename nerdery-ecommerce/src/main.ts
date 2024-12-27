@@ -8,7 +8,6 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api');
 
-
   const config = new DocumentBuilder()
     .setTitle('Sport Clothing Ecommerce API')
     .setDescription(
@@ -41,7 +40,7 @@ In a multi-role endpoint you have to specified the role in the header in order t
       transformOptions: {
         exposeDefaultValues: true,
         enableImplicitConversion: true, //TODO: CHECK
-      }
+      },
     }),
   );
 
