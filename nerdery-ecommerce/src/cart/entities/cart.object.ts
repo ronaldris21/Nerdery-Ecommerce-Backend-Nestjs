@@ -1,0 +1,17 @@
+import { Field, Float, ObjectType } from '@nestjs/graphql';
+import { CartItemObject } from 'src/cart-items/entities/cart-item.object';
+
+@ObjectType()
+export class CartObject {
+  @Field(() => Float)
+  subTotal: number;
+
+  @Field(() => Float)
+  discount: number;
+
+  @Field(() => Float)
+  total: number;
+
+  @Field(() => [CartItemObject])
+  items: CartItemObject[];
+}

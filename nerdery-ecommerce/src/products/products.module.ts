@@ -10,4 +10,4 @@ import { ProductsService } from './products.service';
   imports: [CategoriesModule],
   providers: [ProductsResolver, ProductsService, PrismaService, ProductHelperService],
 })
-export class ProductsModule {}
+export class ProductsModule { }
