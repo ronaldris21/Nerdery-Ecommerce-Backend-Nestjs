@@ -1,4 +1,5 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { GenericResponseDto } from 'src/common/dto/generic-response.dto';
 import { IdValidatorService } from 'src/common/services/id-validator/id-validator.service';
 import { ProductCalculatedFieldsService } from 'src/common/services/product-calculations/product-calculated-fields.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -57,7 +58,24 @@ export class CartItemsService {
     };
   }
 
-  // remove(userId: string, productVariationId: string) {
-  //   throw new InternalServerErrorException('Not implemented');
-  // }
+  async delete(userId: string, productVariationId: string): Promise<GenericResponseDto> {
+    try {
+      await this.prisma.cartItem.delete({
+        where: {
+          userId_productVariationId: {
+            productVariationId,
+            userId,
+          },
+        },
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      throw new NotFoundException('Cart item not found.');
+    }
+
+    return {
+      message: `Item remove from the cart`,
+      statusCode: 204,
+    };
+  }
 }

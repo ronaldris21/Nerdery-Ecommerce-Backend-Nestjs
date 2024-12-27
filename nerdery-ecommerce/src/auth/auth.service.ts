@@ -13,7 +13,7 @@ import { RefreshToken, User } from '@prisma/client';
 import ms from 'ms';
 import { ConfigNames, FrontentConfig, JwtConfig } from 'src/common/config/config.interface';
 import { clientRoleName } from 'src/common/constants';
-import { GenericResponse } from 'src/common/dto/generic.dto';
+import { GenericResponseDto } from 'src/common/dto/generic-response.dto';
 import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { v4 as uuid4 } from 'uuid';
@@ -153,7 +153,7 @@ export class AuthService {
     return await this.generateNewTokens(user);
   }
 
-  async signUp(signUpDto: SignUpDto): Promise<GenericResponse> {
+  async signUp(signUpDto: SignUpDto): Promise<GenericResponseDto> {
     const hashedPassword = await this.passwordService.hashPassword(signUpDto.password);
 
     const userExists = await this.userService.getUserByEmail(signUpDto.email);
@@ -190,7 +190,7 @@ export class AuthService {
     });
 
     return {
-      success: true,
+      statusCode: 201,
       message: 'User created successfully, Now you can login',
     };
   }
@@ -243,7 +243,7 @@ export class AuthService {
     });
   }
 
-  async forgotPassword(email: string): Promise<GenericResponse> {
+  async forgotPassword(email: string): Promise<GenericResponseDto> {
     const user = await this.userService.getUserByEmail(email);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -263,14 +263,14 @@ export class AuthService {
 
     // TODO: modificar
     return {
-      success: true,
+      statusCode: 200,
       message: 'Password reset email sent. You have 1 hour to reset your password',
     };
   }
 
   //TODO: generic responses types:
 
-  async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<GenericResponse> {
+  async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<GenericResponseDto> {
     const resetPassword = await this.prisma.passwordReset.findUnique({
       where: {
         resetToken: resetPasswordDto.resetToken,
@@ -315,8 +315,9 @@ export class AuthService {
     //DELETE ALL ACCESS TOKENS FROM CACHE
     await this.removeAccessTokenFromCacheByUserId(resetPassword.userId);
 
+    //TODO: sent email for password reset here
     return {
-      success: true,
+      statusCode: 200,
       message: 'Password reset successfully, now you can login using your new password',
     };
   }
