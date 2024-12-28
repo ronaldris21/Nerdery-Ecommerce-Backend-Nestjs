@@ -1,9 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Injectable } from '@nestjs/common';
+import { CartItem, ProductVariation } from '@prisma/client';
+import { CartItemObject } from 'src/cart-items/entities/cart-item.object';
+import { PriceSummaryInput } from 'src/common/dto/price-summary-input.dto ';
+import { PriceSummary } from 'src/common/dto/price-summary.dto';
+import { DiscountType } from 'src/common/enums/discount-type.enum';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
-export class ProductHelperService {
+export class ProductCalculatedFieldsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async recalculateProductMinMaxPrices(productIds: string[]) {
@@ -63,20 +67,49 @@ export class ProductHelperService {
     await Promise.all(updatePromises);
   }
 
-  async findProductByIdAndValidate(
-    where: Prisma.ProductWhereUniqueInput,
-    includeCategory: boolean = true,
-    includeVariations: boolean = true,
-  ) {
-    const product = await this.prisma.product.findUnique({
-      where,
-      include: { category: includeCategory, productVariations: includeVariations },
-    });
+  calculatePriceSummary(input: PriceSummaryInput): PriceSummary {
+    const { unitPrice, discountType, discount, quantity } = input;
 
-    if (!product) {
-      throw new NotFoundException('Product not found');
+    const subTotal = unitPrice * quantity;
+
+    let calculatedDiscount = 0;
+    if (discountType === DiscountType.PERCENTAGE) {
+      calculatedDiscount = (subTotal * discount) / 100;
+    } else if (discountType === DiscountType.FIXED) {
+      calculatedDiscount = discount * quantity;
     }
 
-    return product;
+    if (calculatedDiscount > subTotal) {
+      calculatedDiscount = subTotal;
+    }
+
+    return {
+      unitPrice,
+      subTotal,
+      discount: calculatedDiscount,
+      total: subTotal - calculatedDiscount,
+    };
+  }
+
+  createCartItemObjectFromProductVariation(
+    cartItem: CartItem,
+    prodVariation: ProductVariation,
+  ): CartItemObject {
+    const priceSummary = this.calculatePriceSummary({
+      discount: Number(prodVariation.discount),
+      discountType: prodVariation.discountType,
+      quantity: cartItem.quantity,
+      unitPrice: Number(prodVariation.price),
+    });
+
+    return {
+      userId: cartItem.userId,
+      unitPrice: priceSummary.unitPrice,
+      subTotal: priceSummary.subTotal,
+      total: priceSummary.total,
+      discount: priceSummary.discount,
+      quantity: cartItem.quantity,
+      productVariationId: cartItem.productVariationId,
+    };
   }
 }

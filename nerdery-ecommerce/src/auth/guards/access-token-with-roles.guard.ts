@@ -40,7 +40,9 @@ export class AccessTokenWithRolesGuard extends AccessTokenGuard {
     }
 
     if (!user.roles.some((role) => requiredRoles.includes(role))) {
-      throw new ForbiddenException('User does not have the required role');
+      throw new ForbiddenException(
+        'User does not have the required role: ' + requiredRoles.join(' or ').toString(),
+      );
     }
 
     return true;

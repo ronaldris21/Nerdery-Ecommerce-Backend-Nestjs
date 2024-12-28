@@ -1,8 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { Gender } from 'src/common/enums/gender.enum';
 import { PaginationMeta } from 'src/common/pagination/pagination-meta.object';
 import { PaginationInput } from 'src/common/pagination/pagination.input';
-import { ProductHelperService } from 'src/common/services/product-calculations.service';
+import { IdValidatorService } from 'src/common/services/id-validator/id-validator.service';
+import { ProductCalculatedFieldsService } from 'src/common/services/product-calculations/product-calculated-fields.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import { CategoriesService } from './../categories/categories.service';
@@ -18,7 +19,8 @@ export class ProductsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly categoriesService: CategoriesService,
-    private readonly productsHelperService: ProductHelperService,
+    private readonly productCalculatedFieldsService: ProductCalculatedFieldsService,
+    private readonly idValidatorService: IdValidatorService,
   ) {}
 
   async findAll(
@@ -110,7 +112,7 @@ export class ProductsService {
   }
 
   async findOne(id: string) {
-    return this.productsHelperService.findProductByIdAndValidate({ id });
+    return this.idValidatorService.findUniqueProductById({ id });
   }
 
   async findByIds(ids: string[]) {
@@ -137,11 +139,11 @@ export class ProductsService {
     const { categoryId, ...rest } = input;
 
     if (!categoryId) {
-      throw new BadRequestException('Category is required');
+      throw new UnprocessableEntityException('Category is required');
     }
 
     if (!(await this.categoriesService.doesCategoryExist(categoryId))) {
-      throw new BadRequestException('Category does not exist');
+      throw new NotFoundException('Category does not exist');
     }
 
     return await this.prisma.product.create({
@@ -166,7 +168,7 @@ export class ProductsService {
       }
     }
 
-    await this.productsHelperService.findProductByIdAndValidate({ id: input.id });
+    await this.idValidatorService.findUniqueProductById({ id: input.id });
 
     return this.prisma.product.update({
       where: { id: input.id },
@@ -183,24 +185,27 @@ export class ProductsService {
   }
 
   async delete(id: string) {
-    await this.productsHelperService.findProductByIdAndValidate({ id }, false, false);
+    await this.idValidatorService.findUniqueProductById({ id }, false, false);
 
     await this.prisma.productVariation.updateMany({
       where: { productId: id },
       data: { isDeleted: true },
     });
-    return await this.prisma.product.update({ where: { id }, data: { isDeleted: true } });
+    return await this.prisma.product.update({
+      where: { id },
+      data: { isDeleted: true },
+    });
   }
 
   async toggleIsEnabled(id: string, isEnabled: boolean) {
-    await this.productsHelperService.findProductByIdAndValidate({ id }, false, false);
+    await this.idValidatorService.findUniqueProductById({ id }, false, false);
 
     await this.prisma.productVariation.updateMany({
       where: { productId: id },
       data: { isEnabled: isEnabled },
     });
     if (isEnabled) {
-      await this.productsHelperService.recalculateProductMinMaxPrices([id]);
+      await this.productCalculatedFieldsService.recalculateProductMinMaxPrices([id]);
     }
     return await this.prisma.product.update({
       where: { id },

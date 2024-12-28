@@ -2,6 +2,7 @@ import { registerEnumType } from '@nestjs/graphql';
 import { DiscountTypeEnum } from '@prisma/client';
 
 // export enum DiscountType {
+//     NONE = 'NONE',
 //     PERCENTAGE = 'PERCENTAGE',
 //     DOLLAR_SIGN = 'DOLLAR_SIGN',
 // }

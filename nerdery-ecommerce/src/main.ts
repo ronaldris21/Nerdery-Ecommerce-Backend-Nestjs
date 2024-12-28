@@ -37,13 +37,14 @@ In a multi-role endpoint you have to specified the role in the header in order t
     new ValidationPipe({
       transform: true,
       forbidNonWhitelisted: true,
+      forbidUnknownValues: true,
       transformOptions: {
         exposeDefaultValues: true,
-        enableImplicitConversion: true, //TODO: CHECK
       },
     }),
   );
 
   await app.listen(process.env.PORT ?? 3000);
 }
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();
