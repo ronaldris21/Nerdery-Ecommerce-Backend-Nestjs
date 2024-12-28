@@ -11,6 +11,7 @@ import { CommonModule } from './common/common.module';
 import config from './common/config/config';
 import { GraphqlModule } from './graphql/graphql.module';
 import { MailModule } from './mail/mail.module';
+import { ProductLikesModule } from './product-likes/product-likes.module';
 import { ProductVariationImagesModule } from './product-variation-images/product-variation-images.module';
 import { ProductVariationsModule } from './product-variations/product-variations.module';
 import { ProductsModule } from './products/products.module';
@@ -33,6 +34,7 @@ import { ProductsModule } from './products/products.module';
     CartModule,
     CommonModule,
     GraphqlModule,
+    ProductLikesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

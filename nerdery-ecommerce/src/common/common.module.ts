@@ -6,6 +6,6 @@ import { ProductCalculatedFieldsService } from './services/product-calculations/
 
 @Module({
   providers: [ProductCalculatedFieldsService, IdValidatorService, PrismaService],
-  exports: [ProductCalculatedFieldsService, IdValidatorService],
+  exports: [ProductCalculatedFieldsService, IdValidatorService, PrismaService],
 })
 export class CommonModule {}
