@@ -97,7 +97,6 @@ export class ProductVariationsService {
     await this.productCalculatedFieldsService.recalculateProductMinMaxPrices([
       prodVariation.productId,
     ]);
-    //TODO: remove from cart if exists and not enabled
     return await this.idValidatorService.findUniqueProductVariationById({ id });
   }
 
@@ -116,7 +115,6 @@ export class ProductVariationsService {
     await this.productCalculatedFieldsService.recalculateProductMinMaxPrices([
       prodVariation.productId,
     ]);
-    //TODO: remove from cart if exists
     return await this.idValidatorService.findUniqueProductVariationById({ id });
   }
 

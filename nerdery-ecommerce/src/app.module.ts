@@ -25,23 +25,6 @@ import { ProductsModule } from './products/products.module';
       load: [config],
     }),
     MailModule,
-    // GraphQLModule.forRoot({
-    //   driver: ApolloDriver,
-    //   autoSchemaFile: join(process.cwd(), 'src/auto-generated-schemas.graphql'),
-    //   playground: true,
-    //   debug: true,
-    //   introspection: true,
-    //   // formatError: (error) => ({
-    //   //   message: Array.isArray(error.extensions['originalError']?.['message'])
-    //   //     ? (error.extensions['originalError']?.['message'] as string[]).join(', ')
-    //   //     : error.message,
-    //   //   path: error.path,
-    //   //   locations: error.locations,
-    //   //   extensions: {
-    //   //     code: error.extensions['code'],
-    //   //   },
-    //   // }),
-    // }),
     ProductsModule,
     ProductVariationsModule,
     CategoriesModule,

@@ -39,8 +39,8 @@ export class ProductVariationObject {
   productId: string;
 
   @Field(() => ProductObject)
-  product?: ProductObject;
+  product: ProductObject;
 
   @Field(() => [ProductVariationImageObject])
-  variationImages?: ProductVariationImageObject[];
+  variationImages: ProductVariationImageObject[];
 }
