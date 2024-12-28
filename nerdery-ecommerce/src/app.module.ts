@@ -1,9 +1,5 @@
-import { join } from 'path';
-
-import { ApolloDriver } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { GraphQLModule } from '@nestjs/graphql';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -13,6 +9,7 @@ import { CartItemsModule } from './cart-items/cart-items.module';
 import { CategoriesModule } from './categories/categories.module';
 import { CommonModule } from './common/common.module';
 import config from './common/config/config';
+import { GraphqlModule } from './graphql/graphql.module';
 import { MailModule } from './mail/mail.module';
 import { ProductVariationImagesModule } from './product-variation-images/product-variation-images.module';
 import { ProductVariationsModule } from './product-variations/product-variations.module';
@@ -28,23 +25,23 @@ import { ProductsModule } from './products/products.module';
       load: [config],
     }),
     MailModule,
-    GraphQLModule.forRoot({
-      driver: ApolloDriver,
-      autoSchemaFile: join(process.cwd(), 'src/auto-generated-schemas.graphql'),
-      playground: true,
-      debug: true,
-      introspection: true,
-      formatError: (error) => ({
-        message: Array.isArray(error.extensions['originalError']?.['message'])
-          ? (error.extensions['originalError']?.['message'] as string[]).join(', ')
-          : error.message,
-        path: error.path,
-        locations: error.locations,
-        extensions: {
-          code: error.extensions['code'],
-        },
-      }),
-    }),
+    // GraphQLModule.forRoot({
+    //   driver: ApolloDriver,
+    //   autoSchemaFile: join(process.cwd(), 'src/auto-generated-schemas.graphql'),
+    //   playground: true,
+    //   debug: true,
+    //   introspection: true,
+    //   // formatError: (error) => ({
+    //   //   message: Array.isArray(error.extensions['originalError']?.['message'])
+    //   //     ? (error.extensions['originalError']?.['message'] as string[]).join(', ')
+    //   //     : error.message,
+    //   //   path: error.path,
+    //   //   locations: error.locations,
+    //   //   extensions: {
+    //   //     code: error.extensions['code'],
+    //   //   },
+    //   // }),
+    // }),
     ProductsModule,
     ProductVariationsModule,
     CategoriesModule,
@@ -52,6 +49,7 @@ import { ProductsModule } from './products/products.module';
     CartItemsModule,
     CartModule,
     CommonModule,
+    GraphqlModule,
   ],
   controllers: [AppController],
   providers: [AppService],

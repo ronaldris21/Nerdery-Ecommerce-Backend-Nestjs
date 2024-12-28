@@ -15,9 +15,21 @@ export class CartItemsService {
   ) {}
 
   async createOrUpdate(input: CartItemInput, userId: string) {
-    const prodVariation = await this.idValidatorService.findUniqueProductVariationById({
-      id: input.productVariationId,
-    });
+    const prodVariation = await this.idValidatorService.findUniqueProductVariationById(
+      {
+        id: input.productVariationId,
+      },
+      true,
+    );
+
+    if (
+      !prodVariation.isEnabled ||
+      !prodVariation.product.isEnabled ||
+      prodVariation.isDeleted ||
+      prodVariation.product.isDeleted
+    ) {
+      throw new ConflictException(`Conflict, product is either deleted or not enabled`);
+    }
 
     if (input.quantity > prodVariation.stock) {
       throw new ConflictException(

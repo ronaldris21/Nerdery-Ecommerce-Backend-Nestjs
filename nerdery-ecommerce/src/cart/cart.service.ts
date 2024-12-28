@@ -12,14 +12,23 @@ export class CartService {
   ) {}
 
   async myCart(userId: string) {
-    const cartItems = await this.prisma.cartItem.findMany({
+    let cartItems = await this.prisma.cartItem.findMany({
       where: {
         userId,
       },
       include: {
-        productVariation: true,
+        productVariation: {
+          include: {
+            product: true,
+            variationImages: true,
+          },
+        },
       },
     });
+
+    cartItems = cartItems.filter(
+      (item) => !item.productVariation.isDeleted && item.productVariation.isEnabled,
+    );
 
     const result: CartObject = {
       items: [],

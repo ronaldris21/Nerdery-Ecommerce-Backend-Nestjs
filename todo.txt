@@ -14,3 +14,7 @@ TODO: feat/stripe-integration
 TODO: feat/Order-Incidents
 TODO: feat/Cleanup-Failed-Orders
 TODO: feat/deploy
+
+
+
+Note: Bad request are only from class validator!
