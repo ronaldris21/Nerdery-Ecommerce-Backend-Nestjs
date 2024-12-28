@@ -1,4 +1,4 @@
-import { Field, Float, ObjectType } from '@nestjs/graphql';
+import { ObjectType, Field, Float } from '@nestjs/graphql';
 import { CartItemObject } from 'src/cart-items/entities/cart-item.object';
 
 @ObjectType()

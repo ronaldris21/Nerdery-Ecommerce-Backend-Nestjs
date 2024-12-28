@@ -191,7 +191,10 @@ export class ProductsService {
       where: { productId: id },
       data: { isDeleted: true },
     });
-    return await this.prisma.product.update({ where: { id }, data: { isDeleted: true } });
+    return await this.prisma.product.update({
+      where: { id },
+      data: { isDeleted: true },
+    });
   }
 
   async toggleIsEnabled(id: string, isEnabled: boolean) {

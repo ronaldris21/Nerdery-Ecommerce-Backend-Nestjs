@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { CartItem, ProductVariation } from '@prisma/client';
+import { CartItemObject } from 'src/cart-items/entities/cart-item.object';
 import { PriceSummaryInput } from 'src/common/dto/price-summary-input.dto ';
 import { PriceSummary } from 'src/common/dto/price-summary.dto';
 import { DiscountType } from 'src/common/enums/discount-type.enum';
@@ -86,6 +88,28 @@ export class ProductCalculatedFieldsService {
       subTotal,
       discount: calculatedDiscount,
       total: subTotal - calculatedDiscount,
+    };
+  }
+
+  createCartItemObjectFromProductVariation(
+    cartItem: CartItem,
+    prodVariation: ProductVariation,
+  ): CartItemObject {
+    const priceSummary = this.calculatePriceSummary({
+      discount: Number(prodVariation.discount),
+      discountType: prodVariation.discountType,
+      quantity: cartItem.quantity,
+      unitPrice: Number(prodVariation.price),
+    });
+
+    return {
+      userId: cartItem.userId,
+      unitPrice: priceSummary.unitPrice,
+      subTotal: priceSummary.subTotal,
+      total: priceSummary.total,
+      discount: priceSummary.discount,
+      quantity: cartItem.quantity,
+      productVariationId: cartItem.productVariationId,
     };
   }
 }

@@ -29,7 +29,8 @@ export class CartItemsResolver {
   @UseGuards(AccessTokenWithRolesGuard)
   @Roles([ROLES.CLIENT])
   deleteCartItem(
-    @Args('productVariationId', { type: () => String }, ParseUUIDPipe) productVariationId: string,
+    @Args('productVariationId', { type: () => String }, ParseUUIDPipe)
+    productVariationId: string,
     @GetUser() user: JwtPayloadDto,
   ) {
     return this.cartItemsService.delete(user.userId, productVariationId);

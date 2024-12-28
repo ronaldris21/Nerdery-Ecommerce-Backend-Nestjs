@@ -26,7 +26,10 @@ export class ProductVariationsService {
 
   async findOne(id: string) {
     const where = { isDeleted: false, isEnabled: true };
-    return await this.idValidatorService.findUniqueProductVariationById({ id, ...where });
+    return await this.idValidatorService.findUniqueProductVariationById({
+      id,
+      ...where,
+    });
   }
 
   async create(input: CreateProductVariationInput) {
@@ -74,7 +77,9 @@ export class ProductVariationsService {
     });
 
     await this.productCalculatedFieldsService.recalculateProductMinMaxPrices([input.productId]);
-    return await this.idValidatorService.findUniqueProductVariationById({ id: input.id });
+    return await this.idValidatorService.findUniqueProductVariationById({
+      id: input.id,
+    });
   }
 
   async toggleIsEnabled(id: string, isEnabled: boolean) {

@@ -40,22 +40,12 @@ export class CartItemsService {
         quantity: input.quantity,
         productVariationId: input.productVariationId,
       },
-      include: {
-        productVariation: true,
-      },
     });
 
-    const priceSummary = this.productCalculatedFieldsService.calculatePriceSummary({
-      discount: Number(cartItem.productVariation.discount),
-      discountType: cartItem.productVariation.discountType,
-      quantity: cartItem.quantity,
-      unitPrice: Number(cartItem.productVariation.price),
-    });
-
-    return {
-      ...cartItem,
-      ...priceSummary,
-    };
+    return this.productCalculatedFieldsService.createCartItemObjectFromProductVariation(
+      cartItem,
+      prodVariation,
+    );
   }
 
   async delete(userId: string, productVariationId: string): Promise<GenericResponseDto> {

@@ -11,23 +11,23 @@ import {
 import { GqlExceptionFilter } from '@nestjs/graphql';
 import { Prisma } from '@prisma/client';
 import { GraphQLFormattedError } from 'graphql';
-import { GenericErrorDto } from 'src/common/dto/generic-error.dto';
 
-function formatGraphQLError({
-  message,
-  error,
-  statusCode,
-}: GenericErrorDto): GraphQLFormattedError {
-  const timestamp = new Date().toISOString();
-  return {
-    message,
-    extensions: {
-      error,
-      statusCode,
-      timestamp,
-    },
-  };
-}
+//TODO: I'm not using this yet
+// function formatGraphQLError({
+//   message,
+//   error,
+//   statusCode,
+// }: GenericErrorDto): GraphQLFormattedError {
+//   const timestamp = new Date().toISOString();
+//   return {
+//     message,
+//     extensions: {
+//       error,
+//       statusCode,
+//       timestamp,
+//     },
+//   };
+// }
 
 @Catch(Prisma.PrismaClientKnownRequestError)
 export class PrismaClientExceptionFilter implements GqlExceptionFilter {

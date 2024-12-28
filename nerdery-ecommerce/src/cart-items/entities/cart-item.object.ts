@@ -33,5 +33,5 @@ export class CartItemObject {
 
   //relationship - resolved fields
   @Field(() => ProductVariationObject)
-  productVariation: ProductVariationObject;
+  productVariation?: ProductVariationObject;
 }
