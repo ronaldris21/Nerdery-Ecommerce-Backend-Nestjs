@@ -156,8 +156,8 @@ type Mutation {
   deleteProductVariation(id: String!): ProductVariationObject!
   createOrUpdateCartItem(cartItemInput: CartItemInput!): CartItemObject!
   deleteCartItem(productVariationId: String!): GenericResponseObject!
-  likeProduct(productId: String!): GenericResponseObject!
-  dislikeProduct(productId: String!): GenericResponseObject!
+  likeProduct(productId: String!): ProductObject!
+  dislikeProduct(productId: String!): ProductObject!
 }
 
 input CreateProductInput {

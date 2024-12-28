@@ -13,7 +13,10 @@ export class IdValidatorService {
   ) {
     const product = await this.prisma.product.findUnique({
       where,
-      include: { category: includeCategory, productVariations: includeVariations },
+      include: {
+        category: includeCategory,
+        productVariations: includeVariations,
+      },
     });
 
     if (!product) {

@@ -16,7 +16,9 @@ registerEnumType(ProductSortableField, { name: 'ProductSortableField' });
 
 @InputType()
 export class SortingProductInput {
-  @Field(() => ProductSortableField, { defaultValue: ProductSortableField.NAME })
+  @Field(() => ProductSortableField, {
+    defaultValue: ProductSortableField.NAME,
+  })
   @IsOptional()
   @IsEnum(ProductSortableField)
   field: ProductSortableField;
