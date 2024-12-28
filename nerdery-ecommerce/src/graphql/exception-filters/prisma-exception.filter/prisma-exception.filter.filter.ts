@@ -3,6 +3,7 @@ import {
   ConflictException,
   GatewayTimeoutException,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -12,10 +13,13 @@ import { GraphQLFormattedError } from 'graphql';
 
 @Catch(Prisma.PrismaClientKnownRequestError)
 export class PrismaClientExceptionFilter implements GqlExceptionFilter {
+  private readonly logger = new Logger(PrismaClientExceptionFilter.name);
+
   catch(exception: Prisma.PrismaClientKnownRequestError): GraphQLFormattedError {
-    // TODO: LOGGER
-    // console.log('\n\n PrismaClientExceptionFilter');
-    // console.log('exception', exception);
+    this.logger.error(
+      `PRISMA Error for ${exception.code} ${exception.message}: }`,
+      exception.stack,
+    );
 
     switch (exception.code) {
       case 'P2002':

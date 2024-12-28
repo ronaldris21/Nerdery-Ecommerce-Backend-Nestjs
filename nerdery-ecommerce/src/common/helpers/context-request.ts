@@ -1,4 +1,4 @@
-import { BadGatewayException, ContextType, ExecutionContext } from '@nestjs/common';
+import { ContextType, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 
 export const getRequestFromContext = (context: ExecutionContext) => {
@@ -10,6 +10,6 @@ export const getRequestFromContext = (context: ExecutionContext) => {
       return gqlContext.getContext().req;
 
     default:
-      throw new BadGatewayException('Invalid context type, only http or graphql');
+      throw new UnauthorizedException(`Unsupported context type: ${context.getType().toString()}`);
   }
 };
