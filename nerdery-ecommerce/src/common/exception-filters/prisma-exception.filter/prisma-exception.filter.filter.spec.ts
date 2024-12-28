@@ -1,5 +1,7 @@
-describe('PrismaExceptionFilterFilter', () => {
+import { PrismaClientExceptionFilter } from './prisma-exception.filter.filter';
+
+describe('PrismaClientExceptionFilter', () => {
   it('should be defined', () => {
-    expect(new PrismaExceptionFilterFilter()).toBeDefined();
+    expect(new PrismaClientExceptionFilter()).toBeDefined();
   });
 });

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { Gender } from 'src/common/enums/gender.enum';
 import { PaginationMeta } from 'src/common/pagination/pagination-meta.object';
 import { PaginationInput } from 'src/common/pagination/pagination.input';
@@ -139,11 +139,11 @@ export class ProductsService {
     const { categoryId, ...rest } = input;
 
     if (!categoryId) {
-      throw new BadRequestException('Category is required');
+      throw new UnprocessableEntityException('Category is required');
     }
 
     if (!(await this.categoriesService.doesCategoryExist(categoryId))) {
-      throw new BadRequestException('Category does not exist');
+      throw new NotFoundException('Category does not exist');
     }
 
     return await this.prisma.product.create({

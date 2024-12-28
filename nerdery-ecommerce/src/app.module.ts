@@ -1,3 +1,5 @@
+import { join } from 'path';
+
 import { ApolloDriver } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
@@ -26,39 +28,22 @@ import { ProductsModule } from './products/products.module';
       load: [config],
     }),
     MailModule,
-    // GraphQLModule.forRootAsync({
-    //   driver: ApolloDriver,
-    //   useFactory: (config: ConfigService) => {
-    //     return {
-    //       autoSchemaFile: true,
-    //       playground: true,
-    //       debug: true,
-    //       introspection: true,
-    //       // formatError: (error:): GraphQLFormattedError => {
-    //       //   const originalError = error.extensions
-    //       //     ?.originalError as PrismaClientUnknownRequestError;
-
-    //       //   if (!originalError) {
-    //       //     return {
-    //       //       message: error.message,
-    //       //       code: error.extensions?.code,
-    //       //     };
-    //       //   }
-    //       //   return {
-    //       //     message: originalError.message,
-    //       //     statusCode: error.extensions?.code,
-    //       //   };
-    //       // },
-    //     };
-    //   },
-    // }),
-
     GraphQLModule.forRoot({
       driver: ApolloDriver,
-      autoSchemaFile: true,
+      autoSchemaFile: join(process.cwd(), 'src/auto-generated-schemas.graphql'),
       playground: true,
       debug: true,
       introspection: true,
+      formatError: (error) => ({
+        message: Array.isArray(error.extensions['originalError']?.['message'])
+          ? (error.extensions['originalError']?.['message'] as string[]).join(', ')
+          : error.message,
+        path: error.path,
+        locations: error.locations,
+        extensions: {
+          code: error.extensions['code'],
+        },
+      }),
     }),
     ProductsModule,
     ProductVariationsModule,

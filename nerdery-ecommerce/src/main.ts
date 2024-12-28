@@ -3,6 +3,8 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
+import { AllExceptionsFilter } from './common/exception-filters/all-exceptions/all-exceptions.filter';
+import { HttpExceptionFilter } from './common/exception-filters/http-exception/http-exception.filter';
 import { PrismaClientExceptionFilter } from './common/exception-filters/prisma-exception.filter/prisma-exception.filter.filter';
 
 async function bootstrap() {
@@ -38,14 +40,19 @@ In a multi-role endpoint you have to specified the role in the header in order t
     new ValidationPipe({
       transform: true,
       forbidNonWhitelisted: true,
+      forbidUnknownValues: true,
       transformOptions: {
         exposeDefaultValues: true,
-        enableImplicitConversion: true, //TODO: CHECK
       },
     }),
   );
 
-  app.useGlobalFilters(new PrismaClientExceptionFilter());
+  // app.useGlobalFilters(new PrismaClientExceptionFilter());
+  app.useGlobalFilters(
+    new PrismaClientExceptionFilter(),
+    new HttpExceptionFilter(),
+    new AllExceptionsFilter(),
+  );
 
   await app.listen(process.env.PORT ?? 3000);
 }

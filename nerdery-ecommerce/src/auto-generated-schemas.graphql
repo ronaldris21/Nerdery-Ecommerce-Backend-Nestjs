@@ -1,0 +1,204 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type ProductVariationImageObject {
+  id: String!
+  imageUrl: String!
+  productVariationId: String!
+  productVariation: ProductVariationObject!
+}
+
+type CategoryObject {
+  id: ID!
+  name: String!
+  parentId: ID
+  subCategories: [CategoryObject!]
+  products: [ProductObject!]!
+}
+
+type ProductObject {
+  id: ID!
+  name: String!
+  gender: Gender!
+  thumbnailUrl: String
+  categoryId: ID!
+  description: String
+  isEnabled: Boolean!
+  isDeleted: Boolean!
+  likesCount: Float!
+  minPrice: Float!
+  maxPrice: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  category: CategoryObject!
+  productVariations: [ProductVariationObject!]
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  UNISEX
+  KIDS
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type ProductVariationObject {
+  id: ID!
+  price: Float!
+  discount: Float
+  discountType: DiscountType
+  size: String!
+  color: String!
+  stock: Float!
+  stockRefilledAt: String!
+  isEnabled: Boolean!
+  isDeleted: Boolean!
+  productId: String!
+  product: ProductObject!
+  variationImages: [ProductVariationImageObject!]!
+}
+
+enum DiscountType {
+  NONE
+  PERCENTAGE
+  FIXED
+}
+
+type CartItemObject {
+  userId: String!
+  productVariationId: String!
+  quantity: Int!
+  unitPrice: Float!
+  subTotal: Float!
+  discount: Float!
+  total: Float!
+  productVariation: ProductVariationObject!
+}
+
+type CartObject {
+  subTotal: Float!
+  discount: Float!
+  total: Float!
+  items: [CartItemObject!]!
+}
+
+type GenericResponseObject {
+  message: String!
+  statusCode: Float!
+}
+
+type PaginationMeta {
+  totalItems: Int!
+  totalPages: Int!
+  limit: Int!
+  page: Int!
+}
+
+type ProductsPagination {
+  collection: [ProductObject!]!
+  meta: PaginationMeta!
+}
+
+type Query {
+  products(filter: ProductFiltersInput, sortBy: SortingProductInput, pagination: PaginationInput): ProductsPagination!
+  allProducts(filter: ProductFiltersInput, sortBy: SortingProductInput, pagination: PaginationInput): ProductsPagination!
+  productById(id: String!): ProductObject
+  categories(search: String): [CategoryObject!]!
+  productVariations(productId: String!): [ProductVariationObject!]!
+  productVariationById(id: String!): ProductVariationObject
+  cart: CartObject!
+}
+
+input ProductFiltersInput {
+  gender: Gender
+  categoryId: String
+  search: String
+  minPrice: Float
+  maxPrice: Float
+}
+
+input SortingProductInput {
+  field: ProductSortableField! = NAME
+  order: SortOrder! = ASC
+}
+
+enum ProductSortableField {
+  NAME
+  CREATED_AT
+  UPDATED_AT
+  LIKES_COUNT
+  PRICE
+}
+
+enum SortOrder {
+  ASC
+  DESC
+}
+
+input PaginationInput {
+  page: Int = 1
+  limit: Int = 20
+}
+
+type Mutation {
+  createProduct(input: CreateProductInput!): ProductObject!
+  updateProduct(input: UpdateProductInput!): ProductObject!
+  deleteProduct(id: String!): ProductObject!
+  toggleProductEnable(id: String!, isEnabled: Boolean!): ProductObject!
+  createProductVariation(input: CreateProductVariationInput!): ProductVariationObject!
+  updateProductVariation(input: UpdateProductVariationInput!): ProductVariationObject!
+  toggleProductVariation(id: String!, isEnabled: Boolean!): ProductVariationObject!
+  deleteProductVariation(id: String!): ProductVariationObject!
+  createOrUpdateCartItem(cartItemInput: CartItemInput!): CartItemObject!
+  deleteCartItem(productVariationId: String!): GenericResponseObject!
+}
+
+input CreateProductInput {
+  name: String!
+  gender: Gender!
+  categoryId: String!
+  description: String!
+  isEnabled: Boolean! = false
+}
+
+input UpdateProductInput {
+  name: String
+  gender: Gender
+  categoryId: String
+  description: String
+  isEnabled: Boolean = false
+  id: String!
+}
+
+input CreateProductVariationInput {
+  productId: String!
+  stock: Float!
+  price: Float!
+  discount: Float = 0
+  discountType: DiscountType = NONE
+  size: String!
+  color: String!
+  isEnabled: Boolean! = true
+}
+
+input UpdateProductVariationInput {
+  productId: String
+  stock: Float
+  price: Float
+  discount: Float = 0
+  discountType: DiscountType = NONE
+  size: String
+  color: String
+  isEnabled: Boolean = true
+  id: String!
+}
+
+input CartItemInput {
+  quantity: Int!
+  productVariationId: String!
+}

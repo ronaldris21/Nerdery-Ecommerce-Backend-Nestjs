@@ -1,11 +1,11 @@
 import { debug } from 'console';
 
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -216,11 +216,11 @@ export class AuthService {
       user = this.jwtService.decode(accessToken) as JwtPayloadDto;
     } catch (error) {
       debug(error);
-      throw new BadRequestException('Invalid access token, or not sent');
+      throw new UnprocessableEntityException('Invalid access token, or not sent');
     }
 
     if (!user) {
-      throw new BadRequestException('Invalid access token, or not sent');
+      throw new UnprocessableEntityException('Invalid access token, or not sent');
     }
 
     // Validate refresh token
