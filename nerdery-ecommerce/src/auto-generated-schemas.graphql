@@ -92,6 +92,45 @@ type GenericResponseObject {
   statusCode: Float!
 }
 
+type ApprovedStatusPayload {
+  isApproved: Boolean!
+  status: OrderStatus!
+}
+
+enum OrderStatus {
+  WAITING_PAYMENT
+  RETRY_PAYMENT
+  PAYMENT_APPROVED
+  CANCELED
+  COMPLETED
+}
+
+type OrderItemObject {
+  id: ID!
+  orderId: ID!
+  productVariationId: ID!
+  unitPrice: Float!
+  subTotal: Float!
+  discount: Float!
+  total: Float!
+  productVariation: ProductVariationObject!
+}
+
+type ClientOrderObject {
+  id: ID!
+  userId: ID!
+  currency: String!
+  subTotal: Float!
+  discount: Float!
+  total: Float!
+  status: OrderStatus!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  isDeleted: Boolean!
+  isStockReserved: Boolean!
+  orderItems: [OrderItemObject!]!
+}
+
 type PaginationMeta {
   totalItems: Int!
   totalPages: Int!
@@ -112,6 +151,7 @@ type Query {
   productVariations(productId: String!): [ProductVariationObject!]!
   productVariationById(id: String!): ProductVariationObject
   cart: CartObject!
+  orderPaymentApprovedStatus(orderId: String!): ApprovedStatusPayload!
 }
 
 input ProductFiltersInput {
@@ -158,6 +198,7 @@ type Mutation {
   deleteCartItem(productVariationId: String!): GenericResponseObject!
   likeProduct(productId: String!): ProductObject!
   dislikeProduct(productId: String!): ProductObject!
+  createOrder: ClientOrderObject!
 }
 
 input CreateProductInput {

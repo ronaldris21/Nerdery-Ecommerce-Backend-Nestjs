@@ -1,10 +1,6 @@
-import {
-  PrismaClient,
-  Prisma,
-  GenderEnum,
-  DiscountTypeEnum,
-} from '@prisma/client';
+import { PrismaClient, Prisma, GenderEnum, DiscountTypeEnum } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+
 import { generateFakeProduct } from './faker-products';
 
 const clientRoleName = 'Client';
@@ -21,12 +17,8 @@ const rolesData: Prisma.RoleCreateInput[] = [
   },
 ];
 
-const usersWithRolesData = async (
-  managerRoleId: string,
-  clientRoleId: string,
-) => {
-  const roundsOfHash =
-    parseInt(process.env.SECURITY_BCRYPT_SALT_OR_ROUND, 10) || 10;
+const usersWithRolesData = async (managerRoleId: string, clientRoleId: string) => {
+  const roundsOfHash = parseInt(process.env.SECURITY_BCRYPT_SALT_OR_ROUND, 10) || 10;
 
   const usersData: Prisma.UserCreateInput[] = [
     {
@@ -480,8 +472,7 @@ const productDataWomen: Prisma.ProductCreateInput[] = [
             create: [
               { imageUrl: 'https://example.com/womens-sweatshirt-white.jpg' },
               {
-                imageUrl:
-                  'https://example.com/womens-sweatshirt-white-side.jpg',
+                imageUrl: 'https://example.com/womens-sweatshirt-white-side.jpg',
               },
             ],
           },
@@ -517,8 +508,7 @@ const productDataWomen: Prisma.ProductCreateInput[] = [
             create: [
               { imageUrl: 'https://example.com/womens-sweatshirt-black.jpg' },
               {
-                imageUrl:
-                  'https://example.com/womens-sweatshirt-black-side.jpg',
+                imageUrl: 'https://example.com/womens-sweatshirt-black-side.jpg',
               },
             ],
           },
@@ -554,25 +544,28 @@ async function insertProducts(products: Prisma.ProductCreateInput[]) {
 async function main() {
   console.log(`Start seeding ...`);
   console.log(`deleting all data ...`);
+  await prisma.cartItem.deleteMany();
+  await prisma.orderItem.deleteMany();
+  await prisma.orderIncident.deleteMany();
+  await prisma.stripePayment.deleteMany();
+  await prisma.order.deleteMany();
+
+  await prisma.productLike.deleteMany();
   await prisma.variationImage.deleteMany();
   await prisma.productVariation.deleteMany();
   await prisma.product.deleteMany();
   await prisma.category.deleteMany();
+
   await prisma.refreshToken.deleteMany();
   await prisma.passwordReset.deleteMany();
-  await prisma.userRole.deleteMany();
   await prisma.rolePermission.deleteMany();
-  await prisma.cartItem.deleteMany();
   await prisma.orderIncident.deleteMany();
-  await prisma.stripePayment.deleteMany();
-  await prisma.orderItem.deleteMany();
-  await prisma.order.deleteMany();
-  await prisma.user.deleteMany();
+
   await prisma.userRole.deleteMany();
   await prisma.rolePermission.deleteMany();
   await prisma.permission.deleteMany();
   await prisma.role.deleteMany();
-
+  await prisma.user.deleteMany();
 
   console.log(`Start seeding ...`);
 
@@ -580,12 +573,8 @@ async function main() {
   await prisma.role.createMany({ data: rolesData, skipDuplicates: true });
 
   console.log(`Creating users ...`);
-  const clientRoleId = (
-    await prisma.role.findFirst({ where: { name: managerRoleName } })
-  ).id;
-  const managerRoleId = (
-    await prisma.role.findFirst({ where: { name: managerRoleName } })
-  ).id;
+  const clientRoleId = (await prisma.role.findFirst({ where: { name: managerRoleName } })).id;
+  const managerRoleId = (await prisma.role.findFirst({ where: { name: managerRoleName } })).id;
 
   const users = await usersWithRolesData(managerRoleId, clientRoleId);
   for (const user of users) {
@@ -608,7 +597,7 @@ async function main() {
 
   for (let i = 0; i < 25; i++) {
     console.log(`Creating fake product round: ${i} ...`);
-    await setTimeout(() => { }, 1000);
+    await setTimeout(() => {}, 1000);
     await insertProducts(generateFakeProduct());
   }
 
@@ -618,14 +607,12 @@ async function main() {
   });
 
   const updatePromises = products.map(async (product) => {
-
-    const prices = product.productVariations.map(p => Number(p.price));
+    const prices = product.productVariations.map((p) => Number(p.price));
 
     const minPrice = prices.length > 0 ? Math.min(...prices) : product.minPrice;
     const maxPrice = prices.length > 0 ? Math.max(...prices) : product.maxPrice;
 
-
-    let newData = {};
+    const newData = {};
     if (minPrice) newData['minPrice'] = minPrice;
     if (maxPrice) newData['maxPrice'] = maxPrice;
 

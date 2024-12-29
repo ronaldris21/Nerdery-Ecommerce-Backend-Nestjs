@@ -52,4 +52,15 @@ export class CartService {
       return resultAcc;
     }, result);
   }
+
+  async deleteAllItems(userId: string, productVariationIds: string[]) {
+    await this.prisma.cartItem.deleteMany({
+      where: {
+        userId,
+        productVariationId: {
+          in: productVariationIds,
+        },
+      },
+    });
+  }
 }

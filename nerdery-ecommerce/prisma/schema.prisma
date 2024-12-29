@@ -29,6 +29,7 @@ enum DiscountTypeEnum {
 
 enum OrderStatusEnum {
   WAITING_PAYMENT
+  RETRY_PAYMENT
   PAYMENT_APPROVED
   CANCELED
   COMPLETED
@@ -215,7 +216,7 @@ model Order {
   status          OrderStatusEnum @default(WAITING_PAYMENT)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
-  isDeleted       Boolean
+  isDeleted       Boolean         @default(false)
   isStockReserved Boolean
   user            User            @relation(fields: [userId], references: [id])
   orderItems      OrderItem[]

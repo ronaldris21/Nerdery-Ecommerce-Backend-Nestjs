@@ -54,4 +54,8 @@ export class MailService {
 
     return { message: 'Confirmation email sent' };
   }
+
+  async sendLowStockEmail(data: any) {
+    setTimeout(() => console.log('\n\n EMAIL SENT: ' + JSON.stringify(data)), 5000);
+  }
 }
