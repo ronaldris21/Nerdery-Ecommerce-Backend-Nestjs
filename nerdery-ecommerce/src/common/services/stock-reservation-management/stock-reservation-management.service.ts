@@ -28,7 +28,7 @@ export class StockReservationManagementService {
           });
 
           //TODO: send email low stock email notification
-          if (productVariation.stock < 3 && productVariation.stock > 0) {
+          if (productVariation.stock <= 5 && productVariation.stock > 0) {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.mailService.sendLowStockEmail(productVariation);
           }

@@ -23,7 +23,6 @@ export class OrdersResolver {
     @Args('orderId', { type: () => String }, ParseUUIDPipe)
     orderId: string,
   ) {
-    console.log(orderId);
     return this.ordersService.getPaymentApprovedStatus(orderId);
   }
 

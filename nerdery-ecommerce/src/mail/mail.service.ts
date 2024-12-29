@@ -1,13 +1,17 @@
 import { debug } from 'console';
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
-import { User } from '@prisma/client';
+import { ProductVariation, User } from '@prisma/client';
 import { JwtPayloadDto } from 'src/auth/dto/jwtPayload.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class MailService {
-  constructor(private mailerService: MailerService) {}
+  constructor(
+    private mailerService: MailerService,
+    private readonly prismaService: PrismaService,
+  ) {}
 
   async sendWelcomeEmail(to: string, name: string): Promise<void> {
     try {
@@ -55,7 +59,90 @@ export class MailService {
     return { message: 'Confirmation email sent' };
   }
 
-  async sendLowStockEmail(data: any) {
-    setTimeout(() => console.log('\n\n EMAIL SENT: ' + JSON.stringify(data)), 5000);
+  // public async sendProductDetailsEmail(
+  //   user: JwtPayloadDto,
+  //   product: ProductObject,
+  //   variations: ProductVariationObject[],
+  // ): Promise<void> {
+  //   // 1) Construimos data para la plantilla
+
+  async sendLowStockEmail(prodVariation: ProductVariation) {
+    setTimeout(async () => {
+      const logger = new Logger('MailService');
+      logger.log('SENDING LOW STOCK EMAIL');
+
+      //last liked and not bought user:
+      const likes = await this.prismaService.productLike.findMany({
+        where: {
+          productId: prodVariation.productId,
+        },
+        orderBy: {
+          likedAt: 'desc',
+        },
+      });
+
+      //Check on orderItems the productVariationId! Include the order to get the id of the user. Check if the user is not in the list of likes.
+      const orderItems = await this.prismaService.orderItem.findMany({
+        where: {
+          productVariationId: prodVariation.id,
+        },
+        include: {
+          order: {
+            select: {
+              userId: true,
+            },
+          },
+        },
+      });
+
+      //Create a map to make a direct search, if null then the user is not in the list of likes.
+      const usersWhoBought = orderItems.map((orderItem) => orderItem.order.userId);
+
+      let firstValidUserId = null;
+      for (const like of likes) {
+        if (!usersWhoBought.includes(like.userId)) {
+          firstValidUserId = like.userId;
+          break;
+        }
+      }
+
+      if (!firstValidUserId) {
+        return;
+      }
+
+      const userToSendEmail = await this.prismaService.user.findFirst({
+        where: {
+          id: firstValidUserId,
+        },
+      });
+
+      const productVariationFullDetails = await this.prismaService.productVariation.findFirst({
+        where: {
+          id: prodVariation.id,
+        },
+        include: {
+          product: true,
+          variationImages: true,
+        },
+      });
+
+      const templateData = {
+        user: userToSendEmail,
+        productVariation: productVariationFullDetails,
+      };
+
+      await this.mailerService.sendMail({
+        to: userToSendEmail.email,
+        subject: `Low Stock: ${productVariationFullDetails.product.name}!`,
+        template: './low-stock-email',
+        context: templateData,
+      });
+
+      logger.log(`Email sent to: ${userToSendEmail.email}`);
+      logger.log(`Product name: ${productVariationFullDetails.product.name}`);
+      logger.log(`Product ID: ${productVariationFullDetails.product.id}`);
+      logger.log(`Product Variation ID: ${productVariationFullDetails.id}`);
+      logger.log(`Product Variation Stock: ${productVariationFullDetails.stock}`);
+    }, 1);
   }
 }

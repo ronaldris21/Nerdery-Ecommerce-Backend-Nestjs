@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { PrismaClient, Prisma, GenderEnum, DiscountTypeEnum } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
@@ -7,6 +8,10 @@ const clientRoleName = 'Client';
 const managerRoleName = 'Manager';
 
 const prisma = new PrismaClient();
+
+const createImageURL = () => {
+  return 'https://upload.wikimedia.org/wikipedia/en/c/cb/Monkey_D_Luffy.png';
+};
 
 const rolesData: Prisma.RoleCreateInput[] = [
   {
@@ -62,7 +67,7 @@ const productData: Prisma.ProductCreateInput[] = [
   {
     name: 'Running Shoes',
     gender: GenderEnum.UNISEX,
-    thumbnailUrl: 'https://picsum.photos/200/300',
+    thumbnailUrl: createImageURL(),
     description: 'High-performance running shoes for all terrains.',
     isEnabled: true,
     isDeleted: false,
@@ -94,10 +99,7 @@ const productData: Prisma.ProductCreateInput[] = [
           isEnabled: true,
           isDeleted: false,
           variationImages: {
-            create: [
-              { imageUrl: 'https://picsum.photos/200/300' },
-              { imageUrl: 'https://picsum.photos/200/300' },
-            ],
+            create: [{ imageUrl: createImageURL() }, { imageUrl: createImageURL() }],
           },
         },
         {
@@ -110,10 +112,7 @@ const productData: Prisma.ProductCreateInput[] = [
           isEnabled: true,
           isDeleted: false,
           variationImages: {
-            create: [
-              { imageUrl: 'https://picsum.photos/200/300' },
-              { imageUrl: 'https://picsum.photos/200/300' },
-            ],
+            create: [{ imageUrl: createImageURL() }, { imageUrl: createImageURL() }],
           },
         },
         {
@@ -126,10 +125,7 @@ const productData: Prisma.ProductCreateInput[] = [
           isEnabled: true,
           isDeleted: false,
           variationImages: {
-            create: [
-              { imageUrl: 'https://picsum.photos/200/300' },
-              { imageUrl: 'https://picsum.photos/200/300' },
-            ],
+            create: [{ imageUrl: createImageURL() }, { imageUrl: createImageURL() }],
           },
         },
       ],
@@ -148,7 +144,7 @@ const productData: Prisma.ProductCreateInput[] = [
       },
     },
     gender: GenderEnum.MALE,
-    thumbnailUrl: 'https://picsum.photos/200/300',
+    thumbnailUrl: createImageURL(),
     description: 'Stylish and comfortable sports jacket.',
     isEnabled: true,
     isDeleted: false,
@@ -169,10 +165,7 @@ const productData: Prisma.ProductCreateInput[] = [
           isEnabled: true,
           isDeleted: false,
           variationImages: {
-            create: [
-              { imageUrl: 'https://picsum.photos/200/300' },
-              { imageUrl: 'https://picsum.photos/200/300' },
-            ],
+            create: [{ imageUrl: createImageURL() }, { imageUrl: createImageURL() }],
           },
         },
         {
@@ -185,10 +178,7 @@ const productData: Prisma.ProductCreateInput[] = [
           isEnabled: true,
           isDeleted: false,
           variationImages: {
-            create: [
-              { imageUrl: 'https://picsum.photos/200/300' },
-              { imageUrl: 'https://picsum.photos/200/300' },
-            ],
+            create: [{ imageUrl: createImageURL() }, { imageUrl: createImageURL() }],
           },
         },
         {
@@ -201,10 +191,7 @@ const productData: Prisma.ProductCreateInput[] = [
           isEnabled: true,
           isDeleted: false,
           variationImages: {
-            create: [
-              { imageUrl: 'https://picsum.photos/200/300' },
-              { imageUrl: 'https://picsum.photos/200/300' },
-            ],
+            create: [{ imageUrl: createImageURL() }, { imageUrl: createImageURL() }],
           },
         },
       ],
@@ -217,7 +204,7 @@ const productDataMen: Prisma.ProductCreateInput[] = [
   {
     name: 'Track Pants',
     gender: GenderEnum.MALE,
-    thumbnailUrl: 'https://example.com/mens-track-pants.jpg',
+    thumbnailUrl: createImageURL(),
     description: 'Comfortable and durable track pants for men.',
     isEnabled: true,
     isDeleted: false,
@@ -245,9 +232,9 @@ const productDataMen: Prisma.ProductCreateInput[] = [
           isDeleted: false,
           variationImages: {
             create: [
-              { imageUrl: 'https://example.com/mens-track-pants-black.jpg' },
+              { imageUrl: createImageURL() },
               {
-                imageUrl: 'https://example.com/mens-track-pants-black-side.jpg',
+                imageUrl: createImageURL(),
               },
             ],
           },
@@ -263,9 +250,9 @@ const productDataMen: Prisma.ProductCreateInput[] = [
           isDeleted: false,
           variationImages: {
             create: [
-              { imageUrl: 'https://example.com/mens-track-pants-blue.jpg' },
+              { imageUrl: createImageURL() },
               {
-                imageUrl: 'https://example.com/mens-track-pants-blue-back.jpg',
+                imageUrl: createImageURL(),
               },
             ],
           },
@@ -281,9 +268,9 @@ const productDataMen: Prisma.ProductCreateInput[] = [
           isDeleted: false,
           variationImages: {
             create: [
-              { imageUrl: 'https://example.com/mens-track-pants-grey.jpg' },
+              { imageUrl: createImageURL() },
               {
-                imageUrl: 'https://example.com/mens-track-pants-grey-side.jpg',
+                imageUrl: createImageURL(),
               },
             ],
           },
@@ -294,7 +281,7 @@ const productDataMen: Prisma.ProductCreateInput[] = [
   {
     name: 'Sweatpants',
     gender: GenderEnum.MALE,
-    thumbnailUrl: 'https://example.com/mens-sweatpants.jpg',
+    thumbnailUrl: createImageURL(),
     description: 'Soft and cozy sweatpants for everyday wear.',
     isEnabled: true,
     isDeleted: false,
@@ -322,9 +309,9 @@ const productDataMen: Prisma.ProductCreateInput[] = [
           isDeleted: false,
           variationImages: {
             create: [
-              { imageUrl: 'https://example.com/mens-sweatpants-black.jpg' },
+              { imageUrl: createImageURL() },
               {
-                imageUrl: 'https://example.com/mens-sweatpants-black-back.jpg',
+                imageUrl: createImageURL(),
               },
             ],
           },
@@ -339,10 +326,7 @@ const productDataMen: Prisma.ProductCreateInput[] = [
           isEnabled: true,
           isDeleted: false,
           variationImages: {
-            create: [
-              { imageUrl: 'https://example.com/mens-sweatpants-grey.jpg' },
-              { imageUrl: 'https://example.com/mens-sweatpants-grey-side.jpg' },
-            ],
+            create: [{ imageUrl: createImageURL() }, { imageUrl: createImageURL() }],
           },
         },
         {
@@ -355,10 +339,7 @@ const productDataMen: Prisma.ProductCreateInput[] = [
           isEnabled: true,
           isDeleted: false,
           variationImages: {
-            create: [
-              { imageUrl: 'https://example.com/mens-sweatpants-blue.jpg' },
-              { imageUrl: 'https://example.com/mens-sweatpants-blue-back.jpg' },
-            ],
+            create: [{ imageUrl: createImageURL() }, { imageUrl: createImageURL() }],
           },
         },
       ],
@@ -371,7 +352,7 @@ const productDataWomen: Prisma.ProductCreateInput[] = [
   {
     name: 'Hoodie',
     gender: GenderEnum.FEMALE,
-    thumbnailUrl: 'https://example.com/womens-hoodie.jpg',
+    thumbnailUrl: createImageURL(),
     description: 'Stylish and warm hoodie for women.',
     isEnabled: true,
     isDeleted: false,
@@ -398,10 +379,7 @@ const productDataWomen: Prisma.ProductCreateInput[] = [
           isEnabled: true,
           isDeleted: false,
           variationImages: {
-            create: [
-              { imageUrl: 'https://example.com/womens-hoodie-pink.jpg' },
-              { imageUrl: 'https://example.com/womens-hoodie-pink-back.jpg' },
-            ],
+            create: [{ imageUrl: createImageURL() }, { imageUrl: createImageURL() }],
           },
         },
         {
@@ -414,10 +392,7 @@ const productDataWomen: Prisma.ProductCreateInput[] = [
           isEnabled: true,
           isDeleted: false,
           variationImages: {
-            create: [
-              { imageUrl: 'https://example.com/womens-hoodie-grey.jpg' },
-              { imageUrl: 'https://example.com/womens-hoodie-grey-side.jpg' },
-            ],
+            create: [{ imageUrl: createImageURL() }, { imageUrl: createImageURL() }],
           },
         },
         {
@@ -430,10 +405,7 @@ const productDataWomen: Prisma.ProductCreateInput[] = [
           isEnabled: true,
           isDeleted: false,
           variationImages: {
-            create: [
-              { imageUrl: 'https://example.com/womens-hoodie-black.jpg' },
-              { imageUrl: 'https://example.com/womens-hoodie-black-back.jpg' },
-            ],
+            create: [{ imageUrl: createImageURL() }, { imageUrl: createImageURL() }],
           },
         },
       ],
@@ -442,7 +414,7 @@ const productDataWomen: Prisma.ProductCreateInput[] = [
   {
     name: 'Sweatshirt',
     gender: GenderEnum.FEMALE,
-    thumbnailUrl: 'https://example.com/womens-sweatshirt.jpg',
+    thumbnailUrl: createImageURL(),
     description: 'Cozy sweatshirt with a trendy design.',
     isEnabled: true,
     isDeleted: false,
@@ -470,9 +442,9 @@ const productDataWomen: Prisma.ProductCreateInput[] = [
           isDeleted: false,
           variationImages: {
             create: [
-              { imageUrl: 'https://example.com/womens-sweatshirt-white.jpg' },
+              { imageUrl: createImageURL() },
               {
-                imageUrl: 'https://example.com/womens-sweatshirt-white-side.jpg',
+                imageUrl: createImageURL(),
               },
             ],
           },
@@ -488,9 +460,9 @@ const productDataWomen: Prisma.ProductCreateInput[] = [
           isDeleted: false,
           variationImages: {
             create: [
-              { imageUrl: 'https://example.com/womens-sweatshirt-blue.jpg' },
+              { imageUrl: createImageURL() },
               {
-                imageUrl: 'https://example.com/womens-sweatshirt-blue-back.jpg',
+                imageUrl: createImageURL(),
               },
             ],
           },
@@ -506,9 +478,9 @@ const productDataWomen: Prisma.ProductCreateInput[] = [
           isDeleted: false,
           variationImages: {
             create: [
-              { imageUrl: 'https://example.com/womens-sweatshirt-black.jpg' },
+              { imageUrl: createImageURL() },
               {
-                imageUrl: 'https://example.com/womens-sweatshirt-black-side.jpg',
+                imageUrl: createImageURL(),
               },
             ],
           },
@@ -561,11 +533,11 @@ async function main() {
   await prisma.rolePermission.deleteMany();
   await prisma.orderIncident.deleteMany();
 
-  await prisma.userRole.deleteMany();
-  await prisma.rolePermission.deleteMany();
-  await prisma.permission.deleteMany();
-  await prisma.role.deleteMany();
-  await prisma.user.deleteMany();
+  // await prisma.userRole.deleteMany();
+  // await prisma.rolePermission.deleteMany();
+  // await prisma.permission.deleteMany();
+  // await prisma.role.deleteMany();
+  // await prisma.user.deleteMany();
 
   console.log(`Start seeding ...`);
 
