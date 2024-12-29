@@ -38,9 +38,9 @@ const usersWithRolesData = async (managerRoleId: string, clientRoleId: string) =
       },
     },
     {
-      firstName: 'Ashley',
+      firstName: 'Xavier',
       lastName: 'Kai',
-      email: 'ashley@ravn.co',
+      email: 'retejada@alu.ucam.edu',
       password: await bcrypt.hash('12345678', roundsOfHash),
       createdAt: new Date(),
       userRoles: {
@@ -623,6 +623,15 @@ async function main() {
   });
 
   await Promise.all(updatePromises);
+
+  console.log(`Like all products from retejada@alu.ucam.edu user`);
+  const retejada = await prisma.user.findFirst({ where: { email: 'retejada@alu.ucam.edu' } });
+  await prisma.productLike.createMany({
+    data: products.map((p) => ({
+      userId: retejada.id,
+      productId: p.id,
+    })),
+  });
 
   console.log(`Seeding finished.`);
 }
