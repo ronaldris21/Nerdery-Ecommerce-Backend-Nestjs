@@ -16,6 +16,7 @@ import { ProductLikesModule } from './product-likes/product-likes.module';
 import { ProductVariationImagesModule } from './product-variation-images/product-variation-images.module';
 import { ProductVariationsModule } from './product-variations/product-variations.module';
 import { ProductsModule } from './products/products.module';
+import { StripeModule } from './stripe/stripe.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { ProductsModule } from './products/products.module';
     GraphqlModule,
     ProductLikesModule,
     OrdersModule,
+    StripeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

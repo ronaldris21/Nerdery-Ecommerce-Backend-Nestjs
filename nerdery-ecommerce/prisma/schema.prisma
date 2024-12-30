@@ -36,14 +36,13 @@ enum OrderStatusEnum {
 }
 
 enum StripePaymentIntentEnum {
-  REQUIRES_PAYMENT_METHOD
-  REQUIRES_CONFIRMATION
-  REQUIRES_ACTION
-  PROCESSING
-  SUCCEEDED
-  REQUIRES_CAPTURE
-  CANCELED
-  FAILED
+  canceled
+  processing
+  requires_action
+  requires_capture
+  requires_confirmation
+  requires_payment_method
+  succeeded
 }
 
 // PERMISSION RELATED MODELS

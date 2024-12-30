@@ -129,6 +129,8 @@ type ClientOrderObject {
   isDeleted: Boolean!
   isStockReserved: Boolean!
   orderItems: [OrderItemObject!]!
+  clientSecret: String!
+  paymentUrl: String!
 }
 
 type PaginationMeta {

@@ -11,7 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { RefreshToken, User } from '@prisma/client';
 import ms from 'ms';
-import { ConfigNames, FrontentConfig, JwtConfig } from 'src/common/config/config.interface';
+import { ConfigNames, FrontendConfig, JwtConfig } from 'src/common/config/config.interface';
 import { clientRoleName } from 'src/common/constants';
 import { GenericResponseDto } from 'src/common/dto/generic-response.dto';
 import { MailService } from 'src/mail/mail.service';
@@ -258,7 +258,7 @@ export class AuthService {
     });
 
     //Send email with reset password link
-    const resetURL: string = `${this.configService.get<FrontentConfig>(ConfigNames.frontend).resetPasswordFrontendUrl}?token=${resetPassword.resetToken}`;
+    const resetURL: string = `${this.configService.get<FrontendConfig>(ConfigNames.frontend).resetPasswordFrontendUrl}?token=${resetPassword.resetToken}`;
     await this.mailService.sendPasswordResetEmail(user, resetURL, resetPassword.resetToken);
 
     // TODO: modificar

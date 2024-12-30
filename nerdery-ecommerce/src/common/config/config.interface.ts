@@ -8,6 +8,8 @@ export const ConfigNames = {
   frontend: 'frontend',
   redis: 'redis',
   env: 'env',
+  prisma: 'prisma',
+  stripeConfig: 'stripeConfig',
 };
 
 export interface Config {
@@ -17,9 +19,11 @@ export interface Config {
   jwt: JwtConfig;
   nest: NestConfig;
   cors: CorsConfig;
-  frontend: FrontentConfig;
+  frontend: FrontendConfig;
   redis: RedisConfig;
   env: string;
+  prisma: PrismaConfig;
+  stripeConfig: StripeConfig;
 }
 
 export interface RedisConfig {
@@ -27,8 +31,9 @@ export interface RedisConfig {
   port: number;
 }
 
-export interface FrontentConfig {
+export interface FrontendConfig {
   resetPasswordFrontendUrl: string;
+  paymentClientSecretFrontendUrl: string;
 }
 
 export interface S3Config {
@@ -69,4 +74,12 @@ export interface NestConfig {
 
 export interface CorsConfig {
   enabled: boolean;
+}
+
+export interface PrismaConfig {
+  dbConnection: string;
+}
+
+export interface StripeConfig {
+  stripeKey: string;
 }

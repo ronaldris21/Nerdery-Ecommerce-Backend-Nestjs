@@ -1,8 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { OrderStatusEnum } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
+import { OrderStatusEnum, StripePaymentIntentEnum } from '@prisma/client';
 import { CartService } from 'src/cart/cart.service';
-import { ProductCalculatedFieldsService } from 'src/common/services/product-calculations/product-calculated-fields.service';
+import { ConfigNames, FrontendConfig } from 'src/common/config/config.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { StripeService } from 'src/stripe/stripe.service';
 
 import { StockReservationManagementService } from './../common/services/stock-reservation-management/stock-reservation-management.service';
 import { ApprovedStatusPayload } from './entities/approved-status.object';
@@ -11,9 +13,10 @@ import { ApprovedStatusPayload } from './entities/approved-status.object';
 export class OrdersService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly productCalcFieldsService: ProductCalculatedFieldsService,
     private readonly cartService: CartService,
     private readonly StockReservationManagementService: StockReservationManagementService,
+    private readonly stripeService: StripeService,
+    private readonly configService: ConfigService,
   ) {}
 
   async getPaymentApprovedStatus(orderId: string): Promise<ApprovedStatusPayload> {
@@ -71,31 +74,43 @@ export class OrdersService {
       },
     });
 
+    const stripeResult = await this.stripeService.createPaymentIntent(
+      Number(order.total),
+      order.id,
+    );
+
+    await this.prisma.stripePayment.create({
+      data: {
+        orderId: order.id,
+        amount: order.total,
+        currency: 'USD',
+        webhookPaymentIntent: stripeResult.status as StripePaymentIntentEnum,
+        stripePaymentId: stripeResult.id,
+        webhookData: null,
+      },
+    });
+
     await this.cartService.deleteAllItems(
       userId,
       cart.items.map((item) => item.productVariationId),
     );
 
-    // // 4) Crear un StripePayment (mock) y retornamos su id
-    // const stripePayment = await this.prisma.stripePayment.create({
-    //   data: {
-    //     orderId: order.id,
-    //     amount: order.total,
-    //     currency: 'USD',
-    //     status: 'PENDING', // o lo que manejes en tu enum
-    //   },
-    // });
+    const paymentUrl =
+      this.configService.get<FrontendConfig>(ConfigNames.frontend).paymentClientSecretFrontendUrl +
+      stripeResult.client_secret;
 
-    // 5) Retornar
     return {
       ...order,
-      // stripePaymentId: stripePayment.id,
+      clientSecret: stripeResult.client_secret,
+      paymentUrl: paymentUrl,
     };
   }
 
   // ============== HELPER ==============
   private async ensureOrderExists(orderId: string) {
-    const exists = await this.prisma.order.findUnique({ where: { id: orderId } });
+    const exists = await this.prisma.order.findUnique({
+      where: { id: orderId },
+    });
     if (!exists) {
       throw new NotFoundException(`Order ${orderId} not found`);
     }

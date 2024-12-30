@@ -28,10 +28,10 @@ export class ClientOrderObject {
   status: OrderStatus;
 
   @Field()
-  createdAt: Date; // Usa tu scalar DateTime si lo tienes configurado
+  createdAt: Date;
 
   @Field()
-  updatedAt: Date; // O tu scalar DateTime
+  updatedAt: Date;
 
   @Field()
   isDeleted: boolean;
@@ -41,6 +41,12 @@ export class ClientOrderObject {
 
   @Field(() => [OrderItemObject])
   orderItems: OrderItemObject[];
+
+  @Field()
+  clientSecret: string;
+
+  @Field()
+  paymentUrl: string;
 
   // @Field(() => [StripePayment])
   // payments: StripePayment[];

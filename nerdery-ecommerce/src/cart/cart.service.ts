@@ -27,7 +27,12 @@ export class CartService {
     });
 
     cartItems = cartItems.filter(
-      (item) => !item.productVariation.isDeleted && item.productVariation.isEnabled,
+      (item) =>
+        !item.productVariation.isDeleted &&
+        item.productVariation.isEnabled &&
+        item.productVariation.stock > 0 &&
+        item.quantity > 0 &&
+        item.quantity <= item.productVariation.stock,
     );
 
     const result: CartObject = {

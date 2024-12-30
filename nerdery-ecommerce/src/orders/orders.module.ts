@@ -1,15 +1,14 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { CartModule } from 'src/cart/cart.module';
-// Ajusta la ruta si tu cartService está en otro lugar
 import { CommonModule } from 'src/common/common.module';
+import { StripeModule } from 'src/stripe/stripe.module';
 
 import { OrdersResolver } from './orders.resolver';
 import { OrdersService } from './orders.service';
 
-// Importar tus otros servicios y el PrismaService
-
 @Module({
-  imports: [CommonModule, CartModule],
+  imports: [CommonModule, ConfigModule, CartModule, StripeModule, StripeModule.forRootAsync()],
   providers: [OrdersResolver, OrdersService],
   exports: [OrdersService],
 })
