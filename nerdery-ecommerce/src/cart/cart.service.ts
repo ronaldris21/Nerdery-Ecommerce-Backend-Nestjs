@@ -48,6 +48,7 @@ export class CartService {
           cartItem,
           cartItem.productVariation,
         );
+      tempResult.productVariation = cartItem.productVariation as any;
 
       resultAcc.items.push(tempResult);
       resultAcc.discount += tempResult.discount;
