@@ -8,6 +8,7 @@ import { StripeService } from 'src/stripe/stripe.service';
 
 import { StockReservationManagementService } from './../common/services/stock-reservation-management/stock-reservation-management.service';
 import { ApprovedStatusPayload } from './entities/approved-status.object';
+import { RetryPaymentPayload } from './entities/retry-payment.object';
 
 @Injectable()
 export class OrdersService {
@@ -21,7 +22,6 @@ export class OrdersService {
 
   async getPaymentApprovedStatus(orderId: string): Promise<ApprovedStatusPayload> {
     await this.ensureOrderExists(orderId);
-    // Lógica para verificar si hay un stripePayment con status='APPROVED' (depende de tu modelo).
     const order = await this.prisma.order.findFirst({
       where: {
         id: orderId,
@@ -45,7 +45,6 @@ export class OrdersService {
       );
     }
 
-    //Reservar stock!
     await this.StockReservationManagementService.reserveStock(cart.items);
 
     const order = await this.prisma.order.create({
@@ -87,6 +86,7 @@ export class OrdersService {
         webhookPaymentIntent: stripeResult.status as StripePaymentIntentEnum,
         stripePaymentId: stripeResult.id,
         webhookData: null,
+        clientSecret: stripeResult.client_secret,
       },
     });
 
@@ -104,16 +104,6 @@ export class OrdersService {
       clientSecret: stripeResult.client_secret,
       paymentUrl: paymentUrl,
     };
-  }
-
-  // ============== HELPER ==============
-  private async ensureOrderExists(orderId: string) {
-    const exists = await this.prisma.order.findUnique({
-      where: { id: orderId },
-    });
-    if (!exists) {
-      throw new NotFoundException(`Order ${orderId} not found`);
-    }
   }
 
   async getOrders(userId: string, isAdmin: boolean = false) {
@@ -137,5 +127,41 @@ export class OrdersService {
         stripePayments: true,
       },
     });
+  }
+
+  async retryPayment(orderId: string): Promise<RetryPaymentPayload> {
+    const approvedStatus = await this.getPaymentApprovedStatus(orderId);
+
+    if (approvedStatus.isApproved) {
+      return {
+        isPaymentNeeded: false,
+      };
+    }
+
+    const payment = await this.prisma.stripePayment.findFirst({
+      where: {
+        orderId: orderId,
+      },
+    });
+
+    const paymentUrl =
+      this.configService.get<FrontendConfig>(ConfigNames.frontend).paymentClientSecretFrontendUrl +
+      payment.clientSecret;
+
+    return {
+      isPaymentNeeded: true,
+      paymentUrl: paymentUrl,
+      clientSecret: payment.clientSecret,
+    };
+  }
+
+  //HELPERS
+  private async ensureOrderExists(orderId: string) {
+    const exists = await this.prisma.order.findUnique({
+      where: { id: orderId },
+    });
+    if (!exists) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
   }
 }

@@ -19,10 +19,13 @@ export class StripePaymentObject {
   @Field()
   stripePaymentId: string;
 
+  @Field()
+  clientSecret: string;
+
   @Field(() => StripePaymentIntent)
   webhookPaymentIntent: StripePaymentIntent;
 
-  @Field(() => String)
+  @Field(() => String, { nullable: true })
   webhookData: any;
 
   @Field()

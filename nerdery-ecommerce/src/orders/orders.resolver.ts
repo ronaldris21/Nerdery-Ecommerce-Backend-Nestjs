@@ -6,24 +6,26 @@ import { JwtPayloadDto } from 'src/auth/dto/jwtPayload.dto';
 import { AccessTokenWithRolesGuard } from 'src/auth/guards/access-token-with-roles.guard';
 import { ROLES } from 'src/common/constants';
 
+import { OrderCreatedPayload } from './dto/responses/order-created-payload.object';
 import { ApprovedStatusPayload } from './entities/approved-status.object';
-import { ClientOrderObject } from './entities/client-order.object';
+import { OrderObject } from './entities/order.object';
+import { RetryPaymentPayload } from './entities/retry-payment.object';
 import { OrdersService } from './orders.service';
 
 // Importar los tipos de tu schema GraphQL o DTOs generados:
 
-@Resolver(() => ClientOrderObject)
+@Resolver(() => OrderObject)
 export class OrdersResolver {
   constructor(private readonly ordersService: OrdersService) {}
 
-  @Query(() => [ClientOrderObject])
+  @Query(() => [OrderObject])
   @UseGuards(AccessTokenWithRolesGuard)
   @Roles([ROLES.CLIENT])
   myOrders(@GetUser() user: JwtPayloadDto) {
     return this.ordersService.getOrders(user.userId);
   }
 
-  @Query(() => [ClientOrderObject])
+  @Query(() => [OrderObject])
   @UseGuards(AccessTokenWithRolesGuard)
   @Roles([ROLES.MANAGER])
   ordersAsManager(@Args('userId', { type: () => String }, ParseUUIDPipe) userId: string) {
@@ -40,7 +42,17 @@ export class OrdersResolver {
     return this.ordersService.getPaymentApprovedStatus(orderId);
   }
 
-  @Mutation(() => ClientOrderObject)
+  @Query(() => RetryPaymentPayload)
+  @UseGuards(AccessTokenWithRolesGuard)
+  @Roles([ROLES.CLIENT, ROLES.MANAGER])
+  retryPayment(
+    @Args('orderId', { type: () => String }, ParseUUIDPipe)
+    orderId: string,
+  ) {
+    return this.ordersService.retryPayment(orderId);
+  }
+
+  @Mutation(() => OrderCreatedPayload)
   @UseGuards(AccessTokenWithRolesGuard)
   @Roles([ROLES.CLIENT])
   createOrder(@GetUser() user: JwtPayloadDto) {

@@ -245,6 +245,7 @@ model StripePayment {
   amount               Decimal                 @db.Decimal(10, 2)
   currency             String                  @db.VarChar(3)
   stripePaymentId      String                  @db.VarChar(255)
+  clientSecret         String                  @db.VarChar(255)
   webhookPaymentIntent StripePaymentIntentEnum
   webhookData          Json
   createdAt            DateTime                @default(now())

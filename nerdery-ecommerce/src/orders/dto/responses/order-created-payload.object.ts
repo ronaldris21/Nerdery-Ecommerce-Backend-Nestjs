@@ -1,12 +1,10 @@
 import { Field, Float, ID, ObjectType } from '@nestjs/graphql';
+import { OrderItemObject } from 'src/orders/entities/order-item.object';
 
-import { OrderStatus } from '../dto/order-status.enum';
-
-import { OrderItemObject } from './order-item.object';
-import { StripePaymentObject } from './stripe-payment.object';
+import { OrderStatus } from '../order-status.enum';
 
 @ObjectType()
-export class ClientOrderObject {
+export class OrderCreatedPayload {
   @Field(() => ID)
   id: string;
 
@@ -43,12 +41,9 @@ export class ClientOrderObject {
   @Field(() => [OrderItemObject])
   orderItems: OrderItemObject[];
 
-  @Field(() => String, { nullable: true })
-  clientSecret?: string;
+  @Field()
+  clientSecret: string;
 
-  @Field(() => String, { nullable: true })
-  paymentUrl?: string;
-
-  @Field(() => [StripePaymentObject])
-  stripePayments: StripePaymentObject[];
+  @Field()
+  paymentUrl: string;
 }
