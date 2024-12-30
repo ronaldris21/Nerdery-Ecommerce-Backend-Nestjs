@@ -105,6 +105,28 @@ enum OrderStatus {
   COMPLETED
 }
 
+type StripePaymentObject {
+  id: ID!
+  orderId: String!
+  amount: Float!
+  currency: String!
+  stripePaymentId: String!
+  webhookPaymentIntent: StripePaymentIntent!
+  webhookData: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum StripePaymentIntent {
+  canceled
+  processing
+  requires_action
+  requires_capture
+  requires_confirmation
+  requires_payment_method
+  succeeded
+}
+
 type OrderItemObject {
   id: ID!
   orderId: ID!
@@ -114,6 +136,7 @@ type OrderItemObject {
   discount: Float!
   total: Float!
   productVariation: ProductVariationObject!
+  payments: StripePaymentObject!
 }
 
 type ClientOrderObject {
@@ -129,8 +152,9 @@ type ClientOrderObject {
   isDeleted: Boolean!
   isStockReserved: Boolean!
   orderItems: [OrderItemObject!]!
-  clientSecret: String!
-  paymentUrl: String!
+  clientSecret: String
+  paymentUrl: String
+  stripePayments: [StripePaymentObject!]!
 }
 
 type PaginationMeta {
@@ -153,6 +177,8 @@ type Query {
   productVariations(productId: String!): [ProductVariationObject!]!
   productVariationById(id: String!): ProductVariationObject
   cart: CartObject!
+  myOrders: [ClientOrderObject!]!
+  ordersAsManager(userId: String!): [ClientOrderObject!]!
   orderPaymentApprovedStatus(orderId: String!): ApprovedStatusPayload!
 }
 

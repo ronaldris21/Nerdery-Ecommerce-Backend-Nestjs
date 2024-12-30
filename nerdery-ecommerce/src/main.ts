@@ -4,6 +4,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as bodyParser from 'body-parser';
 
 import { AppModule } from './app.module';
+import { HttpExceptionFilter } from './graphql/exception-filters/http-exception/http-exception.filter';
+import { PrismaClientExceptionFilter } from './graphql/exception-filters/prisma-exception.filter/prisma-exception.filter.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -53,6 +55,8 @@ In a multi-role endpoint you have to specified the role in the header in order t
       },
     }),
   );
+
+  app.useGlobalFilters(new HttpExceptionFilter(), new PrismaClientExceptionFilter());
 
   await app.listen(process.env.PORT ?? 3000);
 }

@@ -2,11 +2,7 @@ import { join } from 'path';
 
 import { ApolloDriver } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
-import { APP_FILTER } from '@nestjs/core';
 import { GraphQLModule } from '@nestjs/graphql';
-
-import { HttpExceptionFilter } from './exception-filters/http-exception/http-exception.filter';
-import { PrismaClientExceptionFilter } from './exception-filters/prisma-exception.filter/prisma-exception.filter.filter';
 
 @Module({
   imports: [
@@ -28,16 +24,6 @@ import { PrismaClientExceptionFilter } from './exception-filters/prisma-exceptio
         },
       }),
     }),
-  ],
-  providers: [
-    {
-      provide: APP_FILTER,
-      useClass: HttpExceptionFilter,
-    },
-    {
-      provide: APP_FILTER,
-      useClass: PrismaClientExceptionFilter,
-    },
   ],
 })
 export class GraphqlModule {}

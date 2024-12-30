@@ -115,4 +115,27 @@ export class OrdersService {
       throw new NotFoundException(`Order ${orderId} not found`);
     }
   }
+
+  async getOrders(userId: string, isAdmin: boolean = false) {
+    return await this.prisma.order.findMany({
+      where: {
+        userId: userId,
+      },
+      include: {
+        user: isAdmin,
+        orderIncidents: isAdmin,
+        orderItems: {
+          include: {
+            productVariation: {
+              include: {
+                product: true,
+                variationImages: true,
+              },
+            },
+          },
+        },
+        stripePayments: true,
+      },
+    });
+  }
 }

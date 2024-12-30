@@ -1,6 +1,8 @@
 import { Field, Float, ObjectType, ID } from '@nestjs/graphql';
 import { ProductVariationObject } from 'src/product-variations/entities/product-variation.entity';
 
+import { StripePaymentObject } from './stripe-payment.object';
+
 @ObjectType()
 export class OrderItemObject {
   @Field(() => ID)
@@ -26,4 +28,7 @@ export class OrderItemObject {
 
   @Field(() => ProductVariationObject)
   productVariation: ProductVariationObject;
+
+  @Field()
+  payments: StripePaymentObject;
 }

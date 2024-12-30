@@ -16,9 +16,23 @@ import { OrdersService } from './orders.service';
 export class OrdersResolver {
   constructor(private readonly ordersService: OrdersService) {}
 
-  @Query(() => ApprovedStatusPayload)
+  @Query(() => [ClientOrderObject])
   @UseGuards(AccessTokenWithRolesGuard)
   @Roles([ROLES.CLIENT])
+  myOrders(@GetUser() user: JwtPayloadDto) {
+    return this.ordersService.getOrders(user.userId);
+  }
+
+  @Query(() => [ClientOrderObject])
+  @UseGuards(AccessTokenWithRolesGuard)
+  @Roles([ROLES.MANAGER])
+  ordersAsManager(@Args('userId', { type: () => String }, ParseUUIDPipe) userId: string) {
+    return this.ordersService.getOrders(userId, true);
+  }
+
+  @Query(() => ApprovedStatusPayload)
+  @UseGuards(AccessTokenWithRolesGuard)
+  @Roles([ROLES.CLIENT, ROLES.MANAGER])
   orderPaymentApprovedStatus(
     @Args('orderId', { type: () => String }, ParseUUIDPipe)
     orderId: string,
