@@ -1,0 +1,35 @@
+.card-table-container {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+.card-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+.card-table th, .card-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+.card-table th {
+  background-color: #f4f4f4;
+}
+.copy-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+.copy-button:hover {
+  background-color: #0056b3;
+}
+.copy-notification {
+  background-color: #28a745;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}

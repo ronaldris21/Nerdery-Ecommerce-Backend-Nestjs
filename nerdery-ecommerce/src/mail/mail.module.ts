@@ -1,9 +1,10 @@
-// src/mail/mail.module.ts
 import { join } from 'path';
 
 import { Module } from '@nestjs/common';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import * as Handlebars from 'handlebars'; // Importa Handlebars
+import { PrismaService } from 'src/prisma/prisma.service';
 
 import { MailService } from './mail.service';
 
@@ -13,6 +14,9 @@ import { MailService } from './mail.service';
 //     "assets": [{ "include": "mail/templates/**/*.hbs", "outDir": "dist/src/" }],
 //     "watchAssets": true
 //   }
+
+Handlebars.registerHelper('eq', (arg1, arg2) => arg1 === arg2);
+
 @Module({
   imports: [
     MailerModule.forRoot({
@@ -38,7 +42,7 @@ import { MailService } from './mail.service';
       },
     }),
   ],
-  providers: [MailService],
+  providers: [MailService, PrismaService],
   exports: [MailService],
 })
 export class MailModule {}

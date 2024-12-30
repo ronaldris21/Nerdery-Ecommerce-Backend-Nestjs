@@ -83,12 +83,14 @@ export class ProductCalculatedFieldsService {
       calculatedDiscount = subTotal;
     }
 
-    return {
-      unitPrice,
-      subTotal,
-      discount: calculatedDiscount,
-      total: subTotal - calculatedDiscount,
+    // round prices to 2 decimal places
+    const result: PriceSummary = {
+      unitPrice: Math.round(unitPrice * 100) / 100,
+      subTotal: Math.round(subTotal * 100) / 100,
+      discount: Math.round(calculatedDiscount * 100) / 100,
+      total: Math.round((subTotal - calculatedDiscount) * 100) / 100,
     };
+    return result;
   }
 
   createCartItemObjectFromProductVariation(

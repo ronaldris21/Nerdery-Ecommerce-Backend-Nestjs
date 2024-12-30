@@ -29,20 +29,21 @@ enum DiscountTypeEnum {
 
 enum OrderStatusEnum {
   WAITING_PAYMENT
+  RETRY_PAYMENT
   PAYMENT_APPROVED
   CANCELED
   COMPLETED
 }
 
 enum StripePaymentIntentEnum {
-  REQUIRES_PAYMENT_METHOD
-  REQUIRES_CONFIRMATION
-  REQUIRES_ACTION
-  PROCESSING
-  SUCCEEDED
-  REQUIRES_CAPTURE
-  CANCELED
-  FAILED
+  canceled
+  processing
+  requires_action
+  requires_capture
+  requires_confirmation
+  requires_payment_method
+  succeeded
+  payment_failed
 }
 
 // PERMISSION RELATED MODELS
@@ -215,7 +216,7 @@ model Order {
   status          OrderStatusEnum @default(WAITING_PAYMENT)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
-  isDeleted       Boolean
+  isDeleted       Boolean         @default(false)
   isStockReserved Boolean
   user            User            @relation(fields: [userId], references: [id])
   orderItems      OrderItem[]
@@ -244,6 +245,7 @@ model StripePayment {
   amount               Decimal                 @db.Decimal(10, 2)
   currency             String                  @db.VarChar(3)
   stripePaymentId      String                  @db.VarChar(255)
+  clientSecret         String                  @db.VarChar(255)
   webhookPaymentIntent StripePaymentIntentEnum
   webhookData          Json
   createdAt            DateTime                @default(now())

@@ -36,12 +36,20 @@ const config: Config = {
   },
   frontend: {
     resetPasswordFrontendUrl: process.env.FRONTEND_RESET_PASSWORD_URL,
+    paymentClientSecretFrontendUrl: process.env.FRONTEND_PAYMENT_CLIENT_SECRET_URL,
   },
   redis: {
     host: process.env.REDIS_HOST,
     port: parseInt(process.env.REDIS_PORT, 10),
   },
   env: process.env.NODE_ENV,
+  prisma: {
+    dbConnection: process.env.DATABASE_URL,
+  },
+  stripeConfig: {
+    stripeKey: process.env.STRIPE_API_KEY,
+    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+  },
 };
 
 export default (): Config => config;

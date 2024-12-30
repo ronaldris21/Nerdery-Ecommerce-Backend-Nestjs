@@ -27,7 +27,12 @@ export class CartService {
     });
 
     cartItems = cartItems.filter(
-      (item) => !item.productVariation.isDeleted && item.productVariation.isEnabled,
+      (item) =>
+        !item.productVariation.isDeleted &&
+        item.productVariation.isEnabled &&
+        item.productVariation.stock > 0 &&
+        item.quantity > 0 &&
+        item.quantity <= item.productVariation.stock,
     );
 
     const result: CartObject = {
@@ -43,6 +48,7 @@ export class CartService {
           cartItem,
           cartItem.productVariation,
         );
+      tempResult.productVariation = cartItem.productVariation as any;
 
       resultAcc.items.push(tempResult);
       resultAcc.discount += tempResult.discount;
@@ -51,5 +57,16 @@ export class CartService {
 
       return resultAcc;
     }, result);
+  }
+
+  async deleteAllItems(userId: string, productVariationIds: string[]) {
+    await this.prisma.cartItem.deleteMany({
+      where: {
+        userId,
+        productVariationId: {
+          in: productVariationIds,
+        },
+      },
+    });
   }
 }

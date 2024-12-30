@@ -92,6 +92,94 @@ type GenericResponseObject {
   statusCode: Float!
 }
 
+type StripePaymentObject {
+  id: ID!
+  orderId: String!
+  amount: Float!
+  currency: String!
+  stripePaymentId: String!
+  clientSecret: String!
+  webhookPaymentIntent: StripePaymentIntent!
+  webhookData: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum StripePaymentIntent {
+  canceled
+  processing
+  requires_action
+  requires_capture
+  requires_confirmation
+  requires_payment_method
+  succeeded
+  payment_failed
+}
+
+type OrderItemObject {
+  id: ID!
+  orderId: ID!
+  productVariationId: ID!
+  unitPrice: Float!
+  subTotal: Float!
+  discount: Float!
+  total: Float!
+  productVariation: ProductVariationObject!
+  payments: StripePaymentObject!
+}
+
+type OrderCreatedPayload {
+  id: ID!
+  userId: ID!
+  currency: String!
+  subTotal: Float!
+  discount: Float!
+  total: Float!
+  status: OrderStatus!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  isDeleted: Boolean!
+  isStockReserved: Boolean!
+  orderItems: [OrderItemObject!]!
+  clientSecret: String!
+  paymentUrl: String!
+}
+
+enum OrderStatus {
+  WAITING_PAYMENT
+  RETRY_PAYMENT
+  PAYMENT_APPROVED
+  CANCELED
+  COMPLETED
+}
+
+type ApprovedStatusPayload {
+  isApproved: Boolean!
+  status: OrderStatus!
+}
+
+type OrderObject {
+  id: ID!
+  userId: ID!
+  currency: String!
+  subTotal: Float!
+  discount: Float!
+  total: Float!
+  status: OrderStatus!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  isDeleted: Boolean!
+  isStockReserved: Boolean!
+  orderItems: [OrderItemObject!]!
+  stripePayments: [StripePaymentObject!]!
+}
+
+type RetryPaymentPayload {
+  isPaymentNeeded: Boolean!
+  clientSecret: String!
+  paymentUrl: String!
+}
+
 type PaginationMeta {
   totalItems: Int!
   totalPages: Int!
@@ -112,6 +200,10 @@ type Query {
   productVariations(productId: String!): [ProductVariationObject!]!
   productVariationById(id: String!): ProductVariationObject
   cart: CartObject!
+  myOrders: [OrderObject!]!
+  ordersAsManager(userId: String!): [OrderObject!]!
+  orderPaymentApprovedStatus(orderId: String!): ApprovedStatusPayload!
+  retryPayment(orderId: String!): RetryPaymentPayload!
 }
 
 input ProductFiltersInput {
@@ -158,6 +250,7 @@ type Mutation {
   deleteCartItem(productVariationId: String!): GenericResponseObject!
   likeProduct(productId: String!): ProductObject!
   dislikeProduct(productId: String!): ProductObject!
+  createOrder: OrderCreatedPayload!
 }
 
 input CreateProductInput {
