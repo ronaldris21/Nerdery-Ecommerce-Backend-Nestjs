@@ -199,7 +199,6 @@ const productData: Prisma.ProductCreateInput[] = [
   },
 ];
 
-// https://www.adidas.com/us/men-pants
 const productDataMen: Prisma.ProductCreateInput[] = [
   {
     name: 'Track Pants',
@@ -347,7 +346,6 @@ const productDataMen: Prisma.ProductCreateInput[] = [
   },
 ];
 
-// https://www.adidas.com/us/women-hoodies_sweatshirts
 const productDataWomen: Prisma.ProductCreateInput[] = [
   {
     name: 'Hoodie',

@@ -84,7 +84,6 @@ export class AuthService {
   }
 
   async generateNewTokens(user: Omit<User, 'createdAt' | 'password'>): Promise<AuthResponseDto> {
-    // Get user roles
     const userRoles = await this.prisma.userRole.findMany({
       where: {
         userId: user.id,
@@ -96,10 +95,8 @@ export class AuthService {
 
     const roles = userRoles.map((ur) => ur.role.name);
 
-    // Generate JWT - Access and Refresh Token
     const jwtConfig = this.configService.get<JwtConfig>(ConfigNames.jwt);
 
-    // Access Token
     const iat: number = Math.floor(Date.now() / 1000); // issue at time in seconds
     const accessPayload: Omit<JwtPayloadDto, 'exp'> = {
       userId: user.id,
@@ -210,7 +207,6 @@ export class AuthService {
   }
 
   async refreshToken(accessToken: string, refreshToken: string): Promise<AuthResponseDto> {
-    //Validate access token
     let user: JwtPayloadDto;
     try {
       user = this.jwtService.decode(accessToken) as JwtPayloadDto;
@@ -249,7 +245,6 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    //Create new ResetPassword entry on db
     const resetPassword = await this.prisma.passwordReset.create({
       data: {
         userId: user.id,
@@ -309,10 +304,8 @@ export class AuthService {
       },
     });
 
-    //DELETE ALL USER SESSIONS
     await this.invalidateAllRefreshTokens(resetPassword.userId);
 
-    //DELETE ALL ACCESS TOKENS FROM CACHE
     await this.removeAccessTokenFromCacheByUserId(resetPassword.userId);
 
     //TODO: sent email for password reset here

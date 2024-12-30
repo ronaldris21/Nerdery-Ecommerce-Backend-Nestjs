@@ -16,11 +16,11 @@ export class MailService {
   async sendWelcomeEmail(to: string, name: string): Promise<void> {
     try {
       await this.mailerService.sendMail({
-        to, // recipient email
+        to,
         subject: 'Welcome to Our Service',
-        template: './welcome', // template file name (without .hbs extension)
+        template: './welcome',
         context: {
-          name, // pass variables to the template
+          name,
         },
       });
     } catch (error) {
@@ -32,7 +32,7 @@ export class MailService {
     await this.mailerService.sendMail({
       to: user.email,
       subject: 'Reset Your Password',
-      template: './reset-password', // Handlebars file without extension
+      template: './reset-password',
       context: {
         name: user.firstName,
         resetUrl,
@@ -46,11 +46,9 @@ export class MailService {
 
     await this.mailerService.sendMail({
       to: user.email,
-      // from: '"Support Team" <support@example.com>', // override default from
       subject: 'Welcome to Nice App! Confirm your Email',
-      template: './confirmation', // `.hbs` extension is appended automatically
+      template: './confirmation',
       context: {
-        // ✏️ filling curly brackets with content
         name: user.firstName,
         url,
       },
@@ -58,13 +56,6 @@ export class MailService {
 
     return { message: 'Confirmation email sent' };
   }
-
-  // public async sendProductDetailsEmail(
-  //   user: JwtPayloadDto,
-  //   product: ProductObject,
-  //   variations: ProductVariationObject[],
-  // ): Promise<void> {
-  //   // 1) Construimos data para la plantilla
 
   async sendLowStockEmail(prodVariation: ProductVariation) {
     setTimeout(async () => {
