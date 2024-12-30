@@ -18,3 +18,7 @@ TODO: feat/deploy
 
 
 Note: Bad request are only from class validator!
+
+
+stripe listen --forward-to http://localhost:3000/api/stripe/webhook 
+stripe trigger payment_intent.succeeded, payment_intent.canceled, payment_intent.payment_failed

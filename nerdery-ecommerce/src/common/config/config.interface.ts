@@ -1,5 +1,5 @@
 export const ConfigNames = {
-  s3: 's3',
+  cloudinary: 'cloudinary',
   email: 'email',
   graphql: 'graphql',
   jwt: 'jwt',
@@ -13,7 +13,7 @@ export const ConfigNames = {
 };
 
 export interface Config {
-  s3: S3Config;
+  cloudinary: CloudinaryConfig;
   email: EmailConfig;
   graphql: GraphqlConfig;
   jwt: JwtConfig;
@@ -36,11 +36,10 @@ export interface FrontendConfig {
   paymentClientSecretFrontendUrl: string;
 }
 
-export interface S3Config {
-  accessKeyId: string;
-  secretAccessKey: string;
-  region: string;
-  bucket: string;
+export interface CloudinaryConfig {
+  name: string;
+  apiKey: string;
+  apiSecret: string;
 }
 
 //TODO: may need editing

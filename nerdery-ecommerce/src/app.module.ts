@@ -7,9 +7,11 @@ import { AuthModule } from './auth/auth.module';
 import { CartModule } from './cart/cart.module';
 import { CartItemsModule } from './cart-items/cart-items.module';
 import { CategoriesModule } from './categories/categories.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { CommonModule } from './common/common.module';
 import config from './common/config/config';
 import { GraphqlModule } from './graphql/graphql.module';
+import { ImagesModule } from './images/images.module';
 import { MailModule } from './mail/mail.module';
 import { OrdersModule } from './orders/orders.module';
 import { ProductLikesModule } from './product-likes/product-likes.module';
@@ -39,6 +41,8 @@ import { StripeModule } from './stripe/stripe.module';
     ProductLikesModule,
     OrdersModule,
     StripeModule,
+    CloudinaryModule,
+    ImagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -5,3 +5,5 @@ export const ROLES = {
   CLIENT: clientRoleName,
   MANAGER: managerRoleName,
 };
+
+export const CLOUDINARY = 'Cloudinary';

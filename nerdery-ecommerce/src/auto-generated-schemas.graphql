@@ -92,30 +92,6 @@ type GenericResponseObject {
   statusCode: Float!
 }
 
-type StripePaymentObject {
-  id: ID!
-  orderId: String!
-  amount: Float!
-  currency: String!
-  stripePaymentId: String!
-  clientSecret: String!
-  webhookPaymentIntent: StripePaymentIntent!
-  webhookData: String
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-enum StripePaymentIntent {
-  canceled
-  processing
-  requires_action
-  requires_capture
-  requires_confirmation
-  requires_payment_method
-  succeeded
-  payment_failed
-}
-
 type OrderItemObject {
   id: ID!
   orderId: ID!
@@ -125,7 +101,6 @@ type OrderItemObject {
   discount: Float!
   total: Float!
   productVariation: ProductVariationObject!
-  payments: StripePaymentObject!
 }
 
 type OrderCreatedPayload {
@@ -156,6 +131,30 @@ enum OrderStatus {
 type ApprovedStatusPayload {
   isApproved: Boolean!
   status: OrderStatus!
+}
+
+type StripePaymentObject {
+  id: ID!
+  orderId: String!
+  amount: Float!
+  currency: String!
+  stripePaymentId: String!
+  clientSecret: String!
+  webhookPaymentIntent: StripePaymentIntent!
+  webhookData: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum StripePaymentIntent {
+  canceled
+  processing
+  requires_action
+  requires_capture
+  requires_confirmation
+  requires_payment_method
+  succeeded
+  payment_failed
 }
 
 type OrderObject {

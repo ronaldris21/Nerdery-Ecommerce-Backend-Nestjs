@@ -31,15 +31,19 @@ export class IdValidatorService {
     includeProduct: boolean = true,
     variationImages: boolean = true,
   ) {
-    const productVariation = await this.prisma.productVariation.findUnique({
-      where,
-      include: { product: includeProduct, variationImages: variationImages },
-    });
+    try {
+      const productVariation = await this.prisma.productVariation.findUnique({
+        where,
+        include: { product: includeProduct, variationImages: variationImages },
+      });
 
-    if (!productVariation) {
+      if (!productVariation) {
+        throw new NotFoundException('Product-Variation not found');
+      }
+      return productVariation;
+      // eslint-disable-next-line unused-imports/no-unused-vars
+    } catch (error) {
       throw new NotFoundException('Product-Variation not found');
     }
-
-    return productVariation;
   }
 }

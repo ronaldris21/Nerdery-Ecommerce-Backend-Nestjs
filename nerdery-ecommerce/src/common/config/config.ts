@@ -21,11 +21,10 @@ const config: Config = {
   nest: {
     port: parseInt(process.env.PORT, 10) || 3000,
   },
-  s3: {
-    accessKeyId: process.env.S3_ACCESS_KEY_ID,
-    bucket: process.env.S3_BUCKET,
-    region: process.env.S3_REGION,
-    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+  cloudinary: {
+    name: process.env.CLOUDINARY_NAME,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+    apiSecret: process.env.CLOUDINARY_API_SECRET,
   },
   jwt: {
     bcryptSaltOrRound: process.env.SECURITY_BCRYPT_SALT_OR_ROUND || 10,
