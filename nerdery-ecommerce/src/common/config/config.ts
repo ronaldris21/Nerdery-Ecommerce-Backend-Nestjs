@@ -12,12 +12,6 @@ const config: Config = {
       pass: process.env.MAIL_PASS,
     },
   },
-  graphql: {
-    playgroundEnabled: true,
-    debug: true,
-    schemaDestination: './src/schema.graphql',
-    sortSchema: true,
-  },
   nest: {
     port: parseInt(process.env.PORT, 10) || 3000,
   },

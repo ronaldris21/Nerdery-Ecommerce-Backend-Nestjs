@@ -10,6 +10,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { CommonModule } from './common/common.module';
 import config from './common/config/config';
+import { validateEnv } from './env.validation';
 import { GraphqlModule } from './graphql/graphql.module';
 import { ImagesModule } from './images/images.module';
 import { MailModule } from './mail/mail.module';
@@ -28,6 +29,7 @@ import { StripeModule } from './stripe/stripe.module';
       envFilePath: ['.env.development', '.env'],
       isGlobal: true,
       load: [config],
+      validate: validateEnv,
     }),
     MailModule,
     ProductsModule,

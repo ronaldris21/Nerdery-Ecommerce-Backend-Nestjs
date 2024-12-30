@@ -1,7 +1,6 @@
 export const ConfigNames = {
   cloudinary: 'cloudinary',
   email: 'email',
-  graphql: 'graphql',
   jwt: 'jwt',
   nest: 'nest',
   cors: 'cors',
@@ -12,10 +11,9 @@ export const ConfigNames = {
   stripeConfig: 'stripeConfig',
 };
 
-export interface Config {
+export class Config {
   cloudinary: CloudinaryConfig;
   email: EmailConfig;
-  graphql: GraphqlConfig;
   jwt: JwtConfig;
   nest: NestConfig;
   cors: CorsConfig;
@@ -42,7 +40,6 @@ export interface CloudinaryConfig {
   apiSecret: string;
 }
 
-//TODO: may need editing
 export interface EmailConfig {
   credentials: {
     pass: string;
@@ -50,13 +47,6 @@ export interface EmailConfig {
   };
   host: string;
   from: string;
-}
-
-export interface GraphqlConfig {
-  playgroundEnabled: boolean;
-  debug: boolean;
-  schemaDestination: string;
-  sortSchema: boolean;
 }
 
 export interface JwtConfig {
