@@ -1,5 +1,6 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 import { StripeController } from './stripe.controller';
 import { StripeService } from './stripe.service';
@@ -11,7 +12,7 @@ export class StripeModule {
       module: StripeModule,
       controllers: [StripeController],
       imports: [ConfigModule],
-      providers: [StripeService],
+      providers: [StripeService, PrismaService],
       exports: [StripeService],
     };
   }

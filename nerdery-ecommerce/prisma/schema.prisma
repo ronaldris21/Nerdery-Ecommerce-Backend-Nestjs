@@ -43,6 +43,7 @@ enum StripePaymentIntentEnum {
   requires_confirmation
   requires_payment_method
   succeeded
+  payment_failed
 }
 
 // PERMISSION RELATED MODELS

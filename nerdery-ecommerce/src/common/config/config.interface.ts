@@ -82,4 +82,5 @@ export interface PrismaConfig {
 
 export interface StripeConfig {
   stripeKey: string;
+  webhookSecret: string;
 }

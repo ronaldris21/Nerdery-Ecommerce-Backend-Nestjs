@@ -1,12 +1,22 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as bodyParser from 'body-parser';
 
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api');
+
+  // Enable raw body parsing for webhooks
+  app.use(
+    bodyParser.json({
+      verify: (req, res, buf) => {
+        (req as any).rawBody = buf;
+      },
+    }),
+  );
 
   const config = new DocumentBuilder()
     .setTitle('Sport Clothing Ecommerce API')

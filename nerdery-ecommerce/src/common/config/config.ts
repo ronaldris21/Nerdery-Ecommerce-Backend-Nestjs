@@ -48,6 +48,7 @@ const config: Config = {
   },
   stripeConfig: {
     stripeKey: process.env.STRIPE_API_KEY,
+    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
   },
 };
 
