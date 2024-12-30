@@ -12,12 +12,14 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    tty: true
 
   redis:
     image: redis:alpine
     container_name: redis_container
     ports:
       - "6379:6379"
+    tty: true
 
 volumes:
   postgres_data:
