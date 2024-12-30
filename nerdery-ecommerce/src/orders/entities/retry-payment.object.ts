@@ -5,9 +5,9 @@ export class RetryPaymentPayload {
   @Field()
   isPaymentNeeded: boolean;
 
-  @Field()
+  @Field(() => String, { nullable: true })
   clientSecret?: string;
 
-  @Field()
+  @Field(() => String, { nullable: true })
   paymentUrl?: string;
 }

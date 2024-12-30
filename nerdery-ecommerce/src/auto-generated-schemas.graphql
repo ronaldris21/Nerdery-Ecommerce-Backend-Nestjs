@@ -175,8 +175,8 @@ type OrderObject {
 
 type RetryPaymentPayload {
   isPaymentNeeded: Boolean!
-  clientSecret: String!
-  paymentUrl: String!
+  clientSecret: String
+  paymentUrl: String
 }
 
 type PaginationMeta {
