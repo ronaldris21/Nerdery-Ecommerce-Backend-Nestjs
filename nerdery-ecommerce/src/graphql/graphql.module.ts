@@ -12,6 +12,8 @@ import { GraphQLModule } from '@nestjs/graphql';
       playground: true,
       debug: true,
       introspection: true,
+      context: ({ req, res }) => ({ req, res }), // Pass req and res explicitly
+
       formatError: (error) => ({
         //This is made for class validator errors are represented in a array
         message: Array.isArray(error.extensions['originalError']?.['message'])

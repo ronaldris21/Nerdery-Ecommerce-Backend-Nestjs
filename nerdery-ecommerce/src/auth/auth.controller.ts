@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Body, UseGuards, HttpCode } from '@nestjs/common';
+import { hours, Throttle } from '@nestjs/throttler';
 
 import { AuthService } from './auth.service';
 import { GetAccessToken } from './decoratos/get-jwtPayload.decorator';
@@ -51,6 +52,7 @@ export class AuthController {
   }
 
   @Post('reset-password')
+  @Throttle({ default: { ttl: hours(1), limit: 5 } })
   @HttpCode(200)
   resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     return this.authService.resetPassword(resetPasswordDto);
