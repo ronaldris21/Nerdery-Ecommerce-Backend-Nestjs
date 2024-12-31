@@ -26,6 +26,13 @@ async function bootstrap() {
     }),
   );
 
+  app.enableCors({
+    origin: '*', //I have no fronted yet, so I'm allowing all origins TODO: Change this in the future with real domain
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: '*',
+    credentials: true,
+  });
+
   // Enable raw body parsing for webhooks
   app.use(
     bodyParser.json({
