@@ -34,18 +34,31 @@ You can choose the target of your business, be creative!.
 8. Stripe Integration for payment (including webhooks management) ✅
 
 ## Mandatory Implementations
-Schema validation for environment variables ✅
-Usage of global exception filter ✅
-Usage of guards, pipes (validation) ✅
-Usage of custom decorators ✅
-Configure helmet✅, cors✅, rate limit✅ (this last one for reset password feature + login + forget-password) ✅
+* Schema validation for environment variables ✅
+* Usage of global exception filter ✅
+* Usage of guards, pipes (validation) ✅
+* Usage of custom decorators ✅
+* Configure helmet✅, cors✅, rate limit✅ (this last one for reset password feature + login + forget-password) ✅
 
-## Extra points
+## Extra recomended points
 * Implement resolve field in graphQL queries (if apply)
 * When the stock of a product reaches *5*, notify the last user that liked it and not purchased the product yet with an email. ✅
   Use a background job and make sure to include the product's image in the email. ✅
 * Send an email when the user changes the password ✅
 * Deploy on Hostinger VPS ✅
+
+## Personal extra features:
+* Token invalidation using Redis cache instance ✅
+* Refresh token (30 days) + access token (4 hours) ✅
+* Product Variations ✅
+* Product Variation discounts (PERCENTAGE | DISCOUNT | NONE) ✅
+* Minimal react payment app to simulate payments and receive updates on the webhook in the server. Make sure to use the server endpoints (http://217.15.170.229:3100) ✅
+* Users with multiple roles ✅
+* Cart Items with discounts (PERCENTAGE | DISCOUNT | NONE). This prices are calculated when retrieving the user cart ✅
+* Product search with filters like: gender, minPrice, maxPrice, search, categoryId ✅
+* Product search sorters ASC or DESC by name, createdAt, updatedAt, likesCount, price ✅
+* VPS upload setup with docker and PM2. Redis/database retry connections in case of failed. Server setup to run instance on server startup in any unexpected shutdown ✅
+
 
 ## Notes: 
 
@@ -54,20 +67,9 @@ Requirements to use Rest:
 * Stripe Integration for payment (including webhooks management) ✅
 
 Requirements to use Graph: 
-* The ones not included in the block above
+* The ones not included in the block above 
 
-## Extra features:
-* Token invalidation using Redis cache instance ✅
-* Refresh token (30 days) + access token (4 hours) ✅
-* Product Variations ✅
-* Minimal react payment app to simulate payments and receive updates on the webhook in the server. Make sure to use the server endpoints (http://217.15.170.229:3100) ✅
-* Users with multiple roles ✅
-* Cart Items with discounts (PERCENTAGE | DISCOUNT | NONE). This prices are calculated when retrieving the user cart ✅
-* Product search with filters like: gender, minPrice, maxPrice, search, categoryId ✅
-* Product search sorters ASC or DESC by name, createdAt, updatedAt, likesCount, price ✅
-* VPS upload setup with docker and PM2. Redis/database retry connections in case of failed. Server setup to run instance on server startup in any unexpected shutdown ✅
 
-```
 
 ## References:
 
@@ -91,7 +93,7 @@ Variables used:
     - [localhost:3100/api](http://217.15.170.229:3100/api)
 - ACCESS_TOKEN
 
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/3ebd0321-2171-4eda-a3de-1e532f377733/2cde1e7a-529c-41f8-8f14-dca9c7b2fa47/image.png)
+![image](https://github.com/user-attachments/assets/4f09e792-38ee-4dd8-99c1-c23b6cf95455)
 
 Note: access_token is set automatically after login endpoint is successfully hit.
 
@@ -103,15 +105,16 @@ Note: access_token is set automatically after login endpoint is successfully hit
 
 - These are the requests used in the project
 
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/3ebd0321-2171-4eda-a3de-1e532f377733/ca301101-5936-4b85-9c3c-1ba48183588b/image.png)
+![image](https://github.com/user-attachments/assets/bb747d10-fe41-46ee-ae27-ec8963cb6e39)
 
 - You can test them locally on POSTMAN DESKTOP  (to edit the requests make a fork)
 
- 
+ ![image](https://github.com/user-attachments/assets/261b4a23-5a6d-4ca1-8013-d4484ebcf5a2)
+
 
 - Make sure to have then environments active: (white circular check on):
 
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/3ebd0321-2171-4eda-a3de-1e532f377733/ff6ee70b-fce5-4c1a-bf63-a95132d785be/image.png)
+![image](https://github.com/user-attachments/assets/4520c176-d695-4362-8f77-c1ed1da3f748)
 
 ## Run the app locally:
 
