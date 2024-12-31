@@ -256,14 +256,11 @@ export class AuthService {
     const resetURL: string = `${this.configService.get<FrontendConfig>(ConfigNames.frontend).resetPasswordFrontendUrl}?token=${resetPassword.resetToken}`;
     await this.mailService.sendPasswordResetEmail(user, resetURL, resetPassword.resetToken);
 
-    // TODO: modificar
     return {
       statusCode: 200,
       message: 'Password reset email sent. You have 1 hour to reset your password',
     };
   }
-
-  //TODO: generic responses types:
 
   async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<GenericResponseDto> {
     const resetPassword = await this.prisma.passwordReset.findUnique({
@@ -286,7 +283,7 @@ export class AuthService {
 
     const hashedPassword = await this.passwordService.hashPassword(resetPasswordDto.password);
 
-    await this.prisma.user.update({
+    const user = await this.prisma.user.update({
       where: {
         id: resetPassword.userId,
       },
@@ -308,7 +305,8 @@ export class AuthService {
 
     await this.removeAccessTokenFromCacheByUserId(resetPassword.userId);
 
-    //TODO: sent email for password reset here
+    await this.mailService.sendPasswordChangeNotification(user);
+
     return {
       statusCode: 200,
       message: 'Password reset successfully, now you can login using your new password',

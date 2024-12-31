@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, UseGuards, HttpCode } from '@nestjs/common';
-import { hours, Throttle } from '@nestjs/throttler';
+import { hours, minutes, Throttle } from '@nestjs/throttler';
 
 import { AuthService } from './auth.service';
 import { GetAccessToken } from './decoratos/get-jwtPayload.decorator';
@@ -29,6 +29,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @Throttle({ default: { ttl: minutes(5), limit: 10 } })
   @HttpCode(200)
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
@@ -46,6 +47,7 @@ export class AuthController {
   }
 
   @Post('forgot-password')
+  @Throttle({ default: { ttl: hours(1), limit: 5 } })
   @HttpCode(200)
   forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
     return this.authService.forgotPassword(forgotPasswordDto.email);

@@ -8,6 +8,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class MailService {
+  logger = new Logger('MailService');
+
   constructor(
     private mailerService: MailerService,
     private readonly prismaService: PrismaService,
@@ -41,6 +43,18 @@ export class MailService {
     });
   }
 
+  async sendPasswordChangeNotification(user: User): Promise<void> {
+    await this.mailerService.sendMail({
+      to: user.email,
+      subject: 'Your password was changed!',
+      template: './password-changed',
+      context: {
+        name: user.firstName,
+      },
+    });
+    this.logger.log('Password change notification sent');
+  }
+
   async sendUserConfirmation(user: JwtPayloadDto, token: string) {
     const url = `example.com/auth/confirm?token=${token}`;
 
@@ -59,8 +73,7 @@ export class MailService {
 
   async sendLowStockEmail(prodVariation: ProductVariation) {
     setTimeout(async () => {
-      const logger = new Logger('MailService');
-      logger.log('SENDING LOW STOCK EMAIL');
+      this.logger.log('SENDING LOW STOCK EMAIL');
 
       //last liked and not bought user:
       const likes = await this.prismaService.productLike.findMany({
@@ -129,11 +142,11 @@ export class MailService {
         context: templateData,
       });
 
-      logger.log(`Email sent to: ${userToSendEmail.email}`);
-      logger.log(`Product name: ${productVariationFullDetails.product.name}`);
-      logger.log(`Product ID: ${productVariationFullDetails.product.id}`);
-      logger.log(`Product Variation ID: ${productVariationFullDetails.id}`);
-      logger.log(`Product Variation Stock: ${productVariationFullDetails.stock}`);
+      this.logger.log(`Email sent to: ${userToSendEmail.email}`);
+      this.logger.log(`Product name: ${productVariationFullDetails.product.name}`);
+      this.logger.log(`Product ID: ${productVariationFullDetails.product.id}`);
+      this.logger.log(`Product Variation ID: ${productVariationFullDetails.id}`);
+      this.logger.log(`Product Variation Stock: ${productVariationFullDetails.stock}`);
     }, 1);
   }
 }
