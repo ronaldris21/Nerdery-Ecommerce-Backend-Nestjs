@@ -92,7 +92,12 @@ export class ProductsService {
       orderBy: orderBy,
       skip: (page - 1) * limit,
       take: limit,
-      include: { category: true, productVariations: true },
+      include: {
+        category: true,
+        productVariations: {
+          include: { variationImages: true },
+        },
+      },
     });
 
     if (!isManagerOrSimilar) {
