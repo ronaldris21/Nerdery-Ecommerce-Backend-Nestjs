@@ -12,7 +12,7 @@ import { GraphQLModule } from '@nestjs/graphql';
       playground: true,
       debug: true,
       introspection: true,
-      context: ({ req, res }) => ({ req, res }), // Pass req and res explicitly
+      context: ({ req, res }) => ({ req, res }), // Pass req and res explicitly for rate limit feature
 
       formatError: (error) => ({
         //This is made for class validator errors are represented in a array
