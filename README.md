@@ -38,13 +38,13 @@ Schema validation for environment variables ✅
 Usage of global exception filter ✅
 Usage of guards, pipes (validation) ✅
 Usage of custom decorators ✅
-Configure helmet, cors, rate limit (this last one for reset password feature)
+Configure helmet✅, cors✅, rate limit✅ (this last one for reset password feature + login + forget-password) ✅
 
 ## Extra points
 * Implement resolve field in graphQL queries (if apply)
 * When the stock of a product reaches *5*, notify the last user that liked it and not purchased the product yet with an email. ✅
   Use a background job and make sure to include the product's image in the email. ✅
-* Send an email when the user changes the password 
+* Send an email when the user changes the password ✅
 * Deploy on Hostinger VPS ✅
 
 ## Notes: 
@@ -57,9 +57,16 @@ Requirements to use Graph:
 * The ones not included in the block above
 
 ## Extra features:
-* Token invalidation using Redis cache instance
-* Refresh token (30 days) + access token (4 hours)
-* Product Variations
+* Token invalidation using Redis cache instance ✅
+* Refresh token (30 days) + access token (4 hours) ✅
+* Product Variations ✅
+* Minimal react payment app to simulate payments and receive updates on the webhook in the server. Make sure to use the server endpoints (http://217.15.170.229:3100) ✅
+* Users with multiple roles ✅
+* Cart Items with discounts (PERCENTAGE | DISCOUNT | NONE). This prices are calculated when retrieving the user cart ✅
+* Product search with filters like: gender, minPrice, maxPrice, search, categoryId ✅
+* Product search sorters ASC or DESC by name, createdAt, updatedAt, likesCount, price ✅
+* VPS upload setup with docker and PM2. Redis/database retry connections in case of failed. Server setup to run instance on server startup in any unexpected shutdown ✅
+
 ```
 
 ## References:
