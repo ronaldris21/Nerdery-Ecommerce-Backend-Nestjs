@@ -18,6 +18,7 @@ export class ProductsResolver {
   constructor(private readonly productsService: ProductsService) {}
 
   @Query(() => ProductsPagination)
+  // @Throttle({ default: { ttl: 5000, limit: 1 } }) // Throttle works for graphql and http fine!
   products(
     @Args('filter', { nullable: true }) filter?: ProductFiltersInput,
     @Args('sortBy', { nullable: true }) sortBy?: SortingProductInput,

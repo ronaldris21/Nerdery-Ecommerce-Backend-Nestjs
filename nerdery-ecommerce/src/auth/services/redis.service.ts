@@ -1,12 +1,24 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
+import { ConfigNames, RedisConfig } from 'src/common/config/config.interface';
 
 @Injectable()
 export class RedisService {
   private redisClient: Redis;
 
-  constructor() {
-    this.redisClient = new Redis(); // Configure Redis connection if necessary
+  constructor(private readonly configService: ConfigService) {
+    const redisHost = this.configService.get<RedisConfig>(ConfigNames.redis);
+    this.redisClient = new Redis({
+      host: redisHost.host,
+      port: redisHost.port,
+
+      retryStrategy: (times) => {
+        const delay = times * 500;
+        console.warn(`Retrying to connect to Redis... Attempt: ${times}, Delay: ${delay}s`);
+        return delay;
+      },
+    });
   }
 
   getAccessTokenKey(userId: string, iat: number): string {
