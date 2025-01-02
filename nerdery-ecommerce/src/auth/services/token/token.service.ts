@@ -1,10 +1,13 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { UUID } from 'crypto';
+
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import ms from 'ms';
 import { AuthResponseDto } from 'src/auth/dto/authResponse.dto';
 import { JwtPayloadDto } from 'src/auth/dto/jwtPayload.dto';
 import { ConfigNames, JwtConfig } from 'src/common/config/config.interface';
+import { validateStringUUID } from 'src/common/utils';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { v4 as uuid4 } from 'uuid';
 
@@ -72,6 +75,7 @@ export class TokenService {
   // REDIS OPERATIONS
 
   async addAccessTokenToCache(userId: string, iat: number, accessToken: string): Promise<void> {
+    this.validateIdUuidOrThrow(userId);
     const redisKey = this.redisService.getAccessTokenKey(userId, iat);
     const expiresIn = this.configService.get<JwtConfig>(ConfigNames.jwt).expiresIn;
 
@@ -79,11 +83,13 @@ export class TokenService {
   }
 
   async removeAccessTokenFromCache(userId: string, iat: number): Promise<void> {
+    this.validateIdUuidOrThrow(userId);
     const redisKey = this.redisService.getAccessTokenKey(userId, iat);
     await this.redisService.del(redisKey);
   }
 
-  async removeAccessTokenFromCacheByUserId(userId: string): Promise<void> {
+  async removeAccessTokenFromCacheByUserId(userId: UUID): Promise<void> {
+    this.validateIdUuidOrThrow(userId);
     await this.redisService.removeAllKeysByPattern(`user:${userId}:iat:*`);
   }
 
@@ -94,20 +100,30 @@ export class TokenService {
       where: { refreshToken },
     });
     if (!token) {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new NotFoundException('Invalid refresh token');
     }
     return token;
   }
-  async invalidateRefreshToken(refreshToken: string): Promise<void> {
+  async invalidateRefreshToken(refreshToken: string): Promise<boolean> {
     try {
       await this.prismaService.refreshToken.delete({ where: { refreshToken } });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      return true;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars
     } catch (e) {
       // No need to throw an error if the token no existe
     }
+    return false;
   }
 
-  async invalidateAllRefreshTokens(userId: string): Promise<void> {
-    await this.prismaService.refreshToken.deleteMany({ where: { userId } });
+  async invalidateAllRefreshTokens(userId: string): Promise<number> {
+    this.validateIdUuidOrThrow(userId);
+    const count = await this.prismaService.refreshToken.deleteMany({ where: { userId } });
+    return count.count;
+  }
+
+  validateIdUuidOrThrow(id: string): void {
+    if (validateStringUUID(id) === false) {
+      throw new BadRequestException('Invalid user id in Token service');
+    }
   }
 }
