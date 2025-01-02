@@ -1,5 +1,3 @@
-import { UUID } from 'crypto';
-
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -88,7 +86,7 @@ export class TokenService {
     await this.redisService.del(redisKey);
   }
 
-  async removeAccessTokenFromCacheByUserId(userId: UUID): Promise<void> {
+  async removeAccessTokenFromCacheByUserId(userId: string): Promise<void> {
     this.validateIdUuidOrThrow(userId);
     await this.redisService.removeAllKeysByPattern(`user:${userId}:iat:*`);
   }
