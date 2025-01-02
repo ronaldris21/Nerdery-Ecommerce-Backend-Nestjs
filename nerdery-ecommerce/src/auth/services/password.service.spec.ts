@@ -15,12 +15,12 @@ describe('PasswordService', () => {
   let mockConfigService: Partial<ConfigService>;
 
   beforeEach(async () => {
-    // Mock ConfigService
     mockConfigService = {
       get: jest.fn().mockImplementation((key: string) => {
         if (key === ConfigNames.jwt) {
+          //Mock only the used value, and not all from JwtConfig
           return {
-            bcryptSaltOrRound: 10, // Mocked value for bcrypt salt or rounds
+            bcryptSaltOrRound: 10,
           };
         }
       }),
@@ -47,26 +47,37 @@ describe('PasswordService', () => {
     it('should return a number if the config value is a number', () => {
       jest.spyOn(mockConfigService, 'get').mockReturnValueOnce({ bcryptSaltOrRound: 7 });
       expect(passwordService.bcryptSaltRounds).toBe(7);
+      expect(mockConfigService.get).toHaveBeenCalled();
     });
 
     it('should return 10 as default value from undefined', () => {
       jest.spyOn(mockConfigService, 'get').mockReturnValueOnce({ bcryptSaltOrRound: undefined });
       expect(passwordService.bcryptSaltRounds).toBe(10);
+      expect(mockConfigService.get).toHaveBeenCalled();
     });
 
     it('should return 10 as default value from null', () => {
       jest.spyOn(mockConfigService, 'get').mockReturnValueOnce({ bcryptSaltOrRound: null });
       expect(passwordService.bcryptSaltRounds).toBe(10);
+      expect(mockConfigService.get).toHaveBeenCalled();
     });
 
     it('should return 10 as default value from empty string', () => {
       jest.spyOn(mockConfigService, 'get').mockReturnValueOnce({ bcryptSaltOrRound: '' });
       expect(passwordService.bcryptSaltRounds).toBe(10);
+      expect(mockConfigService.get).toHaveBeenCalled();
     });
 
     it('should parse a string into a number if the config value is a string', () => {
       jest.spyOn(mockConfigService, 'get').mockReturnValueOnce({ bcryptSaltOrRound: '12' });
       expect(passwordService.bcryptSaltRounds).toBe(12);
+      expect(mockConfigService.get).toHaveBeenCalled();
+    });
+
+    it('should return 10 as default value if the config value is invalid string', () => {
+      jest.spyOn(mockConfigService, 'get').mockReturnValueOnce({ bcryptSaltOrRound: 'riskai' });
+      expect(passwordService.bcryptSaltRounds).toBe(10);
+      expect(mockConfigService.get).toHaveBeenCalled();
     });
   });
 
@@ -84,10 +95,9 @@ describe('PasswordService', () => {
 
   describe('validatePassword', () => {
     it('should return true if the password matches the hash', async () => {
-      const password = 'myPassword';
+      const password = 'originaPassword';
       const hashedPassword = 'hashedPassword';
       (compare as jest.Mock).mockResolvedValue(true);
-
       const result = await passwordService.validatePassword(password, hashedPassword);
       expect(compare).toHaveBeenCalledWith(password, hashedPassword);
       expect(result).toBe(true);
