@@ -91,7 +91,12 @@ class EnvironmentVariables {
   STRIPE_WEBHOOK_SECRET: string;
 }
 
+const printVariableToTime = (variable: string, time: number) => {
+  return `${variable} - expires in: ${time / 1000} seconds  = ${time / 1000 / 60} minutes  = ${time / 1000 / 60 / 60} hours  =  ${time / 1000 / 60 / 60 / 24} days`;
+};
+
 export const validateEnv = (config: Record<string, unknown>) => {
+  debug('Validating environment variables\n\n');
   const validatedConfig = plainToInstance(EnvironmentVariables, config, {
     enableImplicitConversion: true,
   });
@@ -103,20 +108,22 @@ export const validateEnv = (config: Record<string, unknown>) => {
   }
 
   const expiresIn: number = ms(validatedConfig.JWT_EXPIRATION_IN);
-  debug(`JWT - expires in: ${expiresIn} ms`);
   if (!expiresIn || expiresIn < 1000 * 60 * 5) {
     throw new Error(
       'JWT_EXPIRATION_IN must be valid ms strings. At least 5 minutes. Check https://www.npmjs.com/package/ms for more information.',
     );
   }
+  debug(printVariableToTime('JWT_EXPIRATION_IN', expiresIn));
 
   const refreshIn: number = ms(validatedConfig.JWT_REFRESH_IN);
-  debug(`Refresh in: ${refreshIn} ms`);
   if (!refreshIn || refreshIn < 1000 * 60 * 60) {
     throw new Error(
-      'JWT_EXPIRATION_IN must be valid ms strings. At least 60 minutes. Check https://www.npmjs.com/package/ms for more information.',
+      'JWT_REFRESH_IN must be valid ms strings. At least 60 minutes. Check https://www.npmjs.com/package/ms for more information.',
     );
   }
+  debug(printVariableToTime('JWT_REFRESH_IN', refreshIn));
+
+  debug('\n\n Environment variables validated successfully\n\n');
 
   return validatedConfig;
 };
