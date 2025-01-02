@@ -155,9 +155,17 @@ describe('RedisService', () => {
 
     it('should throw error if pattern', async () => {
       const pattern = 'nonexistent*';
+
+      const keys = ['test1', 'test2'];
+      mockRedisClient.keys.mockResolvedValue(keys);
+      mockRedisClient.del.mockResolvedValue(0);
+
       await expect(
         async () => await redisService.removeAllKeysByPattern(pattern),
       ).rejects.toThrow();
+
+      expect(mockRedisClient.keys).not.toHaveBeenCalled();
+      expect(mockRedisClient.del).not.toHaveBeenCalled();
     });
 
     it('should throw error if pattern: null', async () => {
@@ -166,6 +174,9 @@ describe('RedisService', () => {
       await expect(
         async () => await redisService.removeAllKeysByPattern(pattern),
       ).rejects.toThrow();
+
+      expect(mockRedisClient.keys).not.toHaveBeenCalled();
+      expect(mockRedisClient.del).not.toHaveBeenCalled();
     });
 
     it('should throw error if pattern: undefined', async () => {
@@ -174,6 +185,9 @@ describe('RedisService', () => {
       await expect(
         async () => await redisService.removeAllKeysByPattern(pattern),
       ).rejects.toThrow();
+
+      expect(mockRedisClient.keys).not.toHaveBeenCalled();
+      expect(mockRedisClient.del).not.toHaveBeenCalled();
     });
 
     it('should throw error if pattern: empty', async () => {
@@ -182,6 +196,9 @@ describe('RedisService', () => {
       await expect(
         async () => await redisService.removeAllKeysByPattern(pattern),
       ).rejects.toThrow();
+
+      expect(mockRedisClient.keys).not.toHaveBeenCalled();
+      expect(mockRedisClient.del).not.toHaveBeenCalled();
     });
 
     it('should not call del if pattern deletes all *', async () => {
@@ -190,6 +207,9 @@ describe('RedisService', () => {
       await expect(
         async () => await redisService.removeAllKeysByPattern(pattern),
       ).rejects.toThrow();
+
+      expect(mockRedisClient.keys).not.toHaveBeenCalled();
+      expect(mockRedisClient.del).not.toHaveBeenCalled();
     });
 
     it('should throw error if pattern user:*', async () => {
@@ -198,12 +218,18 @@ describe('RedisService', () => {
       await expect(
         async () => await redisService.removeAllKeysByPattern(pattern),
       ).rejects.toThrow();
+
+      expect(mockRedisClient.keys).not.toHaveBeenCalled();
+      expect(mockRedisClient.del).not.toHaveBeenCalled();
     });
     it('should throw error if pattern user:4as*', async () => {
       const pattern = 'user:4as*';
       await expect(
         async () => await redisService.removeAllKeysByPattern(pattern),
       ).rejects.toThrow();
+
+      expect(mockRedisClient.keys).not.toHaveBeenCalled();
+      expect(mockRedisClient.del).not.toHaveBeenCalled();
     });
 
     it('should not del keys by pattern if userId not a UUID', async () => {
@@ -211,6 +237,9 @@ describe('RedisService', () => {
       await expect(
         async () => await redisService.removeAllKeysByPattern(pattern),
       ).rejects.toThrow();
+
+      expect(mockRedisClient.keys).not.toHaveBeenCalled();
+      expect(mockRedisClient.del).not.toHaveBeenCalled();
     });
 
     it('should find keys by pattern and return an array', async () => {
