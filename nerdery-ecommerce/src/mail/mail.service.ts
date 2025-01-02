@@ -43,7 +43,7 @@ export class MailService {
     });
   }
 
-  async sendPasswordChangeNotification(user: User): Promise<void> {
+  async sendPasswordChangedNotification(user: User): Promise<void> {
     await this.mailerService.sendMail({
       to: user.email,
       subject: 'Your password was changed!',
