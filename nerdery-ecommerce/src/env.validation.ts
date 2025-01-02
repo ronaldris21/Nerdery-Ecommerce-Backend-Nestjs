@@ -1,6 +1,11 @@
+/* eslint-disable unused-imports/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { debug } from 'console';
+
 import { plainToInstance } from 'class-transformer';
 import { IsNotEmpty, IsNumber, IsString, Min, MinLength } from 'class-validator';
 import { validateSync } from 'class-validator';
+import ms from 'ms';
 
 class EnvironmentVariables {
   @IsString()
@@ -96,5 +101,22 @@ export const validateEnv = (config: Record<string, unknown>) => {
   if (errors.length > 0) {
     throw new Error(errors.toString());
   }
+
+  const expiresIn: number = ms(validatedConfig.JWT_EXPIRATION_IN);
+  debug(`JWT - expires in: ${expiresIn} ms`);
+  if (!expiresIn || expiresIn < 1000 * 60 * 5) {
+    throw new Error(
+      'JWT_EXPIRATION_IN must be valid ms strings. At least 5 minutes. Check https://www.npmjs.com/package/ms for more information.',
+    );
+  }
+
+  const refreshIn: number = ms(validatedConfig.JWT_REFRESH_IN);
+  debug(`Refresh in: ${refreshIn} ms`);
+  if (!refreshIn || refreshIn < 1000 * 60 * 60) {
+    throw new Error(
+      'JWT_EXPIRATION_IN must be valid ms strings. At least 60 minutes. Check https://www.npmjs.com/package/ms for more information.',
+    );
+  }
+
   return validatedConfig;
 };
