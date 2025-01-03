@@ -41,7 +41,7 @@ export class IdValidatorService {
         throw new NotFoundException('Product-Variation not found');
       }
       return productVariation;
-      // eslint-disable-next-line unused-imports/no-unused-vars
+      // eslint-disable-next-line unused-imports/no-unused-vars, @typescript-eslint/no-unused-vars
     } catch (error) {
       throw new NotFoundException('Product-Variation not found');
     }
