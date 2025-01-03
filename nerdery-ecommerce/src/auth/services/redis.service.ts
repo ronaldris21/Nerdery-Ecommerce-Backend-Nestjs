@@ -36,7 +36,7 @@ export class RedisService {
     return `user:${userId}:iat:${iat}`;
   }
 
-  async set(key: string, value: string, ttlSeconds?: number): Promise<void> {
+  async set(key: string, value: string, ttlSeconds: number = 900): Promise<void> {
     if (ttlSeconds) {
       await this.redisClient.set(key, value, 'EX', ttlSeconds);
     } else {
