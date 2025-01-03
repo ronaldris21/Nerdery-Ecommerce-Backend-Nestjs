@@ -18,10 +18,10 @@ jest.mock('ioredis', () => {
 
 describe('RedisService', () => {
   let redisService: RedisService;
-  let mockConfigService: Partial<ConfigService>;
+  let configService: Partial<ConfigService>;
 
   beforeEach(async () => {
-    mockConfigService = {
+    const mockConfigService = {
       get: jest.fn().mockReturnValue({
         host: 'localhost',
         port: 6379,
@@ -39,6 +39,7 @@ describe('RedisService', () => {
     }).compile();
 
     redisService = module.get<RedisService>(RedisService);
+    configService = module.get(ConfigService);
     mockRedisClient.keys.mockReset();
     mockRedisClient.del.mockReset();
     mockRedisClient.exists.mockReset();
@@ -49,7 +50,7 @@ describe('RedisService', () => {
   it('should be defined', () => {
     expect(redisService).toBeDefined();
     expect(mockRedisClient).toBeDefined();
-    expect(mockConfigService).toBeDefined();
+    expect(configService).toBeDefined();
   });
 
   describe('getAccessTokenKey', () => {

@@ -15,7 +15,7 @@ const mockPrismaService = {
 
 describe('UsersService', () => {
   let service: UsersService;
-  let prismaService: PrismaService;
+  let prismaService: typeof mockPrismaService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -29,7 +29,7 @@ describe('UsersService', () => {
     }).compile();
 
     service = module.get<UsersService>(UsersService);
-    prismaService = module.get<PrismaService>(PrismaService);
+    prismaService = module.get(PrismaService);
   });
 
   it('should be defined', () => {

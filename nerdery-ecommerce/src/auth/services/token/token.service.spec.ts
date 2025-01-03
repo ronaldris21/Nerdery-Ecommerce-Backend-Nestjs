@@ -34,14 +34,14 @@ const mockPrismaServiceInit = {
 
 describe('TokenService', () => {
   let service: TokenService;
-  let mockPrismaService: PrismaService;
-  let mockConfigService: Partial<ConfigService>;
+  let prismaService: typeof mockPrismaServiceInit;
+  let configService: Partial<ConfigService>;
 
-  let mockJwtService: DeepMocked<JwtService>;
-  let mockRedisService: DeepMocked<RedisService>;
+  let jwtService: DeepMocked<JwtService>;
+  let redisService: DeepMocked<RedisService>;
 
   beforeEach(async () => {
-    mockConfigService = {
+    configService = {
       get: jest.fn().mockReturnValue({
         bcryptSaltOrRound: 10,
         expiresIn: '60m',
@@ -56,63 +56,59 @@ describe('TokenService', () => {
         TokenService,
         { provide: JwtService, useValue: createMock<JwtService>() },
         { provide: RedisService, useValue: createMock<RedisService>() },
-        { provide: ConfigService, useValue: mockConfigService },
+        { provide: ConfigService, useValue: configService },
         { provide: PrismaService, useValue: mockPrismaServiceInit },
       ],
     }).compile();
 
     service = module.get<TokenService>(TokenService);
-    mockJwtService = module.get(JwtService);
-    mockRedisService = module.get(RedisService);
-    mockPrismaService = module.get(PrismaService);
+    jwtService = module.get(JwtService);
+    redisService = module.get(RedisService);
+    prismaService = module.get(PrismaService);
 
     jest.clearAllMocks();
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
-    expect(mockJwtService).toBeDefined();
-    expect(mockRedisService).toBeDefined();
-    expect(mockConfigService).toBeDefined();
-    expect(mockPrismaService).toBeDefined();
+    expect(jwtService).toBeDefined();
+    expect(redisService).toBeDefined();
+    expect(configService).toBeDefined();
+    expect(prismaService).toBeDefined();
   });
 
   describe('addAccessTokenToCache', () => {
     beforeEach(() => {
-      mockRedisService.set.mockReset();
-      mockRedisService.set.mockReset();
+      redisService.set.mockReset();
+      redisService.set.mockReset();
     });
     it('should call mockRedisService.set with the correct key', async () => {
-      mockRedisService.getAccessTokenKey.mockReturnValue(redisKey);
+      redisService.getAccessTokenKey.mockReturnValue(redisKey);
 
       await service.addAccessTokenToCache(validUUID, iat, 'fakeAccessToken');
 
-      expect(mockRedisService.getAccessTokenKey).toHaveBeenCalledWith(validUUID, iat);
-      expect(mockRedisService.set).toHaveBeenCalledWith(
-        redisKey,
-        'fakeAccessToken',
-        ms('60m') / 1000,
-      );
+      expect(redisService.getAccessTokenKey).toHaveBeenCalledWith(validUUID, iat);
+      expect(redisService.set).toHaveBeenCalledWith(redisKey, 'fakeAccessToken', ms('60m') / 1000);
     });
 
     it('should throw error mockRedisService.del invalid id', async () => {
-      mockRedisService.getAccessTokenKey.mockReturnValue(redisKey);
+      redisService.getAccessTokenKey.mockReturnValue(redisKey);
 
       await expect(service.removeAccessTokenFromCache('invalidId', iat)).rejects.toThrow();
 
-      expect(mockRedisService.getAccessTokenKey).not.toHaveBeenCalled();
-      expect(mockRedisService.del).not.toHaveBeenCalled();
+      expect(redisService.getAccessTokenKey).not.toHaveBeenCalled();
+      expect(redisService.del).not.toHaveBeenCalled();
     });
   });
 
   describe('generateTokensForUser', () => {
     it('should generate accessToken, refreshToken and save them in Redis/DB', async () => {
-      mockJwtService.sign.mockReturnValueOnce('fakeAccessToken');
-      mockJwtService.decode.mockReturnValueOnce({ exp: 1234567 });
+      jwtService.sign.mockReturnValueOnce('fakeAccessToken');
+      jwtService.decode.mockReturnValueOnce({ exp: 1234567 });
 
       const result: AuthResponseDto = await service.generateTokensForUser(userValid);
 
-      expect(mockJwtService.sign).toHaveBeenCalledWith(
+      expect(jwtService.sign).toHaveBeenCalledWith(
         expect.objectContaining({
           userId: userValid.id,
           email: userValid.email,
@@ -121,9 +117,9 @@ describe('TokenService', () => {
         }),
         expect.any(Object),
       );
-      expect(mockRedisService.set).toHaveBeenCalledTimes(1);
-      expect(mockPrismaService.refreshToken.create).toHaveBeenCalledTimes(1);
-      expect(mockPrismaService.refreshToken.create).toHaveBeenCalledWith(
+      expect(redisService.set).toHaveBeenCalledTimes(1);
+      expect(prismaService.refreshToken.create).toHaveBeenCalledTimes(1);
+      expect(prismaService.refreshToken.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: {
             refreshToken: expect.any(String),
@@ -154,49 +150,47 @@ describe('TokenService', () => {
 
   describe('removeAccessTokenFromCache', () => {
     beforeEach(() => {
-      mockRedisService.set.mockReset();
-      mockRedisService.del.mockReset();
+      redisService.set.mockReset();
+      redisService.del.mockReset();
     });
     it('should call mockRedisService.del with the correct key', async () => {
-      mockRedisService.getAccessTokenKey.mockReturnValue(redisKey);
+      redisService.getAccessTokenKey.mockReturnValue(redisKey);
 
       await service.removeAccessTokenFromCache(validUUID, iat);
-      expect(mockRedisService.getAccessTokenKey).toHaveBeenCalledWith(validUUID, iat);
-      expect(mockRedisService.del).toHaveBeenCalledWith(redisKey);
+      expect(redisService.getAccessTokenKey).toHaveBeenCalledWith(validUUID, iat);
+      expect(redisService.del).toHaveBeenCalledWith(redisKey);
     });
 
     it('should throw error mockRedisService.del invalid id', async () => {
-      mockRedisService.getAccessTokenKey.mockReturnValue(redisKey);
+      redisService.getAccessTokenKey.mockReturnValue(redisKey);
 
       await expect(service.removeAccessTokenFromCache('invalidId', iat)).rejects.toThrow();
 
-      expect(mockRedisService.getAccessTokenKey).not.toHaveBeenCalled();
-      expect(mockRedisService.del).not.toHaveBeenCalled();
+      expect(redisService.getAccessTokenKey).not.toHaveBeenCalled();
+      expect(redisService.del).not.toHaveBeenCalled();
     });
   });
   describe('removeAccessTokenFromCacheByUserId', () => {
     beforeEach(() => {
-      mockRedisService.removeAllKeysByPattern.mockReset();
+      redisService.removeAllKeysByPattern.mockReset();
     });
     it('should call mockRedisService.removeAllKeysByPattern with the correct pattern', async () => {
       await service.removeAccessTokenFromCacheByUserId(validUUID);
-      expect(mockRedisService.removeAllKeysByPattern).toHaveBeenCalledWith(
-        `user:${validUUID}:iat:*`,
-      );
+      expect(redisService.removeAllKeysByPattern).toHaveBeenCalledWith(`user:${validUUID}:iat:*`);
     });
 
     it('should throw error mockRedisService.del invalid id', async () => {
-      mockRedisService.getAccessTokenKey.mockReturnValue(redisKey);
+      redisService.getAccessTokenKey.mockReturnValue(redisKey);
 
       await expect(service.removeAccessTokenFromCache('invalidId', iat)).rejects.toThrow();
 
-      expect(mockRedisService.removeAllKeysByPattern).not.toHaveBeenCalled();
+      expect(redisService.removeAllKeysByPattern).not.toHaveBeenCalled();
     });
   });
   describe('validateRefreshTokenOrThrow', () => {
     it('should return the token if it exists in DB', async () => {
       const refreshToken = 'token123';
-      jest.spyOn(mockPrismaService.refreshToken, 'findUnique').mockResolvedValueOnce({
+      jest.spyOn(prismaService.refreshToken, 'findUnique').mockResolvedValueOnce({
         id: validUUID,
         refreshToken: refreshToken,
         createdAt: new Date(),
@@ -206,29 +200,29 @@ describe('TokenService', () => {
 
       const result = await service.validateRefreshTokenOrThrow(refreshToken);
 
-      expect(mockPrismaService.refreshToken.findUnique).toHaveBeenCalledWith({
+      expect(prismaService.refreshToken.findUnique).toHaveBeenCalledWith({
         where: { refreshToken: refreshToken },
       });
       expect(result).toEqual(expect.objectContaining({ refreshToken: refreshToken }));
     });
 
     it('should throw UnauthorizedException if the token does not exist', async () => {
-      jest.spyOn(mockPrismaService.refreshToken, 'findUnique').mockResolvedValueOnce(null);
+      jest.spyOn(prismaService.refreshToken, 'findUnique').mockResolvedValueOnce(null);
 
       await expect(service.validateRefreshTokenOrThrow('notFoundToken')).rejects.toThrow();
     });
   });
   describe('invalidateRefreshToken', () => {
     beforeEach(() => {
-      mockPrismaService.refreshToken.delete = jest.fn();
+      prismaService.refreshToken.delete = jest.fn();
     });
 
     it('should delete the token in DB if it exists', async () => {
-      jest.spyOn(mockPrismaService.refreshToken, 'delete').mockResolvedValue(null);
+      jest.spyOn(prismaService.refreshToken, 'delete').mockResolvedValue(null);
 
       const result = await service.invalidateRefreshToken('someToken');
 
-      expect(mockPrismaService.refreshToken.delete).toHaveBeenCalledWith({
+      expect(prismaService.refreshToken.delete).toHaveBeenCalledWith({
         where: { refreshToken: 'someToken' },
       });
       expect(result).toBe(true);
@@ -236,11 +230,11 @@ describe('TokenService', () => {
 
     it('should not throw error if the token does not exist', async () => {
       jest
-        .spyOn(mockPrismaService.refreshToken, 'delete')
+        .spyOn(prismaService.refreshToken, 'delete')
         .mockRejectedValueOnce(new Error('Database error'));
       const result = await service.invalidateRefreshToken('missingToken');
 
-      expect(mockPrismaService.refreshToken.delete).toHaveBeenCalledWith({
+      expect(prismaService.refreshToken.delete).toHaveBeenCalledWith({
         where: { refreshToken: 'missingToken' },
       });
       expect(result).toBe(false);
@@ -248,24 +242,24 @@ describe('TokenService', () => {
   });
   describe('invalidateAllRefreshTokens', () => {
     beforeEach(() => {
-      mockPrismaService.refreshToken.deleteMany = jest.fn();
+      prismaService.refreshToken.deleteMany = jest.fn();
     });
     it('should delete all refreshTokens for a userId', async () => {
-      jest.spyOn(mockPrismaService.refreshToken, 'deleteMany').mockResolvedValue({ count: 2 });
+      jest.spyOn(prismaService.refreshToken, 'deleteMany').mockResolvedValue({ count: 2 });
 
       const result = await service.invalidateAllRefreshTokens(validUUID);
 
-      expect(mockPrismaService.refreshToken.deleteMany).toHaveBeenCalledWith({
+      expect(prismaService.refreshToken.deleteMany).toHaveBeenCalledWith({
         where: { userId: validUUID },
       });
       expect(result).toEqual(2);
     });
 
     it('should throw error for userId invalid', async () => {
-      jest.spyOn(mockPrismaService.refreshToken, 'deleteMany').mockResolvedValue({ count: 2 });
+      jest.spyOn(prismaService.refreshToken, 'deleteMany').mockResolvedValue({ count: 2 });
 
       await expect(service.invalidateAllRefreshTokens('user123')).rejects.toThrow();
-      expect(mockPrismaService.refreshToken.deleteMany).not.toHaveBeenCalled();
+      expect(prismaService.refreshToken.deleteMany).not.toHaveBeenCalled();
     });
   });
 
