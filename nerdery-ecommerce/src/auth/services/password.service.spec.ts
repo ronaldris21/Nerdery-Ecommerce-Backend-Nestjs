@@ -1,7 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { hash, compare } from 'bcrypt';
-import { ConfigNames } from 'src/common/config/config.interface';
+import { ConfigNames, JwtConfig } from 'src/common/config/config.interface';
 
 import { PasswordService } from './password.service';
 
@@ -16,9 +16,8 @@ describe('PasswordService', () => {
 
   beforeEach(async () => {
     mockConfigService = {
-      get: jest.fn().mockImplementation((key: string) => {
+      get: jest.fn().mockImplementation((key: string): Partial<JwtConfig> => {
         if (key === ConfigNames.jwt) {
-          //Mock only the used value, and not all from JwtConfig
           return {
             bcryptSaltOrRound: 10,
           };
