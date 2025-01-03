@@ -61,6 +61,17 @@ describe('RedisService', () => {
       expect(redisService.getAccessTokenKey(userId, iat)).toBe(expectedKey);
     });
 
+    // feat(redis): it.each for getAccessTokenKey
+    it.each([
+      [undefined, 1678900000],
+      [null, 1678900000],
+      ['', 1678900000],
+      ['userId', 0],
+      ['userId', -561651],
+    ])('should throw error for invalid input: %s, %s', (userId, iat) => {
+      expect(() => redisService.getAccessTokenKey(userId, iat)).toThrow();
+    });
+
     it('should not generate the correct access token key: userId undefined', () => {
       const userId = undefined;
       const iat = 1678900000;
