@@ -56,12 +56,12 @@ export class AuthService {
   }
 
   async signUp(signUpDto: SignUpDto): Promise<GenericResponseDto> {
-    const hashedPassword = await this.passwordService.hashPassword(signUpDto.password);
-
     const userExists = await this.userService.getUserByEmail(signUpDto.email);
     if (userExists) {
       throw new ConflictException('User already exists');
     }
+
+    const hashedPassword = await this.passwordService.hashPassword(signUpDto.password);
 
     const user = await this.prisma.user.create({
       data: {
@@ -106,9 +106,9 @@ export class AuthService {
         await this.tokenService.removeAccessTokenFromCache(user.userId, user.iat);
       }
     } catch (error) {
+      // No need to throw an error if the token is not found
       debug(error);
     }
-    // No need to throw an error if the token is not found
   }
 
   async refreshToken(accessToken: string, refreshToken: string): Promise<AuthResponseDto> {
@@ -120,8 +120,10 @@ export class AuthService {
       throw new UnprocessableEntityException('Invalid access token, or not sent');
     }
 
-    if (!user) {
-      throw new UnprocessableEntityException('Invalid access token, or not sent');
+    const dbUser = await this.userService.findById(user?.userId ?? 'fakeId');
+
+    if (!dbUser) {
+      throw new NotFoundException('User not in the database');
     }
 
     // Validate refresh token
@@ -136,10 +138,10 @@ export class AuthService {
 
     // Generate new tokens
     return await this.tokenService.generateTokensForUser({
-      email: user.email,
-      id: user.userId,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      email: dbUser.email,
+      id: dbUser.id,
+      firstName: dbUser.firstName,
+      lastName: dbUser.lastName,
       roles: roles,
     });
   }
