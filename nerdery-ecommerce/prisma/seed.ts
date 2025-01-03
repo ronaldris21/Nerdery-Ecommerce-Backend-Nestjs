@@ -531,11 +531,11 @@ async function main() {
   await prisma.rolePermission.deleteMany();
   await prisma.orderIncident.deleteMany();
 
-  // await prisma.userRole.deleteMany();
-  // await prisma.rolePermission.deleteMany();
-  // await prisma.permission.deleteMany();
-  // await prisma.role.deleteMany();
-  // await prisma.user.deleteMany();
+  await prisma.userRole.deleteMany();
+  await prisma.rolePermission.deleteMany();
+  await prisma.permission.deleteMany();
+  await prisma.role.deleteMany();
+  await prisma.user.deleteMany();
 
   console.log(`Start seeding ...`);
 

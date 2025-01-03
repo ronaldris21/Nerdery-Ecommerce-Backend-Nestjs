@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CartItem, ProductVariation } from '@prisma/client';
 import { CartItemObject } from 'src/cart-items/entities/cart-item.object';
 import { PriceSummaryInput } from 'src/common/dto/price-summary-input.dto ';
@@ -8,9 +8,10 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ProductCalculatedFieldsService {
+  logger = new Logger('ProductCalculatedFieldsService');
   constructor(private readonly prisma: PrismaService) {}
 
-  async recalculateProductMinMaxPrices(productIds: string[]) {
+  async recalculateProductMinMaxPrices(productIds: string[]): Promise<boolean> {
     const products = await this.prisma.product.findMany({
       where: {
         id: {
@@ -22,7 +23,7 @@ export class ProductCalculatedFieldsService {
       include: { productVariations: true },
     });
 
-    const updatePromises = products.map(async (product) => {
+    const updatePromises = products.map((product) => {
       const filteredProductVariations = product.productVariations.filter(
         (p) => p.isEnabled && !p.isDeleted,
       );
@@ -36,13 +37,18 @@ export class ProductCalculatedFieldsService {
       if (minPrice) calculatedData['minPrice'] = minPrice;
       if (maxPrice) calculatedData['maxPrice'] = maxPrice;
 
-      await this.prisma.product.update({
+      return this.prisma.product.update({
         where: { id: product.id },
         data: calculatedData,
       });
     });
-
-    await Promise.allSettled(updatePromises);
+    try {
+      await this.prisma.$transaction(updatePromises);
+      return true;
+    } catch (error) {
+      this.logger.error('Error updating product min-max prices', error);
+      return false;
+    }
   }
 
   async recalculateProductLikesCount(productIds: string[]) {

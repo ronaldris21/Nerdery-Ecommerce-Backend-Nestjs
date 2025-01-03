@@ -8,7 +8,10 @@ export class ThrottleContextGuard extends ThrottlerGuard {
     switch (context.getType<string>()) {
       case 'http': {
         const httpContext = context.switchToHttp();
-        return { req: httpContext.getRequest(), res: httpContext.getResponse() };
+        return {
+          req: httpContext.getRequest(),
+          res: httpContext.getResponse(),
+        };
       }
       case 'graphql': {
         const graphqlContext = GqlExecutionContext.create(context).getContext();

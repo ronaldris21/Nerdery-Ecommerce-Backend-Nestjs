@@ -32,7 +32,7 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, 'jwt') {
     const isCached = await this.redisService.get(redisKey);
 
     if (!isCached) {
-      throw new UnauthorizedException('Token is not in cache or has been revoked');
+      throw new UnauthorizedException('Access token is not in cache or has been revoked');
     }
 
     return payload;
