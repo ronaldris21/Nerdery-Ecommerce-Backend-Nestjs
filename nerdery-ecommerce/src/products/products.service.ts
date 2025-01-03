@@ -29,7 +29,8 @@ export class ProductsService {
     pagination?: PaginationInput,
     isManagerOrSimilar: boolean = false,
   ) {
-    const { page = 1, limit = 20 } = pagination;
+    const page = pagination?.page ?? 1;
+    const limit = pagination?.limit ?? 20;
 
     const where = { isDeleted: false, isEnabled: true };
     if (isManagerOrSimilar) {
@@ -168,12 +169,13 @@ export class ProductsService {
     const { categoryId, ...rest } = input;
 
     if (categoryId) {
-      if (!this.categoriesService.doesCategoryExist(categoryId)) {
-        throw new Error('Category does not exist');
+      if (!(await this.categoriesService.doesCategoryExist(categoryId))) {
+        throw new NotFoundException('Category does not exist');
       }
     }
 
-    await this.idValidatorService.findUniqueProductById({ id: input.id });
+    const prod = await this.idValidatorService.findUniqueProductById({ id: input.id });
+    const categoryIdUpdate = categoryId || prod.categoryId;
 
     return this.prisma.product.update({
       where: { id: input.id },
@@ -181,7 +183,7 @@ export class ProductsService {
         ...rest,
         category: {
           connect: {
-            id: categoryId,
+            id: categoryIdUpdate,
           },
         },
       },
@@ -209,9 +211,7 @@ export class ProductsService {
       where: { productId: id },
       data: { isEnabled: isEnabled },
     });
-    if (isEnabled) {
-      await this.productCalculatedFieldsService.recalculateProductMinMaxPrices([id]);
-    }
+    await this.productCalculatedFieldsService.recalculateProductMinMaxPrices([id]);
     return await this.prisma.product.update({
       where: { id },
       data: { isEnabled: isEnabled },
