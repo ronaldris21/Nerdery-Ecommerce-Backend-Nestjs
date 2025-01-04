@@ -34,11 +34,12 @@ export class ProductVariationsService {
 
   async create(input: CreateProductVariationInput) {
     await this.idValidatorService.findUniqueProductById({ id: input.productId }, false, false);
-    const { productId, ...rest } = input;
+    const { productId, price, ...rest } = input;
 
     const prodVariation = await this.prisma.productVariation.create({
       data: {
         ...rest,
+        price: Math.round(price * 100) / 100,
         product: {
           connect: { id: productId },
         },
@@ -66,6 +67,11 @@ export class ProductVariationsService {
     });
 
     const { productId, ...rest } = input;
+
+    if (input.price) {
+      rest.price = Math.round(input.price * 100) / 100;
+    }
+
     await this.prisma.productVariation.update({
       where: { id: input.id },
       data: {

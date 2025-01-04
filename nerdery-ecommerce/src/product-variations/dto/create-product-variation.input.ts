@@ -18,6 +18,7 @@ export class CreateProductVariationInput {
   @IsNumber()
   @IsPositive()
   @IsNotIn([0, 0.0], { message: 'Price cannot be zero' })
+  @Min(0.01)
   price: number;
 
   @Field(() => Float, { nullable: true, defaultValue: 0.0 })
