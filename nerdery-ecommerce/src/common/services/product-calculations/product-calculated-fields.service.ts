@@ -92,14 +92,14 @@ export class ProductCalculatedFieldsService {
 
     // round prices to 2 decimal places
     const result: PriceSummary = {
-      unitPrice: Math.round(unitPrice * 100) / 100,
-      subTotal: Math.round(subTotal * 100) / 100,
-      discount: Math.round(calculatedDiscount * 100) / 100,
-      total: Math.round((subTotal - calculatedDiscount) * 100) / 100,
+      unitPrice: Number(unitPrice.toFixed(2)),
+      subTotal: Number(subTotal.toFixed(2)),
+      discount: Number(calculatedDiscount.toFixed(2)),
+      total: Number((subTotal - calculatedDiscount).toFixed(2)),
     };
 
     if (result.total < result.subTotal - result.discount) {
-      result.discount = result.subTotal - result.total;
+      result.discount = Number((result.subTotal - result.total).toFixed(2));
     }
 
     return result;
@@ -110,10 +110,10 @@ export class ProductCalculatedFieldsService {
     prodVariation: ProductVariation,
   ): CartItemObject {
     const priceSummary = this.calculatePriceSummary({
-      discount: Number(prodVariation.discount),
+      discount: Number(prodVariation.discount.toFixed(2)),
       discountType: prodVariation.discountType,
       quantity: cartItem.quantity,
-      unitPrice: Number(prodVariation.price),
+      unitPrice: Number(prodVariation.price.toFixed(2)),
     });
 
     return {
