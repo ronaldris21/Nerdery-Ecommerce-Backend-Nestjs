@@ -25,7 +25,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     try {
       await this.$connect();
       this.logger.log('Connected to the database successfully!');
-      // eslint-disable-next-line unused-imports/no-unused-vars
+      // eslint-disable-next-line unused-imports/no-unused-vars, @typescript-eslint/no-unused-vars
     } catch (error) {
       this.logger.error(`Database connection failed. Retrying (${retries + 1})...`);
       await new Promise((resolve) => setTimeout(resolve, this.retryDelay));

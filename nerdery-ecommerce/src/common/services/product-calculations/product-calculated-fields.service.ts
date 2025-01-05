@@ -4,6 +4,7 @@ import { CartItemObject } from 'src/cart-items/entities/cart-item.object';
 import { PriceSummaryInput } from 'src/common/dto/price-summary-input.dto ';
 import { PriceSummary } from 'src/common/dto/price-summary.dto';
 import { DiscountType } from 'src/common/enums/discount-type.enum';
+import { ProductWithLikes, ProductWithVariations } from 'src/common/prisma-types';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -12,13 +13,11 @@ export class ProductCalculatedFieldsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async recalculateProductMinMaxPrices(productIds: string[]): Promise<boolean> {
-    const products = await this.prisma.product.findMany({
+    const products: ProductWithVariations[] = await this.prisma.product.findMany({
       where: {
         id: {
           in: productIds,
         },
-        isDeleted: false,
-        isEnabled: true,
       },
       include: { productVariations: true },
     });
@@ -52,13 +51,11 @@ export class ProductCalculatedFieldsService {
   }
 
   async recalculateProductLikesCount(productIds: string[]) {
-    const products = await this.prisma.product.findMany({
+    const products: ProductWithLikes[] = await this.prisma.product.findMany({
       where: {
         id: {
           in: productIds,
         },
-        isDeleted: false,
-        isEnabled: true,
       },
       include: { productLikes: true },
     });
@@ -89,6 +86,10 @@ export class ProductCalculatedFieldsService {
       calculatedDiscount = subTotal;
     }
 
+    if (calculatedDiscount < 0 || discount < 0) {
+      calculatedDiscount = 0;
+    }
+
     // round prices to 2 decimal places
     const result: PriceSummary = {
       unitPrice: Math.round(unitPrice * 100) / 100,
@@ -96,10 +97,15 @@ export class ProductCalculatedFieldsService {
       discount: Math.round(calculatedDiscount * 100) / 100,
       total: Math.round((subTotal - calculatedDiscount) * 100) / 100,
     };
+
+    if (result.total < result.subTotal - result.discount) {
+      result.discount = result.subTotal - result.total;
+    }
+
     return result;
   }
 
-  createCartItemObjectFromProductVariation(
+  createCartItemWithPriceSummary(
     cartItem: CartItem,
     prodVariation: ProductVariation,
   ): CartItemObject {
