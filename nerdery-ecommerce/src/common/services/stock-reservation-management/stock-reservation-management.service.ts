@@ -13,9 +13,9 @@ export class StockReservationManagementService {
   ) {}
 
   async reserveStock(cartitems: CartItemObject[]): Promise<void> {
-    //THIS FUNCTION ASSUMES THE STOCK WAS VALIDATED AND THERE IS ENOUGH STOCK BEFORE RESERVING IT
-
-    //Refractor to use prisma transaction - restore stock if something goes wrong
+    if (!cartitems || cartitems.length === 0) {
+      throw new ConflictException('Error reserving stock - cart is empty');
+    }
 
     const updateStockPrismaPromises = cartitems.map((item) =>
       this.prismaService.productVariation.update({
@@ -46,12 +46,16 @@ export class StockReservationManagementService {
       });
 
       for (const prodVariation of productVariations) {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this.mailService.sendLowStockEmailInitProcess(prodVariation);
+        if (prodVariation.stock <= 5 && prodVariation.stock > 0) {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          this.mailService.sendLowStockEmailInitProcess(prodVariation);
+        }
       }
     } catch (error) {
       this.logger.error('Error reserving stock', error);
-      throw new ConflictException('Error reserving stock - please see you cart and try again');
+      throw new ConflictException(
+        'Error reserving stock - not enough stock in some products - please see you cart and try again',
+      );
     }
   }
 }
