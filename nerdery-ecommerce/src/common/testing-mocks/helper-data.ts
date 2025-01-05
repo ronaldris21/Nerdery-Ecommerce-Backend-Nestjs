@@ -1,4 +1,4 @@
-import { Category, Product, Prisma, ProductVariation } from '@prisma/client';
+import { Category, Product, Prisma, ProductVariation, CartItem } from '@prisma/client';
 
 import { DiscountType } from '../enums/discount-type.enum';
 import { Gender } from '../enums/gender.enum';
@@ -83,4 +83,11 @@ export const validProductVariation2: ProductVariation = {
   size: 'M',
   stock: 10,
   stockRefilledAt: new Date(),
+};
+
+// Carts
+export const validCart: CartItem = {
+  userId: validUUID1,
+  productVariationId: validUUID2,
+  quantity: 1,
 };
