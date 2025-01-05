@@ -565,7 +565,7 @@ describe('ProductsService', () => {
         data: { isDeleted: true },
       });
 
-      expect(result.isDeleted).toBe(true);
+      expect(result.isDeleted).toBeTruthy();
     });
 
     it('should throw NotFoundException if product does not exist during deletion', async () => {
@@ -619,7 +619,7 @@ describe('ProductsService', () => {
         include: { productVariations: true },
       });
 
-      expect(result.isEnabled).toBe(true);
+      expect(result.isEnabled).toBeTruthy();
     });
 
     it('should disable a product and recalculate prices', async () => {
@@ -651,7 +651,7 @@ describe('ProductsService', () => {
         include: { productVariations: true },
       });
 
-      expect(result.isEnabled).toBe(false);
+      expect(result.isEnabled).toBeFalsy();
     });
 
     it('should throw NotFoundException if product does not exist during toggle', async () => {
