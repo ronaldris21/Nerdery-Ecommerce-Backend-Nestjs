@@ -75,14 +75,12 @@ export class MailService {
       try {
         await this.sendLowStockEmail(prodVariation);
       } catch (error) {
-        this.logger.error('Error sending low stock email', error);
+        this.logger.error('Error sending low stock email id: ' + prodVariation.id, error);
       }
     }, 1);
   }
 
   async sendLowStockEmail(prodVariation: ProductVariation) {
-    this.logger.log('SENDING LOW STOCK EMAIL FOR PRODUCT VARIATION ID: ' + prodVariation.id);
-
     //last liked and not bought user:
     const likes = await this.prismaService.productLike.findMany({
       where: {
