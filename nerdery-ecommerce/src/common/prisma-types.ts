@@ -18,3 +18,7 @@ export type ProductVariationWithProductAndImages = ProductVariation & {
   product: Product;
   variationImages: VariationImage[];
 };
+
+export type CartItemWithFullDetails = CartItem & {
+  productVariation: ProductVariationWithProductAndImages;
+};

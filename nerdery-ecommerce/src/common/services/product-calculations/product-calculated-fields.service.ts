@@ -71,7 +71,8 @@ export class ProductCalculatedFieldsService {
   }
 
   calculatePriceSummary(input: PriceSummaryInput): PriceSummary {
-    const { unitPrice, discountType, discount, quantity } = input;
+    const { unitPrice, discount } = input;
+    const { discountType, quantity } = input;
 
     const subTotal = unitPrice * quantity;
 
@@ -118,12 +119,14 @@ export class ProductCalculatedFieldsService {
 
     return {
       userId: cartItem.userId,
+      quantity: cartItem.quantity,
+      productVariationId: cartItem.productVariationId,
+
+      //Calculated fields
       unitPrice: priceSummary.unitPrice,
       subTotal: priceSummary.subTotal,
       total: priceSummary.total,
       discount: priceSummary.discount,
-      quantity: cartItem.quantity,
-      productVariationId: cartItem.productVariationId,
     };
   }
 }
