@@ -9,7 +9,7 @@ export class StripeController {
 
   @Post('/webhook')
   async webhook(@Req() req: RawBodyRequest<Request>, @Res() res: Response) {
-    await this.stripeService.handleWeebhook(req);
+    await this.stripeService.handleWebhook(req);
     res.sendStatus(200);
   }
 }

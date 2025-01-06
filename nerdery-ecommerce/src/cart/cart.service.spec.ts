@@ -243,7 +243,7 @@ describe('CartService', () => {
       expect(result).toBe(2);
     });
 
-    it('should return 0 if no cart items match the criteria', async () => {
+    it('should return 0 if no cart items', async () => {
       prismaService.cartItem.deleteMany.mockResolvedValue({ count: 0 });
 
       const result = await service.deleteAllItems(userId, ['nonexistent-id']);
