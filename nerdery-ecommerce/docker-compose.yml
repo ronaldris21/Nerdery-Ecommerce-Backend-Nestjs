@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   postgres:
+    restart: always
     image: postgres:14
     container_name: postgres_compose_container
     environment:
@@ -15,6 +16,7 @@ services:
     tty: true
 
   redis:
+    restart: always
     image: redis:alpine
     container_name: redis_container
     ports:
