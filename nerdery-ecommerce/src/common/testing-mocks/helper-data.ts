@@ -230,3 +230,12 @@ export const validCartItemsWithProductVariationProductAndImages: CartItemWithFul
     productVariation: productVariationWithDetails2,
   },
 ];
+
+export const validUserWithEmail = {
+  id: validUUID1,
+  email: 'riskai.xd@ragnarok.com',
+  password: 'hashedPassword',
+  firstName: 'Ronald',
+  lastName: 'Ris',
+  createdAt: new Date(),
+};
