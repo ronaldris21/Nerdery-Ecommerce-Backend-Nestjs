@@ -96,6 +96,18 @@ describe('AccessTokenWithRolesGuard', () => {
       expect(reflector.get).toHaveBeenCalledWith(ROLES_KEY, executionContext.getHandler());
     });
 
+    it('should return true if no required roles', async () => {
+      const requiredRoles = [];
+      jest.spyOn(reflector, 'get').mockReturnValueOnce(requiredRoles as string[]);
+      const executionContext = createMockExecutionContext(userClientPayload);
+      (getRequestFromContext as jest.Mock).mockReturnValue({ user: userClientPayload });
+
+      const result = await guard.checkRoles(executionContext);
+
+      expect(reflector.get).toHaveBeenCalledWith(ROLES_KEY, executionContext.getHandler());
+      expect(result).toBeTruthy();
+    });
+
     it('should throw UnauthorizedException if user is missing in request', async () => {
       const requiredRoles = ['Wizard', 'Warrior'];
       jest.spyOn(reflector, 'get').mockReturnValueOnce(requiredRoles as string[]);
