@@ -121,7 +121,7 @@ describe('StockReservationManagementService', () => {
       expect(mailService.sendLowStockEmailInitProcess).toHaveBeenCalledWith(var1);
     });
 
-    it('should handle Prisma update failures gracefully', async () => {
+    it('should handle Prisma update failures', async () => {
       jest.spyOn(prismaService, '$transaction').mockRejectedValue(new Error('Database error'));
 
       await expect(service.reserveStock(cartItems)).rejects.toThrow(ConflictException);
