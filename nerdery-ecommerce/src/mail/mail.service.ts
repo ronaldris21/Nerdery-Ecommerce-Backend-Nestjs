@@ -72,7 +72,11 @@ export class MailService {
 
   async sendLowStockEmailInitProcess(prodVariation: ProductVariation) {
     setTimeout(async () => {
-      await this.sendLowStockEmail(prodVariation);
+      try {
+        await this.sendLowStockEmail(prodVariation);
+      } catch (error) {
+        this.logger.error('Error sending low stock email', error);
+      }
     }, 1);
   }
 
