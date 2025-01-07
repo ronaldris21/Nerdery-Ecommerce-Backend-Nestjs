@@ -6,7 +6,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PasswordReset } from '@prisma/client';
 import { ConfigNames, FrontendConfig } from 'src/common/config/config.interface';
 import { ROLES } from 'src/common/constants';
-import { validUserWithEmail, validUUID1, validUUID2 } from 'src/common/testing-mocks/helper-data';
+import {
+  fakeDecodedUser,
+  validUserWithEmail,
+  validUUID1,
+  validUUID2,
+} from 'src/common/testing-mocks/helper-data';
 import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -35,16 +40,6 @@ const mockPrismaServiceInit = {
     findUnique: jest.fn(),
     update: jest.fn(),
   },
-};
-
-const fakeDecodedUser: JwtPayloadDto = {
-  userId: validUUID1,
-  email: 'test@example.com',
-  iat: 123,
-  exp: 456,
-  firstName: 'Kai',
-  lastName: 'Ris',
-  roles: [ROLES.CLIENT],
 };
 
 const authResponse: AuthResponseDto = {

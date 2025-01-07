@@ -1,5 +1,7 @@
 import { Category, Product, Prisma, ProductVariation } from '@prisma/client';
+import { JwtPayloadDto } from 'src/auth/dto/jwtPayload.dto';
 
+import { ROLES } from '../constants';
 import { DiscountType } from '../enums/discount-type.enum';
 import { Gender } from '../enums/gender.enum';
 import {
@@ -238,4 +240,14 @@ export const validUserWithEmail = {
   firstName: 'Ronald',
   lastName: 'Ris',
   createdAt: new Date(),
+};
+
+export const fakeDecodedUser: JwtPayloadDto = {
+  userId: validUUID1,
+  email: 'test@example.com',
+  iat: 123,
+  exp: 456,
+  firstName: 'Kai',
+  lastName: 'Ris',
+  roles: [ROLES.CLIENT],
 };
