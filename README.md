@@ -187,7 +187,8 @@ npm run start
 ## Coverage:
 - This can be seen by running the command: **npm run coverage**
 - Or in **'/nerdery-ecommerce/coverage-copy'** folder
-![image](https://github.com/user-attachments/assets/5d6007c2-8a02-4fe7-b09c-46610ad0ac22)
+![image](https://github.com/user-attachments/assets/e8e81579-ebbf-4434-ae8d-0d1ec1d0bbd4)
+
 
 ## Uptime robots
 - Make sure the apps are running smothly
