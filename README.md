@@ -190,5 +190,13 @@ npm run start
 ![image](https://github.com/user-attachments/assets/5d6007c2-8a02-4fe7-b09c-46610ad0ac22)
 
 ## Uptime robots
+- Make sure the apps are running smothly
+- Receive emails if app is down
+- Check app on /api/hello abd database health on /api/db
 ![image](https://github.com/user-attachments/assets/80fc97ef-b205-4eba-8c67-3fbf96d07ec5)
+
+## PM2 Dashboard 
+- Restart apps from web dashboard
+- See logs in realtime
+![image](https://github.com/user-attachments/assets/eead6a39-b5e5-49d2-8c9d-d67455f7fae9)
 
