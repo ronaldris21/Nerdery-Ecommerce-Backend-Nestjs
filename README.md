@@ -43,7 +43,7 @@ You can choose the target of your business, be creative!.
 ## Extra recomended points
 * Implement resolve field in graphQL queries (if apply)
 * When the stock of a product reaches *5*, notify the last user that liked it and not purchased the product yet with an email. ✅
-  Use a background job and make sure to include the product's image in the email. ✅
+  (Use a background job and make sure to include the product's image in the email. ✅)
 * Send an email when the user changes the password ✅
 * Deploy on Hostinger VPS ✅
 
@@ -52,7 +52,7 @@ You can choose the target of your business, be creative!.
 * Refresh token (30 days) + access token (4 hours) ✅
 * Product Variations ✅
 * Product Variation discounts (PERCENTAGE | DISCOUNT | NONE) ✅
-* Minimal react payment app to simulate payments and receive updates on the webhook in the server. Make sure to use the server endpoints (http://217.15.170.229:3100) ✅
+* Minimal react payment app to simulate payments and receive updates on the webhook in the server. Make sure to use the server endpoints (http://217.15.170.229:3101) ✅
 * Users with multiple roles ✅
 * Cart Items with discounts (PERCENTAGE | DISCOUNT | NONE). This prices are calculated when retrieving the user cart ✅
 * Product search with filters like: gender, minPrice, maxPrice, search, categoryId ✅
@@ -78,16 +78,21 @@ Requirements to use Graph:
 
 ## Use the app on the server:
 
+App has been deployed to a personal VPS in Hostinger. In order to make sure the project is always running smothly, Uptime Robots has been configured as follow:
+- App has 2 enpoints /hello and /db to check the backend health
+- /hello makes sure the app is running
+- /db makes sure the database connection is active
+![image](https://github.com/user-attachments/assets/80fc97ef-b205-4eba-8c67-3fbf96d07ec5)
+
+
 There are 2 apps on a server:
 
-1. http://217.15.170.229:3101/payment?clientSecret=pi_3Qbp0A062gksTdkE0hcMVVpL_secret_p9WJXmIEmJ8X8hhjgE9BK4wGl
-2. http://217.15.170.229:3100/api
+1. http://217.15.170.229:3100/api
+2. http://217.15.170.229:3101/payment?clientSecret=pi_3Qbp0A062gksTdkE0hcMVVpL_secret_p9WJXmIEmJ8X8hhjgE9BK4wGl
 
 All you need to have is Postman to test the app.
 
-Here you have the postman used for testing the app. Make sure to have the environments active on you postman.
-
-Variables used: 
+Variables used in POSTMAN: 
 
 - HOST:
     - http://217.15.170.229:3100/api
@@ -101,7 +106,7 @@ Note: access_token is set automatically after login endpoint is successfully hit
 ### POSTMAN TESTS
 ### Fork the POSTMAN requests from: [RonaldRis Public Workspace](https://www.postman.com/lively-meadow-246836/ronaldris-public-workspace)
 
-- For testing purpose you can copy this postman
+- For testing purpose you can copy this postman. Here you have the postman used for testing the app. Make sure to have the environments active on you postman: 
 
 [RonaldRis Public Workspace](https://www.postman.com/lively-meadow-246836/ronaldris-public-workspace)
 
@@ -129,7 +134,7 @@ Note: access_token is set automatically after login endpoint is successfully hit
 File can found here: 
 Make sure to have it on “nerdery-ecommerce/.env” (need to have  RAVN email)
 
-[](https://drive.google.com/drive/folders/15XvXiOg7e24E-wGZWokJtGZr-hjAv2uc?usp=drive_link)
+[.env real data for production - download from google drive](https://drive.google.com/drive/folders/15XvXiOg7e24E-wGZWokJtGZr-hjAv2uc?usp=drive_link)
 
 1. You need 3 console to completely run this app:
 - Docker Compose:
@@ -182,4 +187,17 @@ npm run start
 ## Coverage:
 - This can be seen by running the command: **npm run coverage**
 - Or in **'/nerdery-ecommerce/coverage-copy'** folder
-![image](https://github.com/user-attachments/assets/5d6007c2-8a02-4fe7-b09c-46610ad0ac22)
+![image](https://github.com/user-attachments/assets/e8e81579-ebbf-4434-ae8d-0d1ec1d0bbd4)
+
+
+## Uptime robots
+- Make sure the apps are running smothly
+- Receive emails if app is down
+- Check app on /api/hello abd database health on /api/db
+![image](https://github.com/user-attachments/assets/80fc97ef-b205-4eba-8c67-3fbf96d07ec5)
+
+## PM2 Dashboard 
+- Restart apps from web dashboard
+- See logs in realtime
+![image](https://github.com/user-attachments/assets/eead6a39-b5e5-49d2-8c9d-d67455f7fae9)
+
