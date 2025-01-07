@@ -171,9 +171,13 @@ npm run start
     - PM2
         
         ```bash
-        
         nvm use 20
         pm2 list
         pm2 restart nerdery-backend nerdery-frontend
         
         ```
+
+## Coverage:
+- This can be seen by running the command: **npm run coverage**
+- Or in **'/nerdery-ecommerce/coverage-copy'** folder
+![image](https://github.com/user-attachments/assets/5d6007c2-8a02-4fe7-b09c-46610ad0ac22)
