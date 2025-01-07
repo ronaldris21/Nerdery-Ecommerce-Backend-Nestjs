@@ -134,7 +134,7 @@ Note: access_token is set automatically after login endpoint is successfully hit
 File can found here: 
 Make sure to have it on “nerdery-ecommerce/.env” (need to have  RAVN email)
 
-[](https://drive.google.com/drive/folders/15XvXiOg7e24E-wGZWokJtGZr-hjAv2uc?usp=drive_link)
+[.env real data for production - download from google drive](https://drive.google.com/drive/folders/15XvXiOg7e24E-wGZWokJtGZr-hjAv2uc?usp=drive_link)
 
 1. You need 3 console to completely run this app:
 - Docker Compose:
