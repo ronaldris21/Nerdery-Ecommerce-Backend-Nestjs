@@ -15,8 +15,8 @@ export class ThrottleContextGuard extends ThrottlerGuard {
       }
       case 'graphql': {
         const graphqlContext = GqlExecutionContext.create(context).getContext();
-        const req = graphqlContext.req || graphqlContext.request; // Support both keys
-        const res = graphqlContext.res || graphqlContext.response; // Support both keys
+        const req = graphqlContext.req || graphqlContext.request;
+        const res = graphqlContext.res || graphqlContext.response;
         if (!req) {
           throw new UnauthorizedException('Request object is missing in GraphQL context');
         }
