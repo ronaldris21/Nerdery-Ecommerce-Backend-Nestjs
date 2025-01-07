@@ -10,8 +10,9 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { PasswordService } from './services/password.service';
 import { RedisService } from './services/redis.service';
+import { TokenService } from './services/token/token.service';
 import { UsersService } from './services/users.service';
-import { AccessTokenStrategy } from './strategies/access-token.strategy .ts';
+import { AccessTokenStrategy } from './strategies/access-token.strategy';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { AccessTokenStrategy } from './strategies/access-token.strategy .ts';
     AccessTokenStrategy,
     PrismaService,
     RedisService,
+    TokenService,
   ],
   exports: [AccessTokenStrategy],
 })

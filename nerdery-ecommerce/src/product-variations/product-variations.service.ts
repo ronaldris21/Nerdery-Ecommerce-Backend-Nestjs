@@ -34,11 +34,17 @@ export class ProductVariationsService {
 
   async create(input: CreateProductVariationInput) {
     await this.idValidatorService.findUniqueProductById({ id: input.productId }, false, false);
-    const { productId, ...rest } = input;
+    const { productId, price, ...rest } = input;
 
+    this.validateDiscount({
+      price,
+      type: input.discountType,
+      discount: input.discount,
+    });
     const prodVariation = await this.prisma.productVariation.create({
       data: {
         ...rest,
+        price: Math.round(price * 100) / 100,
         product: {
           connect: { id: productId },
         },
@@ -66,6 +72,11 @@ export class ProductVariationsService {
     });
 
     const { productId, ...rest } = input;
+
+    if (input.price) {
+      rest.price = Math.round(input.price * 100) / 100;
+    }
+
     await this.prisma.productVariation.update({
       where: { id: input.id },
       data: {
@@ -127,29 +138,25 @@ export class ProductVariationsService {
     price: number;
     discount?: number;
   }): boolean {
-    if (!discount) return true;
-
-    if (type && type != DiscountType.NONE && !discount) {
-      throw new UnprocessableEntityException('Need a valid discount value');
+    if (price <= 0) {
+      throw new UnprocessableEntityException('Price must be a positive number');
+    }
+    if (type === DiscountType.NONE) {
+      return true;
     }
 
-    if (type === DiscountType.PERCENTAGE) {
-      if (discount > 99 || discount < 0) {
-        throw new UnprocessableEntityException(
-          'PERCENTAGE discount needs a valid discount between 0-100',
-        );
-      }
+    if (discount === undefined || discount <= 0) {
+      throw new UnprocessableEntityException(
+        'Discount must be provided for non-NONE discount types. Discount must be a positive number',
+      );
     }
 
-    if (type === DiscountType.FIXED) {
-      if (!price) {
-        throw new UnprocessableEntityException(`FIXED discount needs a price`);
-      }
-      if (discount >= price || discount < 0) {
-        throw new UnprocessableEntityException(
-          `FIXED discount needs a valid discount between 0 - ${price}`,
-        );
-      }
+    if (type === DiscountType.PERCENTAGE && discount > 100) {
+      throw new UnprocessableEntityException('Percentage discount must be between 0 and 100');
+    }
+
+    if (type === DiscountType.FIXED && discount >= price) {
+      throw new UnprocessableEntityException('Fixed discount must be a positive number');
     }
 
     return true;

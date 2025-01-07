@@ -59,7 +59,7 @@
       <p>Hello {{user.firstName}},</p>
     </div>
 
-    <p>We have noticed that one of your product variations is running low on stock. Here are the details:</p>
+    <p>We have noticed that one product you liked is running low on stock. Here are the details:</p>
 
     <div class="product-details">
       <h2>Product: {{productVariation.product.name}}</h2>
@@ -85,7 +85,7 @@
         </p>
       {{/if}}
 
-      <p><strong>Last Stock Refill Date:</strong> {{productVariation.stockRefilledAt}}</p>
+      {{!-- <p><strong>Last Stock Refill Date:</strong> {{productVariation.stockRefilledAt}}</p> --}}
 
       {{#if productVariation.variationImages.length}}
       <div class="images-section">
@@ -103,8 +103,7 @@
       {{/if}}
     </div>
 
-    <p>If this stock level is too low, please consider restocking soon to ensure availability.</p>
-    <p>If you have any questions or need assistance, feel free to contact our support team.</p>
+    <p>Enjoy this and more offers in our store! </p>
 
     <div class="footer">
       <p>Thank you!</p>

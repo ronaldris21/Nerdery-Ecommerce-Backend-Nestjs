@@ -24,7 +24,11 @@ export class AccessTokenWithRolesGuard extends AccessTokenGuard {
     if (!isAuthenticated) {
       return false;
     }
+    await this.checkRoles(context);
+    return true;
+  }
 
+  async checkRoles(context: ExecutionContext) {
     //Then check if the user has the required role
     const requiredRoles = this.reflector.get<string[]>(ROLES_KEY, context.getHandler());
 
@@ -44,7 +48,6 @@ export class AccessTokenWithRolesGuard extends AccessTokenGuard {
         'User does not have the required role: ' + requiredRoles.join(' or ').toString(),
       );
     }
-
     return true;
   }
 }

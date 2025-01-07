@@ -54,7 +54,7 @@ export class CartItemsService {
       },
     });
 
-    return this.productCalculatedFieldsService.createCartItemObjectFromProductVariation(
+    return this.productCalculatedFieldsService.createCartItemWithPriceSummary(
       cartItem,
       prodVariation,
     );

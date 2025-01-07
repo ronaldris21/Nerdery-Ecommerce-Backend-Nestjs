@@ -4,19 +4,16 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
-  UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { RefreshToken, User } from '@prisma/client';
 import ms from 'ms';
-import { ConfigNames, FrontendConfig, JwtConfig } from 'src/common/config/config.interface';
+import { ConfigNames, FrontendConfig } from 'src/common/config/config.interface';
 import { clientRoleName } from 'src/common/constants';
 import { GenericResponseDto } from 'src/common/dto/generic-response.dto';
 import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { v4 as uuid4 } from 'uuid';
 
 import { AuthResponseDto } from './dto/authResponse.dto';
 import { JwtPayloadDto } from './dto/jwtPayload.dto';
@@ -24,7 +21,7 @@ import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { SignUpDto } from './dto/signup.dto';
 import { PasswordService } from './services/password.service';
-import { RedisService } from './services/redis.service';
+import { TokenService } from './services/token/token.service';
 import { UsersService } from './services/users.service';
 
 @Injectable()
@@ -33,130 +30,38 @@ export class AuthService {
     private prisma: PrismaService,
     private passwordService: PasswordService,
     private jwtService: JwtService,
-    private redisService: RedisService,
     private configService: ConfigService,
     private mailService: MailService,
     private userService: UsersService,
+    private tokenService: TokenService,
   ) {}
-
-  async getRefreshToken(refreshToken: string): Promise<RefreshToken> {
-    return this.prisma.refreshToken.findUnique({
-      where: {
-        refreshToken: refreshToken,
-      },
-    });
-  }
-
-  async addAccessTokenToCache(userId: string, iat: number, accessToken: string): Promise<void> {
-    const redisKey = this.redisService.getAccessTokenKey(userId, iat);
-    const expiresIn = this.configService.get<JwtConfig>(ConfigNames.jwt).expiresIn;
-    await this.redisService.set(redisKey, accessToken, ms(expiresIn) / 1000); // expiration in seconds
-  }
-
-  async removeAccessTokenFromCache(userId: string, iat: number): Promise<void> {
-    const redisKey = this.redisService.getAccessTokenKey(userId, iat);
-    await this.redisService.del(redisKey);
-  }
-
-  async removeAccessTokenFromCacheByUserId(userId: string): Promise<void> {
-    await this.redisService.removeAllKeysByPattern(`user:${userId}:iat:*`);
-  }
-
-  async invalidateRefreshToken(refreshToken: string): Promise<void> {
-    try {
-      await this.prisma.refreshToken.delete({
-        where: {
-          refreshToken: refreshToken,
-        },
-      });
-    } catch (e) {
-      // No need to throw an error if the token is not found
-      debug(e);
-    }
-  }
-
-  async invalidateAllRefreshTokens(userId: string): Promise<void> {
-    await this.prisma.refreshToken.deleteMany({
-      where: {
-        userId: userId,
-      },
-    });
-  }
-
-  async generateNewTokens(user: Omit<User, 'createdAt' | 'password'>): Promise<AuthResponseDto> {
-    const userRoles = await this.prisma.userRole.findMany({
-      where: {
-        userId: user.id,
-      },
-      include: {
-        role: true,
-      },
-    });
-
-    const roles = userRoles.map((ur) => ur.role.name);
-
-    const jwtConfig = this.configService.get<JwtConfig>(ConfigNames.jwt);
-
-    const iat: number = Math.floor(Date.now() / 1000); // issue at time in seconds
-    const accessPayload: Omit<JwtPayloadDto, 'exp'> = {
-      userId: user.id,
-      email: user.email,
-      roles: roles,
-      iat: iat,
-      firstName: user.firstName,
-      lastName: user.lastName,
-    };
-    const accessToken = this.jwtService.sign(accessPayload, {
-      expiresIn: jwtConfig.expiresIn,
-      secret: jwtConfig.jwtAcccessSecret,
-    });
-
-    // Save access token in Redis
-    await this.addAccessTokenToCache(user.id, this.jwtService.decode(accessToken).iat, accessToken);
-
-    // Refresh Token
-    const refreshToken = uuid4();
-    const refreshTokenExp = new Date(Date.now() + ms(jwtConfig.refreshIn)); // expiration in milliseconds
-
-    await this.prisma.refreshToken.create({
-      data: {
-        refreshToken: refreshToken,
-        userId: user.id,
-        validUntil: refreshTokenExp,
-      },
-    });
-
-    // note: all tokens are in seconds
-    return {
-      accessToken,
-      refreshToken,
-      roles,
-      accessExp: this.jwtService.decode(accessToken)['exp'],
-      refreshExp: Math.floor(refreshTokenExp.getTime() / 1000), // convert to seconds
-      iat: iat,
-    };
-  }
 
   async login(login: LoginDto): Promise<AuthResponseDto> {
     const user = await this.userService.getUserByEmail(login.email);
     if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const isValidPassword = await this.passwordService.validatePassword(
+      login.password,
+      user.password,
+    );
+    if (!isValidPassword) {
       throw new NotFoundException('Wrong email or password');
     }
 
-    if (!(await this.passwordService.validatePassword(login.password, user.password))) {
-      throw new NotFoundException('Wrong email or password');
-    }
+    const roles = await this.userService.getUserRoles(user.id);
 
-    return await this.generateNewTokens(user);
+    return await this.tokenService.generateTokensForUser({ ...user, roles });
   }
 
   async signUp(signUpDto: SignUpDto): Promise<GenericResponseDto> {
-    const hashedPassword = await this.passwordService.hashPassword(signUpDto.password);
-
     const userExists = await this.userService.getUserByEmail(signUpDto.email);
     if (userExists) {
       throw new ConflictException('User already exists');
     }
+
+    const hashedPassword = await this.passwordService.hashPassword(signUpDto.password);
 
     const user = await this.prisma.user.create({
       data: {
@@ -167,7 +72,7 @@ export class AuthService {
       },
     });
 
-    //Assign user role
+    //Assign CLIENT role to new user
     const userRole = await this.prisma.role.findFirst({
       where: { name: clientRoleName },
     });
@@ -193,17 +98,17 @@ export class AuthService {
   }
 
   async logout(refreshToken: string, accessToken): Promise<void> {
-    await this.invalidateRefreshToken(refreshToken);
+    await this.tokenService.invalidateRefreshToken(refreshToken);
 
     try {
       const user: JwtPayloadDto = this.jwtService.decode(accessToken) as JwtPayloadDto;
       if (user) {
-        await this.removeAccessTokenFromCache(user.userId, user.iat);
+        await this.tokenService.removeAccessTokenFromCache(user.userId, user.iat);
       }
     } catch (error) {
+      // No need to throw an error if the token is not found
       debug(error);
     }
-    // No need to throw an error if the token is not found
   }
 
   async refreshToken(accessToken: string, refreshToken: string): Promise<AuthResponseDto> {
@@ -215,27 +120,29 @@ export class AuthService {
       throw new UnprocessableEntityException('Invalid access token, or not sent');
     }
 
-    if (!user) {
-      throw new UnprocessableEntityException('Invalid access token, or not sent');
+    const dbUser = await this.userService.findById(user?.userId ?? 'fakeId');
+
+    if (!dbUser) {
+      throw new NotFoundException('User not in the database');
     }
 
     // Validate refresh token
-    const token = await this.getRefreshToken(refreshToken);
-    if (!token) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
+    await this.tokenService.validateRefreshTokenOrThrow(refreshToken);
 
-    await this.invalidateRefreshToken(refreshToken);
+    await this.tokenService.invalidateRefreshToken(refreshToken);
 
     // Invalidate Access Token from Cache
-    await this.removeAccessTokenFromCache(user.userId, user.iat);
+    await this.tokenService.removeAccessTokenFromCache(user.userId, user.iat);
+
+    const roles = await this.userService.getUserRoles(user.userId);
 
     // Generate new tokens
-    return await this.generateNewTokens({
-      email: user.email,
-      id: user.userId,
-      firstName: user.firstName,
-      lastName: user.lastName,
+    return await this.tokenService.generateTokensForUser({
+      email: dbUser.email,
+      id: dbUser.id,
+      firstName: dbUser.firstName,
+      lastName: dbUser.lastName,
+      roles: roles,
     });
   }
 
@@ -253,7 +160,10 @@ export class AuthService {
     });
 
     //Send email with reset password link
-    const resetURL: string = `${this.configService.get<FrontendConfig>(ConfigNames.frontend).resetPasswordFrontendUrl}?token=${resetPassword.resetToken}`;
+    const resetPasswordFrontendUrl = this.configService.get<FrontendConfig>(
+      ConfigNames.frontend,
+    ).resetPasswordFrontendUrl;
+    const resetURL: string = `${resetPasswordFrontendUrl}?token=${resetPassword.resetToken}`;
     await this.mailService.sendPasswordResetEmail(user, resetURL, resetPassword.resetToken);
 
     return {
@@ -263,29 +173,29 @@ export class AuthService {
   }
 
   async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<GenericResponseDto> {
-    const resetPassword = await this.prisma.passwordReset.findUnique({
+    const passwordResetRequest = await this.prisma.passwordReset.findUnique({
       where: {
         resetToken: resetPasswordDto.resetToken,
       },
     });
 
-    if (!resetPassword) {
+    if (!passwordResetRequest) {
       throw new NotFoundException('Invalid reset token');
     }
 
-    if (resetPassword.validUntil < new Date()) {
-      throw new UnauthorizedException('Token has expired');
+    if (passwordResetRequest.validUntil < new Date()) {
+      throw new ConflictException('Reset token has expired');
     }
 
-    if (resetPassword.alreadyUsed) {
-      throw new UnauthorizedException('Token has already been used');
+    if (passwordResetRequest.alreadyUsed) {
+      throw new ConflictException('Token has already been used');
     }
 
     const hashedPassword = await this.passwordService.hashPassword(resetPasswordDto.password);
 
     const user = await this.prisma.user.update({
       where: {
-        id: resetPassword.userId,
+        id: passwordResetRequest.userId,
       },
       data: {
         password: hashedPassword,
@@ -294,18 +204,18 @@ export class AuthService {
 
     await this.prisma.passwordReset.update({
       where: {
-        resetToken: resetPassword.resetToken,
+        resetToken: passwordResetRequest.resetToken,
       },
       data: {
         alreadyUsed: true,
       },
     });
 
-    await this.invalidateAllRefreshTokens(resetPassword.userId);
+    await this.tokenService.invalidateAllRefreshTokens(passwordResetRequest.userId);
 
-    await this.removeAccessTokenFromCacheByUserId(resetPassword.userId);
+    await this.tokenService.removeAccessTokenFromCacheByUserId(passwordResetRequest.userId);
 
-    await this.mailService.sendPasswordChangeNotification(user);
+    await this.mailService.sendPasswordChangedNotification(user);
 
     return {
       statusCode: 200,

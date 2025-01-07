@@ -511,6 +511,51 @@ async function insertProducts(products: Prisma.ProductCreateInput[]) {
   }
 }
 
+const recalculateProductMinMaxPrices = async (
+  productIds: string[],
+  prisma: PrismaClient,
+): Promise<boolean> => {
+  const products = await prisma.product.findMany({
+    where: {
+      id: {
+        in: productIds,
+      },
+      isDeleted: false,
+      isEnabled: true,
+    },
+    include: { productVariations: true },
+  });
+
+  const updatePromises = products.map((product) => {
+    console.log('\n\n\n products COPY: \n', product);
+
+    const filteredProductVariations = product.productVariations.filter(
+      (p) => p.isEnabled && !p.isDeleted,
+    );
+    const prices = filteredProductVariations.map((p) => Number(p.price));
+
+    const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+    const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
+
+    //If no valid product variations, prices are 0. So users can't add to cart, nor see the product on "products" query
+    const calculatedData = { minPrice, maxPrice };
+    if (minPrice) calculatedData['minPrice'] = minPrice;
+    if (maxPrice) calculatedData['maxPrice'] = maxPrice;
+
+    return prisma.product.update({
+      where: { id: product.id },
+      data: calculatedData,
+    });
+  });
+  try {
+    await prisma.$transaction(updatePromises);
+    return true;
+  } catch (error) {
+    console.log('Error updating product min-max prices', error);
+    return false;
+  }
+};
+
 async function main() {
   console.log(`Start seeding ...`);
   console.log(`deleting all data ...`);
@@ -531,11 +576,11 @@ async function main() {
   await prisma.rolePermission.deleteMany();
   await prisma.orderIncident.deleteMany();
 
-  // await prisma.userRole.deleteMany();
-  // await prisma.rolePermission.deleteMany();
-  // await prisma.permission.deleteMany();
-  // await prisma.role.deleteMany();
-  // await prisma.user.deleteMany();
+  await prisma.userRole.deleteMany();
+  await prisma.rolePermission.deleteMany();
+  await prisma.permission.deleteMany();
+  await prisma.role.deleteMany();
+  await prisma.user.deleteMany();
 
   console.log(`Start seeding ...`);
 
@@ -573,26 +618,35 @@ async function main() {
 
   console.log(`Calculating real max-min.`);
   const products = await prisma.product.findMany({
-    include: { productVariations: true },
+    select: { id: true },
   });
 
-  const updatePromises = products.map(async (product) => {
-    const prices = product.productVariations.map((p) => Number(p.price));
+  await recalculateProductMinMaxPrices(
+    products.map((p) => p.id),
+    prisma,
+  );
 
-    const minPrice = prices.length > 0 ? Math.min(...prices) : product.minPrice;
-    const maxPrice = prices.length > 0 ? Math.max(...prices) : product.maxPrice;
+  // const products = await prisma.product.findMany({
+  //   include: { productVariations: true },
+  // });
 
-    const newData = {};
-    if (minPrice) newData['minPrice'] = minPrice;
-    if (maxPrice) newData['maxPrice'] = maxPrice;
+  // const updatePromises = products.map(async (product) => {
+  //   const prices = product.productVariations.map((p) => Number(p.price));
 
-    await prisma.product.update({
-      where: { id: product.id },
-      data: newData,
-    });
-  });
+  //   const minPrice = prices.length > 0 ? Math.min(...prices) : product.minPrice;
+  //   const maxPrice = prices.length > 0 ? Math.max(...prices) : product.maxPrice;
 
-  await Promise.all(updatePromises);
+  //   const newData = {};
+  //   if (minPrice) newData['minPrice'] = minPrice;
+  //   if (maxPrice) newData['maxPrice'] = maxPrice;
+
+  //   await prisma.product.update({
+  //     where: { id: product.id },
+  //     data: newData,
+  //   });
+  // });
+
+  // await Promise.all(updatePromises);
 
   console.log(`Like all products from retejada@alu.ucam.edu user`);
   const retejada = await prisma.user.findFirst({ where: { email: 'retejada@alu.ucam.edu' } });

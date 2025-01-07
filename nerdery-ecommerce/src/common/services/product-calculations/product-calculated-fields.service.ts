@@ -1,28 +1,28 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CartItem, ProductVariation } from '@prisma/client';
 import { CartItemObject } from 'src/cart-items/entities/cart-item.object';
 import { PriceSummaryInput } from 'src/common/dto/price-summary-input.dto ';
 import { PriceSummary } from 'src/common/dto/price-summary.dto';
 import { DiscountType } from 'src/common/enums/discount-type.enum';
+import { ProductWithLikes, ProductWithVariations } from 'src/common/prisma-types';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ProductCalculatedFieldsService {
+  logger = new Logger('ProductCalculatedFieldsService');
   constructor(private readonly prisma: PrismaService) {}
 
-  async recalculateProductMinMaxPrices(productIds: string[]) {
-    const products = await this.prisma.product.findMany({
+  async recalculateProductMinMaxPrices(productIds: string[]): Promise<boolean> {
+    const products: ProductWithVariations[] = await this.prisma.product.findMany({
       where: {
         id: {
           in: productIds,
         },
-        isDeleted: false,
-        isEnabled: true,
       },
       include: { productVariations: true },
     });
 
-    const updatePromises = products.map(async (product) => {
+    const updatePromises = products.map((product) => {
       const filteredProductVariations = product.productVariations.filter(
         (p) => p.isEnabled && !p.isDeleted,
       );
@@ -36,23 +36,26 @@ export class ProductCalculatedFieldsService {
       if (minPrice) calculatedData['minPrice'] = minPrice;
       if (maxPrice) calculatedData['maxPrice'] = maxPrice;
 
-      await this.prisma.product.update({
+      return this.prisma.product.update({
         where: { id: product.id },
         data: calculatedData,
       });
     });
-
-    await Promise.allSettled(updatePromises);
+    try {
+      await this.prisma.$transaction(updatePromises);
+      return true;
+    } catch (error) {
+      this.logger.error('Error updating product min-max prices', error);
+      return false;
+    }
   }
 
   async recalculateProductLikesCount(productIds: string[]) {
-    const products = await this.prisma.product.findMany({
+    const products: ProductWithLikes[] = await this.prisma.product.findMany({
       where: {
         id: {
           in: productIds,
         },
-        isDeleted: false,
-        isEnabled: true,
       },
       include: { productLikes: true },
     });
@@ -68,7 +71,8 @@ export class ProductCalculatedFieldsService {
   }
 
   calculatePriceSummary(input: PriceSummaryInput): PriceSummary {
-    const { unitPrice, discountType, discount, quantity } = input;
+    const { unitPrice, discount } = input;
+    const { discountType, quantity } = input;
 
     const subTotal = unitPrice * quantity;
 
@@ -83,35 +87,46 @@ export class ProductCalculatedFieldsService {
       calculatedDiscount = subTotal;
     }
 
+    if (calculatedDiscount < 0 || discount < 0) {
+      calculatedDiscount = 0;
+    }
+
     // round prices to 2 decimal places
     const result: PriceSummary = {
-      unitPrice: Math.round(unitPrice * 100) / 100,
-      subTotal: Math.round(subTotal * 100) / 100,
-      discount: Math.round(calculatedDiscount * 100) / 100,
-      total: Math.round((subTotal - calculatedDiscount) * 100) / 100,
+      unitPrice: Number(unitPrice.toFixed(2)),
+      subTotal: Number(subTotal.toFixed(2)),
+      discount: Number(calculatedDiscount.toFixed(2)),
+      total: Number((subTotal - calculatedDiscount).toFixed(2)),
     };
+
+    if (result.total < result.subTotal - result.discount) {
+      result.discount = Number((result.subTotal - result.total).toFixed(2));
+    }
+
     return result;
   }
 
-  createCartItemObjectFromProductVariation(
+  createCartItemWithPriceSummary(
     cartItem: CartItem,
     prodVariation: ProductVariation,
   ): CartItemObject {
     const priceSummary = this.calculatePriceSummary({
-      discount: Number(prodVariation.discount),
+      discount: Number(prodVariation.discount.toFixed(2)),
       discountType: prodVariation.discountType,
       quantity: cartItem.quantity,
-      unitPrice: Number(prodVariation.price),
+      unitPrice: Number(prodVariation.price.toFixed(2)),
     });
 
     return {
       userId: cartItem.userId,
+      quantity: cartItem.quantity,
+      productVariationId: cartItem.productVariationId,
+
+      //Calculated fields
       unitPrice: priceSummary.unitPrice,
       subTotal: priceSummary.subTotal,
       total: priceSummary.total,
       discount: priceSummary.discount,
-      quantity: cartItem.quantity,
-      productVariationId: cartItem.productVariationId,
     };
   }
 }

@@ -1,4 +1,10 @@
-import { ForbiddenException, Injectable, Logger, RawBodyRequest } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  Logger,
+  RawBodyRequest,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OrderStatusEnum, StripePaymentIntentEnum } from '@prisma/client';
 import { StripeConfig, ConfigNames } from 'src/common/config/config.interface';
@@ -23,19 +29,24 @@ export class StripeService {
   }
 
   async createPaymentIntent(amount: number, orderId: string) {
-    const paymentResponse = await this.stripe.paymentIntents.create({
-      amount: Math.round(amount * 100),
-      currency: 'usd',
-      metadata: {
-        orderId: orderId,
-      },
-      payment_method_types: ['card'],
-    });
-    this.logger.log('Payment intent created successfully', paymentResponse);
-    return paymentResponse;
+    try {
+      const paymentResponse = await this.stripe.paymentIntents.create({
+        amount: Math.round(amount * 100),
+        currency: 'usd',
+        metadata: {
+          orderId: orderId,
+        },
+        payment_method_types: ['card'],
+      });
+      this.logger.log('Payment intent created successfully', paymentResponse);
+      return paymentResponse;
+      // eslint-disable-next-line unused-imports/no-unused-vars, @typescript-eslint/no-unused-vars
+    } catch (error) {
+      throw new ServiceUnavailableException('Error creating payment intent on Stripe API');
+    }
   }
 
-  async handleWeebhook(req: RawBodyRequest<Request>) {
+  async handleWebhook(req: RawBodyRequest<Request>) {
     try {
       const signature = req.headers['stripe-signature'];
       const payload = req.rawBody;

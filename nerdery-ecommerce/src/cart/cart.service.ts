@@ -26,6 +26,9 @@ export class CartService {
       },
     });
 
+    // console.log('\n\n cartItems');
+    // console.log(cartItems);
+
     cartItems = cartItems.filter(
       (item) =>
         !item.productVariation.isDeleted &&
@@ -34,20 +37,21 @@ export class CartService {
         item.quantity > 0 &&
         item.quantity <= item.productVariation.stock,
     );
+    // console.log('\n\n cartItems.filter');
+    // console.log(JSON.stringify(cartItems));
 
-    const result: CartObject = {
+    let result: CartObject = {
       items: [],
       discount: 0,
       subTotal: 0,
       total: 0,
     };
 
-    return cartItems.reduce((resultAcc, cartItem) => {
-      const tempResult =
-        this.productCalculatedFieldsService.createCartItemObjectFromProductVariation(
-          cartItem,
-          cartItem.productVariation,
-        );
+    result = cartItems.reduce((resultAcc, cartItem) => {
+      const tempResult = this.productCalculatedFieldsService.createCartItemWithPriceSummary(
+        cartItem,
+        cartItem.productVariation,
+      );
       tempResult.productVariation = cartItem.productVariation as any;
 
       resultAcc.items.push(tempResult);
@@ -57,10 +61,17 @@ export class CartService {
 
       return resultAcc;
     }, result);
+
+    return {
+      ...result,
+      discount: Number(result.discount.toFixed(2)),
+      subTotal: Number(result.subTotal.toFixed(2)),
+      total: Number(result.total.toFixed(2)),
+    };
   }
 
   async deleteAllItems(userId: string, productVariationIds: string[]) {
-    await this.prisma.cartItem.deleteMany({
+    const result = await this.prisma.cartItem.deleteMany({
       where: {
         userId,
         productVariationId: {
@@ -68,5 +79,7 @@ export class CartService {
         },
       },
     });
+
+    return result.count;
   }
 }

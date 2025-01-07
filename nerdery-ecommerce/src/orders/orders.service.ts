@@ -21,12 +21,15 @@ export class OrdersService {
   ) {}
 
   async getPaymentApprovedStatus(orderId: string): Promise<ApprovedStatusPayload> {
-    await this.ensureOrderExists(orderId);
     const order = await this.prisma.order.findFirst({
       where: {
         id: orderId,
       },
     });
+
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
 
     const isApproved =
       order.status === OrderStatusEnum.PAYMENT_APPROVED ||
@@ -82,7 +85,7 @@ export class OrdersService {
       data: {
         orderId: order.id,
         amount: order.total,
-        currency: 'USD',
+        currency: 'usd',
         webhookPaymentIntent: stripeResult.status as StripePaymentIntentEnum,
         stripePaymentId: stripeResult.id,
         webhookData: null,
@@ -153,15 +156,5 @@ export class OrdersService {
       paymentUrl: paymentUrl,
       clientSecret: payment.clientSecret,
     };
-  }
-
-  //HELPERS
-  private async ensureOrderExists(orderId: string) {
-    const exists = await this.prisma.order.findUnique({
-      where: { id: orderId },
-    });
-    if (!exists) {
-      throw new NotFoundException(`Order ${orderId} not found`);
-    }
   }
 }
