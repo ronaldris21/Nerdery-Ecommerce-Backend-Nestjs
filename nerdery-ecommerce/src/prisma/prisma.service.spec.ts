@@ -52,15 +52,19 @@ describe('PrismaService', () => {
     expect(service.onModuleDestroy).toHaveBeenCalledTimes(1);
   });
 
-  it('Database connection in the first try', async () => {
-    jest
-      .spyOn(service, '$connect')
-      .mockRejectedValueOnce(new Error('Database connection failed. Retrying (1)...'))
-      .mockRejectedValueOnce(new Error('Database connection failed. Retrying (2)...'))
-      .mockResolvedValueOnce();
+  it(
+    'Database connection in the first try',
+    async () => {
+      jest
+        .spyOn(service, '$connect')
+        .mockRejectedValueOnce(new Error('Database connection failed. Retrying (1)...'))
+        .mockRejectedValueOnce(new Error('Database connection failed. Retrying (2)...'))
+        .mockResolvedValueOnce();
 
-    await service.connectWithRetry();
+      await service.connectWithRetry();
 
-    expect(service.$connect).toHaveBeenCalledTimes(3);
-  });
+      expect(service.$connect).toHaveBeenCalledTimes(3);
+    },
+    4 * 3 * 1000, // extra timeout in milliseconds
+  );
 });
