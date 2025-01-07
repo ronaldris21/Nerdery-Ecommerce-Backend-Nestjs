@@ -1,4 +1,8 @@
-import { UnauthorizedException, ExecutionContext } from '@nestjs/common';
+import {
+  UnauthorizedException,
+  ExecutionContext,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { ThrottlerModuleOptions, ThrottlerStorage } from '@nestjs/throttler';
@@ -61,6 +65,40 @@ describe('ThrottleContextGuard', () => {
       expect(GqlExecutionContext.create).toHaveBeenCalledWith(context);
       expect(mockGqlExecutionContext.getContext).toHaveBeenCalled();
       expect(result).toEqual({ req: mockReq, res: mockRes });
+    });
+
+    it('should throw error when REQUEST is missing in GraphQL context', () => {
+      const mockReq = null;
+      const mockRes = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+      const mockGqlContext = { req: mockReq, res: mockRes };
+      const mockGqlExecutionContext = {
+        getContext: jest.fn().mockReturnValue(mockGqlContext),
+      };
+      jest.spyOn(GqlExecutionContext, 'create').mockReturnValue(mockGqlExecutionContext as any);
+      (context.getType as jest.Mock).mockReturnValue('graphql');
+
+      expect(() => guard.getRequestResponse(context)).toThrow(InternalServerErrorException);
+
+      expect(context.getType).toHaveBeenCalled();
+      expect(GqlExecutionContext.create).toHaveBeenCalledWith(context);
+      expect(mockGqlExecutionContext.getContext).toHaveBeenCalled();
+    });
+
+    it('should throw error when RESPONSE is missing in GraphQL context', () => {
+      const mockReq = { headers: { authorization: 'Bearer token' } };
+      const mockRes = null;
+      const mockGqlContext = { req: mockReq, res: mockRes };
+      const mockGqlExecutionContext = {
+        getContext: jest.fn().mockReturnValue(mockGqlContext),
+      };
+      jest.spyOn(GqlExecutionContext, 'create').mockReturnValue(mockGqlExecutionContext as any);
+      (context.getType as jest.Mock).mockReturnValue('graphql');
+
+      expect(() => guard.getRequestResponse(context)).toThrow(InternalServerErrorException);
+
+      expect(context.getType).toHaveBeenCalled();
+      expect(GqlExecutionContext.create).toHaveBeenCalledWith(context);
+      expect(mockGqlExecutionContext.getContext).toHaveBeenCalled();
     });
 
     it('should throw UnauthorizedException for unsupported context types', () => {

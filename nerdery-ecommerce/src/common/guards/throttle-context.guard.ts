@@ -1,4 +1,9 @@
-import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  ExecutionContext,
+  UnauthorizedException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { ThrottlerGuard } from '@nestjs/throttler';
 
@@ -18,7 +23,10 @@ export class ThrottleContextGuard extends ThrottlerGuard {
         const req = graphqlContext.req || graphqlContext.request;
         const res = graphqlContext.res || graphqlContext.response;
         if (!req) {
-          throw new UnauthorizedException('Request object is missing in GraphQL context');
+          throw new InternalServerErrorException('Request object is missing in GraphQL context');
+        }
+        if (!res) {
+          throw new InternalServerErrorException('Response object is missing in GraphQL context');
         }
         return { req, res };
       }
