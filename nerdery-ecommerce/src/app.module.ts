@@ -18,6 +18,8 @@ import { GraphqlModule } from './graphql/graphql.module';
 import { ImagesModule } from './images/images.module';
 import { MailModule } from './mail/mail.module';
 import { OrdersModule } from './orders/orders.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { PrismaService } from './prisma/prisma.service';
 import { ProductLikesModule } from './product-likes/product-likes.module';
 import { ProductVariationImagesModule } from './product-variation-images/product-variation-images.module';
 import { ProductVariationsModule } from './product-variations/product-variations.module';
@@ -27,6 +29,7 @@ import { StripeModule } from './stripe/stripe.module';
 @Module({
   imports: [
     AuthModule,
+    PrismaModule,
     ThrottlerModule.forRoot({
       errorMessage(context, throttlerLimitDetail) {
         return `Too many request in a short period! Only ${throttlerLimitDetail.limit} request every ${throttlerLimitDetail.ttl / 1000} seconds.`;
@@ -67,6 +70,7 @@ import { StripeModule } from './stripe/stripe.module';
       provide: APP_GUARD,
       useClass: ThrottleContextGuard,
     },
+    PrismaService,
   ],
 })
 export class AppModule {}
