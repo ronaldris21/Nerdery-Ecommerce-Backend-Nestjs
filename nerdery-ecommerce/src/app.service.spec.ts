@@ -21,6 +21,10 @@ describe('AppService', () => {
     expect(service).not.toBeDefined();
   });
 
+  it('SHOULD FAIL ON PURPOSE FOR GITHUB ACTION COMMIT PUSH TEST 2', () => {
+    expect(service).not.toBeDefined();
+  });
+
   it('getHello', () => {
     expect(service.getHello()).toBe('Hello World!');
   });
