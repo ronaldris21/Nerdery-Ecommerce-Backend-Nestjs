@@ -20,9 +20,8 @@ jobs:
       matrix:
         node-version: [20.x]
         # node-version: [20.x, 18.x]
-      
-      env:
-        NODE_ENV: "development"
+    env:
+      MODE: "development"
 
     steps:
       - name: Checkout Repository
