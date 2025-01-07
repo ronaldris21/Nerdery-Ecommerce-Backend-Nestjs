@@ -43,7 +43,7 @@ You can choose the target of your business, be creative!.
 ## Extra recomended points
 * Implement resolve field in graphQL queries (if apply)
 * When the stock of a product reaches *5*, notify the last user that liked it and not purchased the product yet with an email. ✅
-  Use a background job and make sure to include the product's image in the email. ✅
+  (Use a background job and make sure to include the product's image in the email. ✅)
 * Send an email when the user changes the password ✅
 * Deploy on Hostinger VPS ✅
 
@@ -52,7 +52,7 @@ You can choose the target of your business, be creative!.
 * Refresh token (30 days) + access token (4 hours) ✅
 * Product Variations ✅
 * Product Variation discounts (PERCENTAGE | DISCOUNT | NONE) ✅
-* Minimal react payment app to simulate payments and receive updates on the webhook in the server. Make sure to use the server endpoints (http://217.15.170.229:3100) ✅
+* Minimal react payment app to simulate payments and receive updates on the webhook in the server. Make sure to use the server endpoints (http://217.15.170.229:3101) ✅
 * Users with multiple roles ✅
 * Cart Items with discounts (PERCENTAGE | DISCOUNT | NONE). This prices are calculated when retrieving the user cart ✅
 * Product search with filters like: gender, minPrice, maxPrice, search, categoryId ✅
