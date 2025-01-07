@@ -57,7 +57,8 @@ You can choose the target of your business, be creative!.
 * Cart Items with discounts (PERCENTAGE | DISCOUNT | NONE). This prices are calculated when retrieving the user cart ✅
 * Product search with filters like: gender, minPrice, maxPrice, search, categoryId ✅
 * Product search sorters ASC or DESC by name, createdAt, updatedAt, likesCount, price ✅
-* VPS upload setup with docker and PM2. Redis/database retry connections in case of failed. Server setup to run instance on server startup in any unexpected shutdown ✅
+* VPS upload setup with docker and PM2 ✅
+* Redis - database retry connections in case of failed. Server setup to run instance on server startup in any unexpected shutdown ✅
 
 
 ## Notes: 
@@ -97,7 +98,8 @@ Variables used:
 
 Note: access_token is set automatically after login endpoint is successfully hit.
 
-### Fork the request
+### POSTMAN TESTS
+### Fork the POSTMAN requests from: [RonaldRis Public Workspace](https://www.postman.com/lively-meadow-246836/ronaldris-public-workspace)
 
 - For testing purpose you can copy this postman
 
