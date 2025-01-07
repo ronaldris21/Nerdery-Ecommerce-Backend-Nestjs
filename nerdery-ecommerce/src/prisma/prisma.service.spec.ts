@@ -1,17 +1,9 @@
-import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { PrismaService } from './prisma.service';
 
-const mockPrismaService = {
-  $connect: jest.fn(),
-  $disconnect: jest.fn(),
-  connectWithRetry: jest.fn(),
-};
-
 describe('PrismaService', () => {
   let service: PrismaService;
-  let logger: Logger;
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -20,11 +12,9 @@ describe('PrismaService', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [PrismaService],
-      // providers: [{ provide: PrismaService, useValue: mockPrismaService }],
     }).compile();
 
     service = module.get(PrismaService);
-    logger = (service as any).logger;
   });
 
   afterEach(() => {
