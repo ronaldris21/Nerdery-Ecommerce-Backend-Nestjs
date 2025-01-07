@@ -1,8 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CartItem, Prisma, Product, ProductVariation } from '@prisma/client';
-import { PriceSummaryInput } from 'src/common/dto/price-summary-input.dto ';
-import { PriceSummary } from 'src/common/dto/price-summary.dto';
-import { DiscountType } from 'src/common/enums/discount-type.enum';
+import { PriceSummaryInput } from 'src/common/data/dto/price-summary-input.dto ';
+import { PriceSummary } from 'src/common/data/dto/price-summary.dto';
+import { DiscountType } from 'src/common/data/enums/discount-type.enum';
+import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 import { ProductWithLikes } from 'src/common/prisma-types';
 import {
   validProduct1,
@@ -14,7 +15,6 @@ import {
   validUUID7,
   validUUID8,
 } from 'src/common/testing-mocks/helper-data';
-import { PrismaService } from 'src/prisma/prisma.service';
 
 import { ProductCalculatedFieldsService } from './product-calculated-fields.service';
 
@@ -51,7 +51,9 @@ describe('ProductCalculatedFieldsService', () => {
   });
 
   describe('recalculateProductMinMaxPrices', () => {
-    type ProductWithVariations = Product & { productVariations: ProductVariation[] };
+    type ProductWithVariations = Product & {
+      productVariations: ProductVariation[];
+    };
 
     const productWithVariation1: ProductWithVariations = {
       id: productId1,

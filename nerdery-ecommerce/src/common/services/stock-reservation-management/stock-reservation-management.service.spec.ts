@@ -2,14 +2,14 @@ import { DeepMocked, createMock } from '@golevelup/ts-jest';
 import { ConflictException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProductVariation } from '@prisma/client';
-import { CartItemObject } from 'src/cart-items/entities/cart-item.object';
+import { MailService } from 'src/common/modules/mail/mail.service';
+import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 import {
   validProductVariation1,
   validProductVariation2,
   validUUID6,
 } from 'src/common/testing-mocks/helper-data';
-import { MailService } from 'src/mail/mail.service';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { CartItemObject } from 'src/modules/cart-items/entities/cart-item.object';
 
 import { StockReservationManagementService } from './stock-reservation-management.service';
 
