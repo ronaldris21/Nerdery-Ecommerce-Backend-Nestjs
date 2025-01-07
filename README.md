@@ -78,16 +78,21 @@ Requirements to use Graph:
 
 ## Use the app on the server:
 
+App has been deployed to a personal VPS in Hostinger. In order to make sure the project is always running smothly, Uptime Robots has been configured as follow:
+- App has 2 enpoints /hello and /db to check the backend health
+- /hello makes sure the app is running
+- /db makes sure the database connection is active
+![image](https://github.com/user-attachments/assets/80fc97ef-b205-4eba-8c67-3fbf96d07ec5)
+
+
 There are 2 apps on a server:
 
-1. http://217.15.170.229:3101/payment?clientSecret=pi_3Qbp0A062gksTdkE0hcMVVpL_secret_p9WJXmIEmJ8X8hhjgE9BK4wGl
-2. http://217.15.170.229:3100/api
+1. http://217.15.170.229:3100/api
+2. http://217.15.170.229:3101/payment?clientSecret=pi_3Qbp0A062gksTdkE0hcMVVpL_secret_p9WJXmIEmJ8X8hhjgE9BK4wGl
 
 All you need to have is Postman to test the app.
 
-Here you have the postman used for testing the app. Make sure to have the environments active on you postman.
-
-Variables used: 
+Variables used in POSTMAN: 
 
 - HOST:
     - http://217.15.170.229:3100/api
@@ -101,7 +106,7 @@ Note: access_token is set automatically after login endpoint is successfully hit
 ### POSTMAN TESTS
 ### Fork the POSTMAN requests from: [RonaldRis Public Workspace](https://www.postman.com/lively-meadow-246836/ronaldris-public-workspace)
 
-- For testing purpose you can copy this postman
+- For testing purpose you can copy this postman. Here you have the postman used for testing the app. Make sure to have the environments active on you postman: 
 
 [RonaldRis Public Workspace](https://www.postman.com/lively-meadow-246836/ronaldris-public-workspace)
 
@@ -183,3 +188,6 @@ npm run start
 - This can be seen by running the command: **npm run coverage**
 - Or in **'/nerdery-ecommerce/coverage-copy'** folder
 ![image](https://github.com/user-attachments/assets/5d6007c2-8a02-4fe7-b09c-46610ad0ac22)
+
+## Uptime robots
+- 
