@@ -397,12 +397,12 @@ describe('ProductVariationsService', () => {
 
       await expect(service.update(updateInput)).rejects.toThrow(NotFoundException);
 
+      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalled();
       expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith(
         { id: productId },
         false,
         false,
       );
-      expect(idValidatorService.findUniqueProductVariationById).not.toHaveBeenCalled();
       expect(prismaService.productVariation.update).not.toHaveBeenCalled();
       expect(productCalculatedFieldsService.recalculateProductMinMaxPrices).not.toHaveBeenCalled();
     });
@@ -415,11 +415,7 @@ describe('ProductVariationsService', () => {
 
       await expect(service.update(updateInput)).rejects.toThrow(NotFoundException);
 
-      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith(
-        { id: productId },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductById).not.toHaveBeenCalled();
       expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith(
         { id: variationId },
         false,
