@@ -58,12 +58,15 @@ export class ProductVariationsService {
   }
 
   async update(input: UpdateProductVariationInput) {
-    await this.idValidatorService.findUniqueProductById({ id: input.productId }, false, false);
     const prodVariation = await this.idValidatorService.findUniqueProductVariationById(
       { id: input.id },
       false,
       false,
     );
+
+    if (input.productId) {
+      await this.idValidatorService.findUniqueProductById({ id: input.productId }, false, false);
+    }
 
     this.validateDiscount({
       price: input.price ?? Number(prodVariation.price),
@@ -82,12 +85,14 @@ export class ProductVariationsService {
       data: {
         ...rest,
         product: {
-          connect: { id: productId },
+          connect: { id: productId ?? prodVariation.productId },
         },
       },
     });
 
-    await this.productCalculatedFieldsService.recalculateProductMinMaxPrices([input.productId]);
+    await this.productCalculatedFieldsService.recalculateProductMinMaxPrices([
+      productId ?? prodVariation.productId,
+    ]);
     return await this.idValidatorService.findUniqueProductVariationById({
       id: input.id,
     });

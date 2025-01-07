@@ -33,8 +33,8 @@ Handlebars.registerHelper('eq', (arg1, arg2) => arg1 === arg2);
         from: `"No Reply" <${process.env.MAIL_FROM}>`,
       },
       template: {
+        // dir: process.cwd() + '/public/templates/mails',
         dir: join(__dirname, '/templates'),
-
         adapter: new HandlebarsAdapter(),
         options: {
           strict: true,

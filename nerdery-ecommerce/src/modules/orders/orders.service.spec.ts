@@ -9,8 +9,6 @@ import {
   StripePayment,
   StripePaymentIntentEnum,
 } from '@prisma/client';
-import { CartService } from 'src/cart/cart.service';
-import { CartObject } from 'src/cart/entities/cart.entity';
 import { FrontendConfig, ConfigNames } from 'src/common/modules/config-env/config.interface';
 import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 import {
@@ -24,6 +22,8 @@ import {
 import { StripeService } from 'src/modules/stripe/stripe.service';
 
 import { StockReservationManagementService } from '../../common/services/stock-reservation-management/stock-reservation-management.service';
+import { CartService } from '../cart/cart.service';
+import { CartObject } from '../cart/entities/cart.entity';
 
 import { ApprovedStatusPayload } from './entities/approved-status.object';
 import { OrdersService } from './orders.service';
