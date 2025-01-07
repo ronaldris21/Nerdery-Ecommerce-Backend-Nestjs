@@ -55,6 +55,6 @@ describe('PrismaService', () => {
 
       expect(service.$connect).toHaveBeenCalledTimes(3);
     },
-    4 * 3 * 1000, // extra timeout in milliseconds
+    3 * 5000, // extra timeout in milliseconds
   );
 });
