@@ -1,9 +1,9 @@
 import { Category, Product, Prisma, ProductVariation } from '@prisma/client';
-import { JwtPayloadDto } from 'src/auth/dto/jwtPayload.dto';
+import { JwtPayloadDto } from 'src/modules/auth/dto/jwtPayload.dto';
 
 import { ROLES } from '../constants';
-import { DiscountType } from '../enums/discount-type.enum';
-import { Gender } from '../enums/gender.enum';
+import { DiscountType } from '../data/enums/discount-type.enum';
+import { Gender } from '../data/enums/gender.enum';
 import {
   CartItemWithFullDetails,
   CartItemWithProductVariation,

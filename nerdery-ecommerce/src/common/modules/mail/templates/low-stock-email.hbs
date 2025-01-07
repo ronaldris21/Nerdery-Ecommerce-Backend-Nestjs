@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Low Stock Alert</title>
+  <style>
+    /* Inline CSS */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f8f8;
+    }
+    .container {
+      background-color: #ffffff;
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      border: 1px solid #dedede;
+    }
+    .header {
+      text-align: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #dedede;
+      margin-bottom: 20px;
+    }
+    h1, h2, h3, p {
+      margin: 0 0 15px 0;
+      color: #333333;
+    }
+    .product-details {
+      background-color: #fafafa;
+      border: 1px solid #eaeaea;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+    .highlight {
+      color: #c0392b; /* Reddish color for critical info (e.g., stock) */
+      font-weight: bold;
+    }
+    .images-section {
+      margin-top: 15px;
+      padding: 10px;
+      background-color: #fff5f5;
+      border: 1px solid #fadcdc;
+    }
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #777777;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Low Stock Alert</h1>
+      <p>Hello {{user.firstName}},</p>
+    </div>
+
+    <p>We have noticed that one product you liked is running low on stock. Here are the details:</p>
+
+    <div class="product-details">
+      <h2>Product: {{productVariation.product.name}}</h2>
+      <p><strong>Description:</strong> {{productVariation.product.description}}</p>
+      <p><strong>Color:</strong> {{productVariation.color}}</p>
+      <p><strong>Size:</strong> {{productVariation.size}}</p>
+      <p><strong>Current Stock:</strong> <span class="highlight">{{productVariation.stock}}</span></p>
+      <p><strong>Price:</strong> ${{productVariation.price}}</p>
+
+      {{#if productVariation.discount}}
+        <p>
+          <strong>Discount:</strong> 
+          {{productVariation.discount}} 
+          (
+            {{#if (eq productVariation.discountType 'PERCENTAGE')}}
+              %
+            {{else if (eq productVariation.discountType 'DOLLAR_SIGN')}}
+              $
+            {{else}}
+              USD
+            {{/if}}
+          )
+        </p>
+      {{/if}}
+
+      {{!-- <p><strong>Last Stock Refill Date:</strong> {{productVariation.stockRefilledAt}}</p> --}}
+
+      {{#if productVariation.variationImages.length}}
+      <div class="images-section">
+        <h3>Images:</h3>
+        <ul>
+          {{#each productVariation.variationImages}}
+          <img
+            src='{{this.imageUrl}}'
+            alt='Product Image'
+            style='max-width: 200px;'
+          />
+          {{/each}}
+        </ul>
+      </div>
+      {{/if}}
+    </div>
+
+    <p>Enjoy this and more offers in our store! </p>
+
+    <div class="footer">
+      <p>Thank you!</p>
+      <p>Your Store Team</p>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,7 +1,7 @@
 import { ConflictException, Injectable, Logger } from '@nestjs/common';
-import { CartItemObject } from 'src/cart-items/entities/cart-item.object';
-import { MailService } from 'src/mail/mail.service';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { MailService } from 'src/common/modules/mail/mail.service';
+import { PrismaService } from 'src/common/modules/prisma/prisma.service';
+import { CartItemObject } from 'src/modules/cart-items/entities/cart-item.object';
 
 @Injectable()
 export class StockReservationManagementService {

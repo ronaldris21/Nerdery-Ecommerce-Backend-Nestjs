@@ -1,10 +1,10 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Prisma, Product, ProductVariation } from '@prisma/client';
-import { DiscountType } from 'src/common/enums/discount-type.enum';
-import { Gender } from 'src/common/enums/gender.enum';
+import { DiscountType } from 'src/common/data/enums/discount-type.enum';
+import { Gender } from 'src/common/data/enums/gender.enum';
+import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 import { validUUID1, validUUID2, validUUID3 } from 'src/common/testing-mocks/helper-data';
-import { PrismaService } from 'src/prisma/prisma.service';
 
 import { IdValidatorService } from './id-validator.service';
 

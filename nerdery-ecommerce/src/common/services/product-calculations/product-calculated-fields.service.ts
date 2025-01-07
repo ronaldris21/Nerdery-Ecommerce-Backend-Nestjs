@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CartItem, ProductVariation } from '@prisma/client';
-import { CartItemObject } from 'src/cart-items/entities/cart-item.object';
-import { PriceSummaryInput } from 'src/common/dto/price-summary-input.dto ';
-import { PriceSummary } from 'src/common/dto/price-summary.dto';
-import { DiscountType } from 'src/common/enums/discount-type.enum';
+import { PriceSummaryInput } from 'src/common/data/dto/price-summary-input.dto ';
+import { PriceSummary } from 'src/common/data/dto/price-summary.dto';
+import { DiscountType } from 'src/common/data/enums/discount-type.enum';
+import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 import { ProductWithLikes, ProductWithVariations } from 'src/common/prisma-types';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { CartItemObject } from 'src/modules/cart-items/entities/cart-item.object';
 
 @Injectable()
 export class ProductCalculatedFieldsService {
