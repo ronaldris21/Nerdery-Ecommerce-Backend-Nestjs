@@ -6,17 +6,9 @@ import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 export class IdValidatorService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUniqueProductById(
-    where: Prisma.ProductWhereUniqueInput,
-    includeCategory: boolean = true,
-    includeVariations: boolean = true,
-  ) {
+  async findUniqueProductById(where: Prisma.ProductWhereUniqueInput) {
     const product = await this.prisma.product.findUnique({
       where,
-      include: {
-        category: includeCategory,
-        productVariations: includeVariations,
-      },
     });
 
     if (!product) {

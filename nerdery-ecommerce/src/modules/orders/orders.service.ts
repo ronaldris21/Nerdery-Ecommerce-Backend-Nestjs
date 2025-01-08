@@ -118,18 +118,7 @@ export class OrdersService {
       include: {
         user: isAdmin,
         orderIncidents: isAdmin,
-        // orderItems: true,
-        orderItems: {
-          include: {
-            productVariation: {
-              include: {
-                product: true,
-                variationImages: true,
-              },
-            },
-          },
-        },
-        // stripePayments: true,
+        orderItems: true,
       },
     });
   }
