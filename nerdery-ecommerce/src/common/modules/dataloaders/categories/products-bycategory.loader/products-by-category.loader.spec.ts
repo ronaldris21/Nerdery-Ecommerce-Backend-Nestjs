@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProductsBycategoryLoader } from './products-bycategory.loader';
+
+import { ProductsBycategoryLoader } from './products-by-category.loader';
 
 describe('ProductsBycategoryLoader', () => {
   let provider: ProductsBycategoryLoader;

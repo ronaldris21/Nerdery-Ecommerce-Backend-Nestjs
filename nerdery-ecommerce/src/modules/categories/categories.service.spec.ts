@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Category } from '@prisma/client';
-import { validUUID1, validUUID2 } from 'src/common/testing-mocks/helper-data';
 import { PrismaService } from 'src/common/modules/prisma/prisma.service';
+import { validUUID1, validUUID2 } from 'src/common/testing-mocks/helper-data';
 
 import { CategoriesService } from './categories.service';
 
