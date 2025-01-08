@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class DataloadersService {
+  logger = new Logger('DataloadersService');
   constructor(private readonly prismaService: PrismaService) {}
 
   // ORDERS
@@ -12,11 +13,6 @@ export class DataloadersService {
       where: {
         orderId: {
           in: OrderIds,
-        },
-      },
-      include: {
-        order: {
-          select: { id: true },
         },
       },
     });
@@ -45,24 +41,16 @@ export class DataloadersService {
   }
 
   //ORDER ITEMS
-  async listProductVariationByOrderItem(orderItemsId: string[]) {
+  async listProductVariationByOrderItem(orderProductVariationIds: string[]) {
     const productVariations = await this.prismaService.productVariation.findMany({
       where: {
-        orderItems: {
-          some: {
-            id: {
-              in: orderItemsId,
-            },
-          },
-        },
-      },
-      include: {
-        orderItems: {
-          select: { id: true },
+        id: {
+          in: orderProductVariationIds,
         },
       },
     });
 
+    this.logger.log('productVariations', productVariations);
     return productVariations;
   }
 

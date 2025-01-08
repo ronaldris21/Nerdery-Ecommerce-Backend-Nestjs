@@ -118,6 +118,7 @@ export class OrdersService {
       include: {
         user: isAdmin,
         orderIncidents: isAdmin,
+        // orderItems: true,
         orderItems: {
           include: {
             productVariation: {
@@ -128,7 +129,7 @@ export class OrdersService {
             },
           },
         },
-        stripePayments: true,
+        // stripePayments: true,
       },
     });
   }

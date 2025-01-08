@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service';
 
-import { ProductVariationByCartItemLoader } from './cart-items/product-variation-by-cart-item.loader/product-variation-by-cart-item.loader';
 import { ProductsBycategoryLoader } from './categories/products-bycategory.loader/products-bycategory.loader';
 import { DataloadersService } from './dataloaders.service';
 import { ProductVariationByOrderItemLoader } from './order-items/product-variation-by-order-item.loader/product-variation-by-order-item.loader';
@@ -22,7 +21,6 @@ import { VariationImagesByProductLoader } from './products/variation-images-by-p
     ProductByProductVariationLoader,
     CategoryByProductLoader,
     VariationImagesByProductLoader,
-    ProductVariationByCartItemLoader,
     ProductsBycategoryLoader,
     DataloadersService,
     PrismaService,
@@ -35,7 +33,6 @@ import { VariationImagesByProductLoader } from './products/variation-images-by-p
     ProductByProductVariationLoader,
     CategoryByProductLoader,
     VariationImagesByProductLoader,
-    ProductVariationByCartItemLoader,
     ProductsBycategoryLoader,
     DataloadersService,
   ],

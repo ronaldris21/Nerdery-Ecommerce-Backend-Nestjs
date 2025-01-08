@@ -20,7 +20,7 @@ export class ProductVariationsService {
 
     return await this.prisma.productVariation.findMany({
       where: { ...where, productId },
-      include: { product: true, variationImages: true },
+      include: { product: true },
     });
   }
 

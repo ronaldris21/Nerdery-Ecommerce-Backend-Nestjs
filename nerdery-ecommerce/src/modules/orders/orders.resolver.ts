@@ -1,6 +1,7 @@
 import { ParseUUIDPipe, UseGuards } from '@nestjs/common';
-import { Resolver, Mutation, Query, Args } from '@nestjs/graphql';
+import { Resolver, Mutation, Query, Args, ResolveField, Parent } from '@nestjs/graphql';
 import { ROLES } from 'src/common/constants';
+import { StripePaymentsByOrderLoader } from 'src/common/modules/dataloaders/orders/stripe-payments-by-order.loader/stripe-payments-by-order.loader';
 import { GetUser } from 'src/modules/auth/decoratos/get-user.decorator';
 import { Roles } from 'src/modules/auth/decoratos/roles.decorator';
 import { JwtPayloadDto } from 'src/modules/auth/dto/jwtPayload.dto';
@@ -10,14 +11,15 @@ import { OrderCreatedPayload } from './dto/response/order-created-payload.object
 import { ApprovedStatusPayload } from './entities/approved-status.object';
 import { OrderObject } from './entities/order.object';
 import { RetryPaymentPayload } from './entities/retry-payment.object';
+import { StripePaymentObject } from './entities/stripe-payment.object';
 import { OrdersService } from './orders.service';
-
-// Importar los tipos de tu schema GraphQL o DTOs generados:
 
 @Resolver(() => OrderObject)
 export class OrdersResolver {
-  constructor(private readonly ordersService: OrdersService) {}
-
+  constructor(
+    private readonly ordersService: OrdersService,
+    private readonly stripePaymentsByOrderLoader: StripePaymentsByOrderLoader,
+  ) {}
   @Query(() => [OrderObject])
   @UseGuards(AccessTokenWithRolesGuard)
   @Roles([ROLES.CLIENT])
@@ -57,5 +59,10 @@ export class OrdersResolver {
   @Roles([ROLES.CLIENT])
   createOrder(@GetUser() user: JwtPayloadDto) {
     return this.ordersService.createOrder(user.userId);
+  }
+
+  @ResolveField(() => [StripePaymentObject])
+  async stripePayments(@Parent() order: OrderObject) {
+    return this.stripePaymentsByOrderLoader.load(order.id);
   }
 }
