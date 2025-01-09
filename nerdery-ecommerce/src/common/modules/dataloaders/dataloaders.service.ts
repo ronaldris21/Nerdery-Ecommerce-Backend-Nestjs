@@ -67,6 +67,8 @@ export class DataloadersService {
   }
 
   async listProductByProductVariation(productVariationIds: string[]) {
+    //PRODUCT CAN BE REPEATED A LOT OF TIMES
+    //I NEED TO MAKE REQUEST EFICCIENT
     const products = await this.prismaService.product.findMany({
       where: {
         productVariations: {

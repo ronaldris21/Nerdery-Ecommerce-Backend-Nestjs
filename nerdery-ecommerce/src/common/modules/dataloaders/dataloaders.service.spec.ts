@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { DataloadersService } from './dataloaders/dataloaders.service';
+import { DataloadersService } from './dataloaders.service';
 
 describe('DataloadersService', () => {
   let service: DataloadersService;
