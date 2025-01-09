@@ -2,9 +2,9 @@ import { DeepMocked, createMock } from '@golevelup/ts-jest';
 import { UnprocessableEntityException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { VariationImage } from '@prisma/client';
+import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 import { IdValidatorService } from 'src/common/services/id-validator/id-validator.service';
 import { validUUID3, validUUID6 } from 'src/common/testing-mocks/helper-data';
-import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 
 import { CloudinaryService } from '../../common/modules/cloudinary/cloudinary.service';
 
@@ -86,11 +86,9 @@ describe('ImagesService', () => {
 
       const result = await service.uploadFile(productVariationId, mockFile);
 
-      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith(
-        { id: productVariationId },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith({
+        id: productVariationId,
+      });
       expect(cloudinaryService.uploadFile).toHaveBeenCalledWith(mockFile);
       expect(prismaService.variationImage.create).toHaveBeenCalledWith({
         data: {
@@ -126,11 +124,9 @@ describe('ImagesService', () => {
         NotFoundException,
       );
 
-      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith(
-        { id: productVariationId },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith({
+        id: productVariationId,
+      });
       expect(cloudinaryService.uploadFile).not.toHaveBeenCalled();
       expect(prismaService.variationImage.create).not.toHaveBeenCalled();
     });
@@ -145,11 +141,9 @@ describe('ImagesService', () => {
         'Cloudinary upload failed',
       );
 
-      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith(
-        { id: productVariationId },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith({
+        id: productVariationId,
+      });
       expect(cloudinaryService.uploadFile).toHaveBeenCalledWith(mockFile);
       expect(prismaService.variationImage.create).not.toHaveBeenCalled();
     });
@@ -163,11 +157,9 @@ describe('ImagesService', () => {
 
       await expect(service.uploadFile(productVariationId, mockFile)).rejects.toThrow();
 
-      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith(
-        { id: productVariationId },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith({
+        id: productVariationId,
+      });
       expect(cloudinaryService.uploadFile).toHaveBeenCalledWith(mockFile);
       expect(prismaService.variationImage.create).toHaveBeenCalledWith({
         data: {

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Category } from '@prisma/client';
-import { validUUID1, validUUID2 } from 'src/common/testing-mocks/helper-data';
 import { PrismaService } from 'src/common/modules/prisma/prisma.service';
+import { validUUID1, validUUID2 } from 'src/common/testing-mocks/helper-data';
 
 import { CategoriesService } from './categories.service';
 
@@ -50,7 +50,7 @@ describe('CategoriesService', () => {
       const result = await service.findBySearch('');
 
       expect(prismaService.category.findMany).toHaveBeenCalledWith({
-        include: { subCategories: true, products: true },
+        include: { subCategories: true },
       });
       expect(result).toEqual(mockCategories);
     });
@@ -69,7 +69,7 @@ describe('CategoriesService', () => {
             mode: 'insensitive',
           },
         },
-        include: { subCategories: true, products: true },
+        include: { subCategories: true },
       });
       expect(result).toEqual(filteredCategories);
     });
@@ -87,7 +87,7 @@ describe('CategoriesService', () => {
             mode: 'insensitive',
           },
         },
-        include: { subCategories: true, products: true },
+        include: { subCategories: true },
       });
       expect(result).toEqual([]);
     });

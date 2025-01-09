@@ -2,6 +2,7 @@ import { Field, Float, ID, ObjectType } from '@nestjs/graphql';
 
 import { OrderStatus } from '../dto/order-status.enum';
 
+import { ClientObject } from './client.object';
 import { OrderItemObject } from './order-item.object';
 import { StripePaymentObject } from './stripe-payment.object';
 
@@ -45,4 +46,8 @@ export class OrderObject {
 
   @Field(() => [StripePaymentObject])
   stripePayments: StripePaymentObject[];
+
+  //Accessible only for admins
+  @Field(() => ClientObject, { nullable: true })
+  client?: ClientObject;
 }

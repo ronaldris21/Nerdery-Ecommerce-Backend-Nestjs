@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 import { IdValidatorService } from 'src/common/services/id-validator/id-validator.service';
 import { ProductCalculatedFieldsService } from 'src/common/services/product-calculations/product-calculated-fields.service';
-import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 
 @Injectable()
 export class ProductLikesService {
@@ -29,7 +29,7 @@ export class ProductLikesService {
     });
 
     await this.productCalculatedFieldsService.recalculateProductLikesCount([productId]);
-    return await this.idValidatorService.findUniqueProductById({ id: productId }, false, false);
+    return await this.idValidatorService.findUniqueProductById({ id: productId });
   }
   async dislike(userId: string, productId: string) {
     try {
@@ -48,6 +48,6 @@ export class ProductLikesService {
       //Ignore Error
     }
 
-    return await this.idValidatorService.findUniqueProductById({ id: productId }, false, false);
+    return await this.idValidatorService.findUniqueProductById({ id: productId });
   }
 }

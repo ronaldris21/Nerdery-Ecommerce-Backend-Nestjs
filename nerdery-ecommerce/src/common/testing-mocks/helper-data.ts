@@ -1,4 +1,12 @@
-import { Category, Product, Prisma, ProductVariation } from '@prisma/client';
+import {
+  Category,
+  Product,
+  Prisma,
+  ProductVariation,
+  StripePayment,
+  StripePaymentIntentEnum,
+  VariationImage,
+} from '@prisma/client';
 import { JwtPayloadDto } from 'src/modules/auth/dto/jwtPayload.dto';
 
 import { ROLES } from '../constants';
@@ -130,6 +138,23 @@ export const cartItems: CartItemWithProductVariation[] = [
     },
   },
 ];
+export const validVariationImages: VariationImage[] = [
+  {
+    id: '5e0cb744-dac3-4b3e-96b1-3f50d83eb361',
+    productVariationId: '67062ffa-b66b-4b3e-ba09-342e0b9ebb80',
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/en/c/cb/Monkey_D_Luffy.png',
+  },
+  {
+    id: '98cdd450-cb25-4fab-b948-0875fd086ff7',
+    productVariationId: '67062ffa-b66b-4b3e-ba09-342e0b9ebb80',
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/en/c/cb/Monkey_D_Luffy.png',
+  },
+  {
+    id: '783f53d1-bb7e-4d40-851b-217cdbc0a648',
+    productVariationId: '67062ffa-b66b-4b3e-ba09-342e0b9ebb80',
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/en/c/cb/Monkey_D_Luffy.png',
+  },
+];
 
 export const productVariationWithDetails1: ProductVariationWithImagesAndProduct = {
   id: '67062ffa-b66b-4b3e-ba09-342e0b9ebb80',
@@ -158,23 +183,7 @@ export const productVariationWithDetails1: ProductVariationWithImagesAndProduct 
     createdAt: new Date(),
     updatedAt: new Date(),
   },
-  variationImages: [
-    {
-      id: '5e0cb744-dac3-4b3e-96b1-3f50d83eb361',
-      productVariationId: '67062ffa-b66b-4b3e-ba09-342e0b9ebb80',
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/en/c/cb/Monkey_D_Luffy.png',
-    },
-    {
-      id: '98cdd450-cb25-4fab-b948-0875fd086ff7',
-      productVariationId: '67062ffa-b66b-4b3e-ba09-342e0b9ebb80',
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/en/c/cb/Monkey_D_Luffy.png',
-    },
-    {
-      id: '783f53d1-bb7e-4d40-851b-217cdbc0a648',
-      productVariationId: '67062ffa-b66b-4b3e-ba09-342e0b9ebb80',
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/en/c/cb/Monkey_D_Luffy.png',
-    },
-  ],
+  variationImages: validVariationImages,
 };
 
 export const productVariationWithDetails2: ProductVariationWithImagesAndProduct = {
@@ -250,4 +259,17 @@ export const fakeDecodedUser: JwtPayloadDto = {
   firstName: 'Kai',
   lastName: 'Ris',
   roles: [ROLES.CLIENT],
+};
+
+export const mockStripePayment: StripePayment = {
+  id: validUUID5,
+  orderId: validUUID6,
+  amount: new Prisma.Decimal(300),
+  currency: 'usd',
+  webhookPaymentIntent: StripePaymentIntentEnum.requires_payment_method,
+  stripePaymentId: 'stripe-pi-2',
+  clientSecret: 'client_secret_2',
+  webhookData: null,
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };

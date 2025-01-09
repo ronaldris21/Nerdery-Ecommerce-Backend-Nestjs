@@ -66,7 +66,6 @@ describe('IdValidatorService', () => {
   });
 
   describe('findUniqueProductById', () => {
-    //I wont be testing the includes for the product and productVariations because I'll create dataloaders as extra feature
     it('should return the product when is found by id', async () => {
       const where = { id: validUUID1 };
 
@@ -76,10 +75,6 @@ describe('IdValidatorService', () => {
 
       expect(prismaService.product.findUnique).toHaveBeenCalledWith({
         where,
-        include: {
-          category: true,
-          productVariations: true,
-        },
       });
       expect(result).toEqual({
         ...validProduct,
@@ -149,10 +144,6 @@ describe('IdValidatorService', () => {
       );
       expect(prismaService.productVariation.findUnique).toHaveBeenCalledWith({
         where,
-        include: {
-          product: true,
-          variationImages: true,
-        },
       });
     });
   });

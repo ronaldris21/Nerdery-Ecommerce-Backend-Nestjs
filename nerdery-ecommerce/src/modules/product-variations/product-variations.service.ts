@@ -20,7 +20,6 @@ export class ProductVariationsService {
 
     return await this.prisma.productVariation.findMany({
       where: { ...where, productId },
-      include: { product: true, variationImages: true },
     });
   }
 
@@ -33,7 +32,7 @@ export class ProductVariationsService {
   }
 
   async create(input: CreateProductVariationInput) {
-    await this.idValidatorService.findUniqueProductById({ id: input.productId }, false, false);
+    await this.idValidatorService.findUniqueProductById({ id: input.productId });
     const { productId, price, ...rest } = input;
 
     this.validateDiscount({
@@ -58,14 +57,12 @@ export class ProductVariationsService {
   }
 
   async update(input: UpdateProductVariationInput) {
-    const prodVariation = await this.idValidatorService.findUniqueProductVariationById(
-      { id: input.id },
-      false,
-      false,
-    );
+    const prodVariation = await this.idValidatorService.findUniqueProductVariationById({
+      id: input.id,
+    });
 
     if (input.productId) {
-      await this.idValidatorService.findUniqueProductById({ id: input.productId }, false, false);
+      await this.idValidatorService.findUniqueProductById({ id: input.productId });
     }
 
     this.validateDiscount({
@@ -99,11 +96,7 @@ export class ProductVariationsService {
   }
 
   async toggleIsEnabled(id: string, isEnabled: boolean) {
-    const prodVariation = await this.idValidatorService.findUniqueProductVariationById(
-      { id },
-      false,
-      false,
-    );
+    const prodVariation = await this.idValidatorService.findUniqueProductVariationById({ id });
 
     await this.prisma.productVariation.update({
       where: { id },
@@ -117,11 +110,7 @@ export class ProductVariationsService {
   }
 
   async delete(id: string) {
-    const prodVariation = await this.idValidatorService.findUniqueProductVariationById(
-      { id },
-      false,
-      false,
-    );
+    const prodVariation = await this.idValidatorService.findUniqueProductVariationById({ id });
 
     await this.prisma.productVariation.update({
       where: { id },

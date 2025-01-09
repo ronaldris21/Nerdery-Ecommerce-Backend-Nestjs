@@ -108,12 +108,7 @@ describe('CartService', () => {
       expect(prismaService.cartItem.findMany).toHaveBeenCalledWith({
         where: { userId },
         include: {
-          productVariation: {
-            include: {
-              product: true,
-              variationImages: true,
-            },
-          },
+          productVariation: true,
         },
       });
 
@@ -138,12 +133,7 @@ describe('CartService', () => {
       expect(prismaService.cartItem.findMany).toHaveBeenCalledWith({
         where: { userId },
         include: {
-          productVariation: {
-            include: {
-              product: true,
-              variationImages: true,
-            },
-          },
+          productVariation: true,
         },
       });
 
@@ -211,12 +201,7 @@ describe('CartService', () => {
       expect(prismaService.cartItem.findMany).toHaveBeenCalledWith({
         where: { userId },
         include: {
-          productVariation: {
-            include: {
-              product: true,
-              variationImages: true,
-            },
-          },
+          productVariation: true,
         },
       });
 

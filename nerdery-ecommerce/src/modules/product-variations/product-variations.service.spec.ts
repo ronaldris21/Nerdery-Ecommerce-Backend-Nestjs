@@ -115,7 +115,6 @@ describe('ProductVariationsService', () => {
 
       expect(prismaService.productVariation.findMany).toHaveBeenCalledWith({
         where: { isDeleted: false, isEnabled: true, productId },
-        include: { product: true, variationImages: true },
       });
 
       expect(result).toEqual(mockVariations);
@@ -132,7 +131,6 @@ describe('ProductVariationsService', () => {
           isEnabled: true,
           productId: 'nonexistent-product-id',
         },
-        include: { product: true, variationImages: true },
       });
 
       expect(result).toEqual([]);
@@ -145,7 +143,6 @@ describe('ProductVariationsService', () => {
 
       expect(prismaService.productVariation.findMany).toHaveBeenCalledWith({
         where: { isDeleted: false, isEnabled: true, productId },
-        include: { product: true, variationImages: true },
       });
     });
   });
@@ -245,11 +242,7 @@ describe('ProductVariationsService', () => {
 
       const result = await service.create(createInput);
 
-      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith(
-        { id: productId },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith({ id: productId });
       expect(prismaService.productVariation.create).toHaveBeenCalledWith({
         data: {
           discount: 15,
@@ -280,11 +273,7 @@ describe('ProductVariationsService', () => {
 
       await expect(service.create(createInput)).rejects.toThrow(NotFoundException);
 
-      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith(
-        { id: productId },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith({ id: productId });
       expect(prismaService.productVariation.create).not.toHaveBeenCalled();
       expect(productCalculatedFieldsService.recalculateProductMinMaxPrices).not.toHaveBeenCalled();
       expect(idValidatorService.findUniqueProductVariationById).not.toHaveBeenCalled();
@@ -296,11 +285,7 @@ describe('ProductVariationsService', () => {
 
       await expect(service.create(createInput)).rejects.toThrow('Database error');
 
-      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith(
-        { id: productId },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith({ id: productId });
       expect(prismaService.productVariation.create).toHaveBeenCalledWith({
         data: {
           discount: 15,
@@ -362,16 +347,10 @@ describe('ProductVariationsService', () => {
 
       const result = await service.update(updateInput);
 
-      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith(
-        { id: productId },
-        false,
-        false,
-      );
-      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith(
-        { id: variationId },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith({ id: productId });
+      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith({
+        id: variationId,
+      });
       expect(prismaService.productVariation.update).toHaveBeenCalledWith({
         where: { id: variationId },
         data: {
@@ -398,11 +377,7 @@ describe('ProductVariationsService', () => {
       await expect(service.update(updateInput)).rejects.toThrow(NotFoundException);
 
       expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalled();
-      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith(
-        { id: productId },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith({ id: productId });
       expect(prismaService.productVariation.update).not.toHaveBeenCalled();
       expect(productCalculatedFieldsService.recalculateProductMinMaxPrices).not.toHaveBeenCalled();
     });
@@ -416,11 +391,9 @@ describe('ProductVariationsService', () => {
       await expect(service.update(updateInput)).rejects.toThrow(NotFoundException);
 
       expect(idValidatorService.findUniqueProductById).not.toHaveBeenCalled();
-      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith(
-        { id: variationId },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith({
+        id: variationId,
+      });
       expect(prismaService.productVariation.update).not.toHaveBeenCalled();
       expect(productCalculatedFieldsService.recalculateProductMinMaxPrices).not.toHaveBeenCalled();
     });
@@ -509,11 +482,9 @@ describe('ProductVariationsService', () => {
 
       const result = await service.toggleIsEnabled(variationId, true);
 
-      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith(
-        { id: variationId },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith({
+        id: variationId,
+      });
       expect(prismaService.productVariation.update).toHaveBeenCalledWith({
         where: { id: variationId },
         data: { isEnabled: true },
@@ -542,11 +513,9 @@ describe('ProductVariationsService', () => {
 
       const result = await service.toggleIsEnabled(variationId, false);
 
-      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith(
-        { id: variationId },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith({
+        id: variationId,
+      });
       expect(prismaService.productVariation.update).toHaveBeenCalledWith({
         where: { id: variationId },
         data: { isEnabled: false },
@@ -569,11 +538,9 @@ describe('ProductVariationsService', () => {
         NotFoundException,
       );
 
-      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith(
-        { id: 'nonexistent-variation-id' },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith({
+        id: 'nonexistent-variation-id',
+      });
       expect(prismaService.productVariation.update).not.toHaveBeenCalled();
       expect(productCalculatedFieldsService.recalculateProductMinMaxPrices).not.toHaveBeenCalled();
     });
@@ -620,11 +587,9 @@ describe('ProductVariationsService', () => {
 
       const result = await service.delete(variationId);
 
-      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith(
-        { id: variationId },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith({
+        id: variationId,
+      });
       expect(prismaService.productVariation.update).toHaveBeenCalledWith({
         where: { id: variationId },
         data: { isDeleted: true, isEnabled: false },
@@ -645,11 +610,9 @@ describe('ProductVariationsService', () => {
 
       await expect(service.delete('nonexistent-variation-id')).rejects.toThrow(NotFoundException);
 
-      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith(
-        { id: 'nonexistent-variation-id' },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith({
+        id: 'nonexistent-variation-id',
+      });
       expect(prismaService.productVariation.update).not.toHaveBeenCalled();
       expect(productCalculatedFieldsService.recalculateProductMinMaxPrices).not.toHaveBeenCalled();
     });
