@@ -1,10 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class DataloadersService {
-  logger = new Logger('DataloadersService');
   constructor(private readonly prismaService: PrismaService) {}
 
   // ORDERS
@@ -50,7 +49,6 @@ export class DataloadersService {
       },
     });
 
-    this.logger.log('productVariations', productVariations);
     return productVariations;
   }
 

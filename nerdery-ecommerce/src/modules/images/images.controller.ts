@@ -8,10 +8,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Roles } from 'src/modules/auth/decoratos/roles.decorator';
-import { AccessTokenWithRolesGuard } from 'src/modules/auth/guards/access-token-with-roles.guard';
 import { ROLES } from 'src/common/constants';
 import { HttpExceptionFilter } from 'src/common/modules/graphql/exception-filters/http-exception/http-exception.filter';
+import { Roles } from 'src/modules/auth/decoratos/roles.decorator';
+import { AccessTokenWithRolesGuard } from 'src/modules/auth/guards/access-token-with-roles.guard';
 
 import { ImagesService } from './images.service';
 
@@ -28,7 +28,6 @@ export class ImagesController {
     @Param('productVariationId') id: string,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    console.log('file', file);
     return this.imagesService.uploadFile(id, file);
   }
 }

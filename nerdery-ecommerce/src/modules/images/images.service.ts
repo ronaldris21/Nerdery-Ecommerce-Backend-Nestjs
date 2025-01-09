@@ -1,6 +1,6 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
-import { IdValidatorService } from 'src/common/services/id-validator/id-validator.service';
 import { PrismaService } from 'src/common/modules/prisma/prisma.service';
+import { IdValidatorService } from 'src/common/services/id-validator/id-validator.service';
 
 import { CloudinaryService } from '../../common/modules/cloudinary/cloudinary.service';
 
@@ -13,11 +13,9 @@ export class ImagesService {
   ) {}
 
   async uploadFile(productVariationId: string, file: Express.Multer.File) {
-    const prodVariation = await this.idValidatorService.findUniqueProductVariationById(
-      { id: productVariationId },
-      false,
-      false,
-    );
+    const prodVariation = await this.idValidatorService.findUniqueProductVariationById({
+      id: productVariationId,
+    });
 
     if (!file.mimetype.startsWith('image/')) {
       throw new UnprocessableEntityException('File must be an image');

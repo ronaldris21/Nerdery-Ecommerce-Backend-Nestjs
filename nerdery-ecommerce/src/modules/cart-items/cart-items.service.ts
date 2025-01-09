@@ -15,12 +15,15 @@ export class CartItemsService {
   ) {}
 
   async createOrUpdate(input: CartItemInput, userId: string) {
-    const prodVariation = await this.idValidatorService.findUniqueProductVariationById(
-      {
+    //TODO: test TryCatch
+    const prodVariation = await this.prisma.productVariation.findUnique({
+      where: {
         id: input.productVariationId,
       },
-      true,
-    );
+      include: {
+        product: true,
+      },
+    });
 
     if (
       !prodVariation.isEnabled ||

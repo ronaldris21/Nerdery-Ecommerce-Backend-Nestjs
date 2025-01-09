@@ -110,14 +110,12 @@ export class OrdersService {
     };
   }
 
-  async getOrders(userId: string, isAdmin: boolean = false) {
+  async getOrders(userId: string) {
     return await this.prisma.order.findMany({
       where: {
         userId: userId,
       },
       include: {
-        user: isAdmin,
-        orderIncidents: isAdmin,
         orderItems: true,
       },
     });

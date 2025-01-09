@@ -20,7 +20,6 @@ export class ProductVariationsService {
 
     return await this.prisma.productVariation.findMany({
       where: { ...where, productId },
-      include: { product: true },
     });
   }
 
@@ -58,11 +57,9 @@ export class ProductVariationsService {
   }
 
   async update(input: UpdateProductVariationInput) {
-    const prodVariation = await this.idValidatorService.findUniqueProductVariationById(
-      { id: input.id },
-      false,
-      false,
-    );
+    const prodVariation = await this.idValidatorService.findUniqueProductVariationById({
+      id: input.id,
+    });
 
     if (input.productId) {
       await this.idValidatorService.findUniqueProductById({ id: input.productId });
@@ -99,11 +96,7 @@ export class ProductVariationsService {
   }
 
   async toggleIsEnabled(id: string, isEnabled: boolean) {
-    const prodVariation = await this.idValidatorService.findUniqueProductVariationById(
-      { id },
-      false,
-      false,
-    );
+    const prodVariation = await this.idValidatorService.findUniqueProductVariationById({ id });
 
     await this.prisma.productVariation.update({
       where: { id },
@@ -117,11 +110,7 @@ export class ProductVariationsService {
   }
 
   async delete(id: string) {
-    const prodVariation = await this.idValidatorService.findUniqueProductVariationById(
-      { id },
-      false,
-      false,
-    );
+    const prodVariation = await this.idValidatorService.findUniqueProductVariationById({ id });
 
     await this.prisma.productVariation.update({
       where: { id },

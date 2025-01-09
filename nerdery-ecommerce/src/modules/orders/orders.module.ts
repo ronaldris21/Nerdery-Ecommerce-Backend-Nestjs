@@ -6,6 +6,7 @@ import { StripeModule } from 'src/modules/stripe/stripe.module';
 
 import { CartModule } from '../cart/cart.module';
 
+import { OrderItemsResolver } from './orders-items.resolver';
 import { OrdersResolver } from './orders.resolver';
 import { OrdersService } from './orders.service';
 
@@ -18,7 +19,7 @@ import { OrdersService } from './orders.service';
     StripeModule,
     StripeModule.forRootAsync(),
   ],
-  providers: [OrdersResolver, OrdersService],
+  providers: [OrdersResolver, OrdersService, OrderItemsResolver],
   exports: [OrdersService],
 })
 export class OrdersModule {}

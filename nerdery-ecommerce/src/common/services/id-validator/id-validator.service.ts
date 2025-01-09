@@ -18,15 +18,10 @@ export class IdValidatorService {
     return product;
   }
 
-  async findUniqueProductVariationById(
-    where: Prisma.ProductVariationWhereUniqueInput,
-    includeProduct: boolean = true,
-    variationImages: boolean = true,
-  ) {
+  async findUniqueProductVariationById(where: Prisma.ProductVariationWhereUniqueInput) {
     try {
       const productVariation = await this.prisma.productVariation.findUnique({
         where,
-        include: { product: includeProduct, variationImages: variationImages },
       });
 
       if (!productVariation) {
