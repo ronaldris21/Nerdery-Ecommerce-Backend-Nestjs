@@ -7,6 +7,7 @@ import {
   validProduct2,
   validUUID1,
   validUUID2,
+  validUUID3,
 } from 'src/common/testing-mocks/helper-data';
 
 import { DataloadersService } from '../../dataloaders.service'; // Adjust the path as needed
@@ -59,6 +60,24 @@ describe('ProductsBycategoryLoader', () => {
     ];
     const expectedResults: Product[][] = [
       [{ ...validProduct1, categoryId: validUUID1 }],
+      [{ ...validProduct2, categoryId: validUUID2 }],
+    ];
+    dataloadersService.listProductsByCategory.mockResolvedValueOnce(mockProducts);
+
+    const results = await loader.loadMany(categoryIds);
+
+    expect(results).toEqual(expectedResults);
+  });
+
+  it('should batch load products by category - Category with no products', async () => {
+    const categoryIds = [validUUID1, validUUID3, validUUID2];
+    const mockProducts: Product[] = [
+      { ...validProduct2, categoryId: validUUID2 },
+      { ...validProduct1, categoryId: validUUID1 },
+    ];
+    const expectedResults: Product[][] = [
+      [{ ...validProduct1, categoryId: validUUID1 }],
+      [],
       [{ ...validProduct2, categoryId: validUUID2 }],
     ];
     dataloadersService.listProductsByCategory.mockResolvedValueOnce(mockProducts);
