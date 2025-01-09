@@ -6,17 +6,9 @@ import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 export class IdValidatorService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUniqueProductById(
-    where: Prisma.ProductWhereUniqueInput,
-    includeCategory: boolean = true,
-    includeVariations: boolean = true,
-  ) {
+  async findUniqueProductById(where: Prisma.ProductWhereUniqueInput) {
     const product = await this.prisma.product.findUnique({
       where,
-      include: {
-        category: includeCategory,
-        productVariations: includeVariations,
-      },
     });
 
     if (!product) {
@@ -26,15 +18,10 @@ export class IdValidatorService {
     return product;
   }
 
-  async findUniqueProductVariationById(
-    where: Prisma.ProductVariationWhereUniqueInput,
-    includeProduct: boolean = true,
-    variationImages: boolean = true,
-  ) {
+  async findUniqueProductVariationById(where: Prisma.ProductVariationWhereUniqueInput) {
     try {
       const productVariation = await this.prisma.productVariation.findUnique({
         where,
-        include: { product: includeProduct, variationImages: variationImages },
       });
 
       if (!productVariation) {

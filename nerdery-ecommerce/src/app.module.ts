@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { CommonModule } from './common/common.module';
 import { CloudinaryModule } from './common/modules/cloudinary/cloudinary.module';
 import { ConfigEnvModule } from './common/modules/config-env/config-env.module';
+import { DataloadersModule } from './common/modules/dataloaders/dataloaders.module';
 import { GraphqlModule } from './common/modules/graphql/graphql.module';
 import { MailModule } from './common/modules/mail/mail.module';
 import { PrismaModule } from './common/modules/prisma/prisma.module';
@@ -24,6 +25,7 @@ import { StripeModule } from './modules/stripe/stripe.module';
 
 @Module({
   imports: [
+    DataloadersModule,
     AuthModule,
     PrismaModule,
     ConfigEnvModule,

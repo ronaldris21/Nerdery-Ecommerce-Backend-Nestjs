@@ -133,6 +133,13 @@ type ApprovedStatusPayload {
   status: OrderStatus!
 }
 
+type ClientObject {
+  id: ID!
+  email: String!
+  firstName: String!
+  lastName: String!
+}
+
 type StripePaymentObject {
   id: ID!
   orderId: String!
@@ -171,6 +178,7 @@ type OrderObject {
   isStockReserved: Boolean!
   orderItems: [OrderItemObject!]!
   stripePayments: [StripePaymentObject!]!
+  client: ClientObject
 }
 
 type RetryPaymentPayload {

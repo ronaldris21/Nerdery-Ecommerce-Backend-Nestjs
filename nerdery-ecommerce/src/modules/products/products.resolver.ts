@@ -1,9 +1,15 @@
 import { ParseUUIDPipe, UseGuards } from '@nestjs/common';
-import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
+import { Resolver, Query, Args, Mutation, Parent, ResolveField } from '@nestjs/graphql';
 import { ROLES } from 'src/common/constants';
 import { PaginationInput } from 'src/common/data/pagination/pagination.input';
+import { AfterLoadersService } from 'src/common/modules/dataloaders/after-loaders.service';
+import { CategoryByProductLoader } from 'src/common/modules/dataloaders/products/category-by-product.loader/category-by-product.loader';
+import { ProductVariationByProductLoader } from 'src/common/modules/dataloaders/products/product-variation-by-product.loader/product-variation-by-product.loader';
 import { Roles } from 'src/modules/auth/decoratos/roles.decorator';
 import { AccessTokenWithRolesGuard } from 'src/modules/auth/guards/access-token-with-roles.guard';
+
+import { GetAccessToken } from '../auth/decoratos/get-jwtPayload.decorator';
+import { ProductVariationObject } from '../product-variations/entities/product-variation.entity';
 
 import { CreateProductInput } from './dto/request/create-product.input';
 import { ProductFiltersInput } from './dto/request/product-filters.input';
@@ -15,10 +21,14 @@ import { ProductsService } from './products.service';
 
 @Resolver(() => ProductObject)
 export class ProductsResolver {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly productVariationByProductLoader: ProductVariationByProductLoader,
+    private readonly afterLoadersService: AfterLoadersService,
+    private readonly categoryByProductLoader: CategoryByProductLoader,
+  ) {}
 
   @Query(() => ProductsPagination)
-  // @Throttle({ default: { ttl: 5000, limit: 1 } }) // Throttle works for graphql and http fine!
   products(
     @Args('filter', { nullable: true }) filter?: ProductFiltersInput,
     @Args('sortBy', { nullable: true }) sortBy?: SortingProductInput,
@@ -72,5 +82,21 @@ export class ProductsResolver {
     @Args('isEnabled') isEnabled: boolean,
   ) {
     return this.productsService.toggleIsEnabled(id, isEnabled);
+  }
+
+  @ResolveField(() => [ProductVariationObject])
+  async productVariations(@Parent() product: ProductObject, @GetAccessToken() accessToken: string) {
+    //FILTER BY ROLE
+    const loaderResults = await this.productVariationByProductLoader.load(product.id);
+    return this.afterLoadersService.filterProductVariationsIfNoRequiredRole(
+      loaderResults,
+      accessToken,
+      [ROLES.MANAGER],
+    );
+  }
+
+  @ResolveField(() => [ProductVariationObject])
+  async category(@Parent() product: ProductObject) {
+    return this.categoryByProductLoader.load(product.id);
   }
 }

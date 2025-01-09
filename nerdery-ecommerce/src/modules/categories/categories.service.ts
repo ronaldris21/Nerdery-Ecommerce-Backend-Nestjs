@@ -8,7 +8,7 @@ export class CategoriesService {
   async findBySearch(search: string) {
     if (!search) {
       return this.prisma.category.findMany({
-        include: { subCategories: true, products: true },
+        include: { subCategories: true },
       });
     }
 
@@ -19,7 +19,7 @@ export class CategoriesService {
           mode: 'insensitive',
         },
       },
-      include: { subCategories: true, products: true },
+      include: { subCategories: true },
     });
   }
 

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigNames, JwtConfig } from 'src/common/modules/config-env/config.interface';
 import { MailModule } from 'src/common/modules/mail/mail.module';
@@ -40,6 +40,6 @@ import { AccessTokenStrategy } from './strategies/access-token.strategy';
     RedisService,
     TokenService,
   ],
-  exports: [AccessTokenStrategy],
+  exports: [AccessTokenStrategy, JwtService],
 })
 export class AuthModule {}

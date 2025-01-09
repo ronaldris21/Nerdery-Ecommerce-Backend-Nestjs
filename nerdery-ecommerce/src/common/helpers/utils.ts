@@ -4,3 +4,7 @@ export const validateStringUUID = (uuid: string): boolean => {
   );
   return uuidRegex.test(uuid);
 };
+
+export const checkAnyRequiredRoles = (userRoles: string[], requiredRoles: string[]): boolean => {
+  return requiredRoles.some((requiredRole) => userRoles.includes(requiredRole));
+};

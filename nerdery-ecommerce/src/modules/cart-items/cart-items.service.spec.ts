@@ -23,6 +23,9 @@ const mockPrismaServiceInit = {
     upsert: jest.fn(),
     delete: jest.fn(),
   },
+  productVariation: {
+    findUnique: jest.fn(),
+  },
 };
 
 describe('CartItemsService', () => {
@@ -96,9 +99,7 @@ describe('CartItemsService', () => {
 
     it('should create a new cart item successfully', async () => {
       const createdCartItem = validCartItem;
-      idValidatorService.findUniqueProductVariationById.mockResolvedValue(
-        productVariationWithDetails,
-      );
+      prismaService.productVariation.findUnique.mockResolvedValue(productVariationWithDetails);
       prismaService.cartItem.upsert.mockResolvedValue(createdCartItem);
       const cartItemWithSummary = {
         ...createdCartItem,
@@ -113,10 +114,14 @@ describe('CartItemsService', () => {
 
       const result = await service.createOrUpdate(createInput, userId);
 
-      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith(
-        { id: productVariationId },
-        true,
-      );
+      expect(prismaService.productVariation.findUnique).toHaveBeenCalledWith({
+        where: {
+          id: productVariationId,
+        },
+        include: {
+          product: true,
+        },
+      });
       expect(prismaService.cartItem.upsert).toHaveBeenCalledWith({
         where: {
           userId_productVariationId: {
@@ -146,9 +151,7 @@ describe('CartItemsService', () => {
         productVariationId: productVariationId,
         quantity: 4,
       };
-      idValidatorService.findUniqueProductVariationById.mockResolvedValue(
-        productVariationWithDetails,
-      );
+      prismaService.productVariation.findUnique.mockResolvedValue(productVariationWithDetails);
       prismaService.cartItem.upsert.mockResolvedValue(existingCartItem);
       const updatedCartItemWithSummary = {
         ...existingCartItem,
@@ -164,10 +167,14 @@ describe('CartItemsService', () => {
 
       const result = await service.createOrUpdate(updateInput, userId);
 
-      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith(
-        { id: productVariationId },
-        true,
-      );
+      expect(prismaService.productVariation.findUnique).toHaveBeenCalledWith({
+        where: {
+          id: productVariationId,
+        },
+        include: {
+          product: true,
+        },
+      });
       expect(prismaService.cartItem.upsert).toHaveBeenCalledWith({
         where: {
           userId_productVariationId: {
@@ -196,14 +203,14 @@ describe('CartItemsService', () => {
         ...productVariationWithDetails,
         isEnabled: false,
       };
-      idValidatorService.findUniqueProductVariationById.mockResolvedValue(disabledProductVariation);
+      prismaService.productVariation.findUnique.mockResolvedValue(disabledProductVariation);
 
       await expect(service.createOrUpdate(createInput, userId)).rejects.toThrow(ConflictException);
 
-      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith(
-        { id: productVariationId },
-        true,
-      );
+      expect(prismaService.productVariation.findUnique).toHaveBeenCalledWith({
+        where: { id: productVariationId },
+        include: { product: true },
+      });
       expect(prismaService.cartItem.upsert).not.toHaveBeenCalled();
       expect(productCalculatedFieldsService.createCartItemWithPriceSummary).not.toHaveBeenCalled();
     });
@@ -226,10 +233,10 @@ describe('CartItemsService', () => {
         ConflictException,
       );
 
-      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith(
-        { id: productVariationId },
-        true,
-      );
+      expect(prismaService.productVariation.findUnique).toHaveBeenCalledWith({
+        where: { id: productVariationId },
+        include: { product: true },
+      });
       expect(prismaService.cartItem.upsert).not.toHaveBeenCalled();
       expect(productCalculatedFieldsService.createCartItemWithPriceSummary).not.toHaveBeenCalled();
     });

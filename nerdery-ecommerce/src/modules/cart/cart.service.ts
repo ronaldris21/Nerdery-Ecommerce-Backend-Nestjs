@@ -17,17 +17,9 @@ export class CartService {
         userId,
       },
       include: {
-        productVariation: {
-          include: {
-            product: true,
-            variationImages: true,
-          },
-        },
+        productVariation: true,
       },
     });
-
-    // console.log('\n\n cartItems');
-    // console.log(cartItems);
 
     cartItems = cartItems.filter(
       (item) =>
@@ -37,8 +29,6 @@ export class CartService {
         item.quantity > 0 &&
         item.quantity <= item.productVariation.stock,
     );
-    // console.log('\n\n cartItems.filter');
-    // console.log(JSON.stringify(cartItems));
 
     let result: CartObject = {
       items: [],

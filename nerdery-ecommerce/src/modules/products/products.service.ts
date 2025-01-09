@@ -88,28 +88,12 @@ export class ProductsService {
       totalPages,
     };
 
-    let collection = await this.prisma.product.findMany({
+    const collection = await this.prisma.product.findMany({
       where: where,
       orderBy: orderBy,
       skip: (page - 1) * limit,
       take: limit,
-      include: {
-        category: true,
-        productVariations: {
-          include: { variationImages: true },
-        },
-      },
     });
-
-    if (!isManagerOrSimilar) {
-      collection = collection.map((product) => {
-        const filteredProductVariations = product.productVariations.filter(
-          (p) => p.isEnabled && !p.isDeleted,
-        );
-        product.productVariations = filteredProductVariations;
-        return product;
-      });
-    }
 
     return {
       meta,
@@ -161,7 +145,6 @@ export class ProductsService {
           },
         },
       },
-      include: { productVariations: true, category: true },
     });
   }
 
@@ -189,12 +172,11 @@ export class ProductsService {
           },
         },
       },
-      include: { productVariations: true, category: true },
     });
   }
 
   async delete(id: string) {
-    await this.idValidatorService.findUniqueProductById({ id }, false, false);
+    await this.idValidatorService.findUniqueProductById({ id });
 
     await this.prisma.productVariation.updateMany({
       where: { productId: id },
@@ -207,7 +189,7 @@ export class ProductsService {
   }
 
   async toggleIsEnabled(id: string, isEnabled: boolean) {
-    await this.idValidatorService.findUniqueProductById({ id }, false, false);
+    await this.idValidatorService.findUniqueProductById({ id });
 
     await this.prisma.productVariation.updateMany({
       where: { productId: id },
@@ -217,7 +199,6 @@ export class ProductsService {
     return await this.prisma.product.update({
       where: { id },
       data: { isEnabled: isEnabled },
-      include: { productVariations: true },
     });
   }
 }
