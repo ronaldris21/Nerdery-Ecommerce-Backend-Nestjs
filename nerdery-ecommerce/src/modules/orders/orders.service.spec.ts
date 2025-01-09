@@ -12,7 +12,6 @@ import {
 import { FrontendConfig, ConfigNames } from 'src/common/modules/config-env/config.interface';
 import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 import {
-  validCartItemsWithProductVariationProductAndImages,
   validUUID1,
   validUUID2,
   validUUID3,
@@ -161,7 +160,6 @@ describe('OrdersService', () => {
           total: new Prisma.Decimal(132.57),
           createdAt: new Date(),
           updatedAt: new Date(),
-          productVariation: validCartItemsWithProductVariationProductAndImages[0].productVariation,
         },
         {
           id: validUUID3,
@@ -174,7 +172,6 @@ describe('OrdersService', () => {
           total: new Prisma.Decimal(132.78),
           createdAt: new Date(),
           updatedAt: new Date(),
-          productVariation: validCartItemsWithProductVariationProductAndImages[1].productVariation,
         },
       ],
       stripePayments: [
@@ -280,30 +277,15 @@ describe('OrdersService', () => {
   });
 
   describe('getOrders', () => {
-    const isAdminFalse = false;
-    const isAdminTrue = true;
-
     it('should retrieve orders for a user without admin privileges', async () => {
       jest.spyOn(prismaService.order, 'findMany').mockResolvedValue(mockOrdersWithDetailsArray);
 
-      const result = await service.getOrders(userId, isAdminFalse);
+      const result = await service.getOrders(userId);
 
       expect(prismaService.order.findMany).toHaveBeenCalledWith({
         where: { userId: userId },
         include: {
-          user: false,
-          orderIncidents: false,
-          orderItems: {
-            include: {
-              productVariation: {
-                include: {
-                  product: true,
-                  variationImages: true,
-                },
-              },
-            },
-          },
-          stripePayments: true,
+          orderItems: true,
         },
       });
       expect(result).toEqual(mockOrdersWithDetailsArray);
@@ -312,24 +294,12 @@ describe('OrdersService', () => {
     it('should retrieve orders for a user with admin privileges with incidents if exists', async () => {
       prismaService.order.findMany.mockResolvedValue(mockOrdersWithDetailsArray);
 
-      const result = await service.getOrders(userId, isAdminTrue);
+      const result = await service.getOrders(userId);
 
       expect(prismaService.order.findMany).toHaveBeenCalledWith({
         where: { userId: userId },
         include: {
-          user: true,
-          orderIncidents: true, // true beacuse isAdmin is true
-          orderItems: {
-            include: {
-              productVariation: {
-                include: {
-                  product: true,
-                  variationImages: true,
-                },
-              },
-            },
-          },
-          stripePayments: true,
+          orderItems: true,
         },
       });
       expect(result).toEqual(mockOrdersWithDetailsArray);
@@ -338,24 +308,12 @@ describe('OrdersService', () => {
     it('should return an empty array if no orders are found', async () => {
       prismaService.order.findMany.mockResolvedValue([]);
 
-      const result = await service.getOrders(userId, isAdminFalse);
+      const result = await service.getOrders(userId);
 
       expect(prismaService.order.findMany).toHaveBeenCalledWith({
         where: { userId: userId },
         include: {
-          user: false,
-          orderIncidents: false,
-          orderItems: {
-            include: {
-              productVariation: {
-                include: {
-                  product: true,
-                  variationImages: true,
-                },
-              },
-            },
-          },
-          stripePayments: true,
+          orderItems: true,
         },
       });
       expect(result).toEqual([]);
