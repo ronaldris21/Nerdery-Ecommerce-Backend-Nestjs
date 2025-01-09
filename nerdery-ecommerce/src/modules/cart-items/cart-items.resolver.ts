@@ -35,6 +35,4 @@ export class CartItemsResolver {
   ) {
     return this.cartItemsService.delete(user.userId, productVariationId);
   }
-
-  //TODO: resolved Field and dataloader for productVariation!
 }
