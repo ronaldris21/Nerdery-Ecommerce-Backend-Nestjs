@@ -1,21 +1,14 @@
 import { DeepMocked, createMock } from '@golevelup/ts-jest';
 import { NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Product, Category, ProductVariation } from '@prisma/client';
+import { Product } from '@prisma/client';
 import { Gender } from 'src/common/data/enums/gender.enum';
 import { SortOrder } from 'src/common/data/enums/sort-order.enum';
 import { PaginationInput } from 'src/common/data/pagination/pagination.input';
 import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 import { IdValidatorService } from 'src/common/services/id-validator/id-validator.service';
 import { ProductCalculatedFieldsService } from 'src/common/services/product-calculations/product-calculated-fields.service';
-import {
-  validCategory,
-  validProduct1,
-  validProduct2,
-  validProductVariation1,
-  validProductVariation2,
-  validUUID1,
-} from 'src/common/testing-mocks/helper-data';
+import { validProduct1, validProduct2, validUUID1 } from 'src/common/testing-mocks/helper-data';
 
 import { CategoriesService } from './../categories/categories.service';
 import { CreateProductInput } from './dto/request/create-product.input';
@@ -38,15 +31,10 @@ const mockPrismaServiceInit = {
 
 const mockProducts: Product[] = [validProduct1, validProduct2];
 
-const mockCategories: Category[] = [validCategory];
-
-const mockProductVariations: ProductVariation[] = [validProductVariation1, validProductVariation2];
 const productId = validUUID1;
 const productData = {
   ...validProduct1,
   id: productId,
-  category: mockCategories[0],
-  productVariations: [validProductVariation1],
 };
 
 describe('ProductsService', () => {
@@ -96,8 +84,6 @@ describe('ProductsService', () => {
       const expected = {
         ...mockProducts[0],
         id: validUUID1,
-        category: mockCategories[0],
-        productVariations: [mockProductVariations[0]],
       };
       idValidatorService.findUniqueProductById.mockResolvedValue(expected);
 
@@ -217,13 +203,7 @@ describe('ProductsService', () => {
       };
 
       prismaService.product.count.mockResolvedValue(1);
-      prismaService.product.findMany.mockResolvedValue([
-        {
-          ...mockProducts[0],
-          category: mockCategories[0],
-          productVariations: [mockProductVariations[0]],
-        },
-      ]);
+      prismaService.product.findMany.mockResolvedValue([mockProducts[0]]);
       const wherePrismaFilter = {
         isDeleted: false,
         isEnabled: true,
@@ -253,12 +233,6 @@ describe('ProductsService', () => {
           },
           skip: 0,
           take: 10,
-          include: {
-            category: true,
-            productVariations: {
-              include: { variationImages: true },
-            },
-          },
         }),
       );
       expect(result).toEqual({
@@ -268,29 +242,12 @@ describe('ProductsService', () => {
           totalItems: expect.any(Number),
           totalPages: expect.any(Number),
         },
-        collection: [
-          {
-            ...mockProducts[0],
-            category: mockCategories[0],
-            productVariations: [mockProductVariations[0]],
-          },
-        ],
+        collection: [mockProducts[0]],
       });
     });
 
     it('should handle default pagination and no filters', async () => {
-      const expectedData = [
-        {
-          ...mockProducts[0],
-          category: mockCategories[0],
-          productVariations: [mockProductVariations[0]],
-        },
-        {
-          ...mockProducts[1],
-          category: mockCategories[1],
-          productVariations: [mockProductVariations[1]],
-        },
-      ];
+      const expectedData = [mockProducts[0], mockProducts[1]];
       prismaService.product.count.mockResolvedValue(2);
       prismaService.product.findMany.mockResolvedValue(expectedData);
 
@@ -328,18 +285,7 @@ describe('ProductsService', () => {
 
     it('should adjust filters based on isManagerOrSimilar flag as true', async () => {
       const isManagerOrSimilar = true;
-      const expectedData = [
-        {
-          ...mockProducts[0],
-          category: mockCategories[0],
-          productVariations: [mockProductVariations[0]],
-        },
-        {
-          ...mockProducts[1],
-          category: mockCategories[1],
-          productVariations: [mockProductVariations[1]],
-        },
-      ];
+      const expectedData = [mockProducts[0], mockProducts[1]];
 
       prismaService.product.count.mockResolvedValue(2);
       prismaService.product.findMany.mockResolvedValue(expectedData);
@@ -350,19 +296,12 @@ describe('ProductsService', () => {
         where: {},
       });
 
-      //TODO: remove include after dataloader implementation
       expect(prismaService.product.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {},
           orderBy: {},
           skip: 0,
           take: 20,
-          include: {
-            category: true,
-            productVariations: {
-              include: { variationImages: true },
-            },
-          },
         }),
       );
 
@@ -391,11 +330,7 @@ describe('ProductsService', () => {
     });
 
     it('should create a new product successfully', async () => {
-      const expectedCreatedProduct = {
-        ...validProduct1,
-        category: validCategory,
-        productVariations: [],
-      };
+      const expectedCreatedProduct = validProduct1;
 
       categoriesService.doesCategoryExist.mockResolvedValue(true);
       prismaService.product.create.mockResolvedValue(expectedCreatedProduct);
@@ -414,7 +349,6 @@ describe('ProductsService', () => {
               },
             },
           },
-          include: { productVariations: true, category: true },
         }),
       );
 
@@ -457,11 +391,7 @@ describe('ProductsService', () => {
       gender: Gender.FEMALE,
     };
 
-    const productData = {
-      ...validProduct1,
-      category: mockCategories[0],
-      productVariations: [validProductVariation1],
-    };
+    const productData = validProduct1;
 
     const productUpdatedData = {
       ...productData,
@@ -490,7 +420,6 @@ describe('ProductsService', () => {
             },
           },
         },
-        include: { productVariations: true, category: true },
       });
 
       expect(result).toEqual(productUpdatedData);
@@ -527,7 +456,6 @@ describe('ProductsService', () => {
             },
           },
         },
-        include: { productVariations: true, category: true },
       });
       expect(result.name).toBe('Partially Updated Product');
     });
@@ -561,11 +489,7 @@ describe('ProductsService', () => {
 
       const result = await service.delete(productId);
 
-      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith(
-        { id: productId },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith({ id: productId });
       expect(prismaService.productVariation.updateMany).toHaveBeenCalledWith({
         where: { productId },
         data: { isDeleted: true },
@@ -584,11 +508,9 @@ describe('ProductsService', () => {
       );
 
       await expect(service.delete('nonexistent-id')).rejects.toThrow(NotFoundException);
-      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith(
-        { id: 'nonexistent-id' },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith({
+        id: 'nonexistent-id',
+      });
       expect(prismaService.productVariation.updateMany).not.toHaveBeenCalled();
       expect(prismaService.product.update).not.toHaveBeenCalled();
     });
@@ -611,11 +533,7 @@ describe('ProductsService', () => {
 
       const result = await service.toggleIsEnabled(productId, true);
 
-      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith(
-        { id: productId },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith({ id: productId });
       expect(prismaService.productVariation.updateMany).toHaveBeenCalledWith({
         where: { productId },
         data: { isEnabled: true },
@@ -626,7 +544,6 @@ describe('ProductsService', () => {
       expect(prismaService.product.update).toHaveBeenCalledWith({
         where: { id: productId },
         data: { isEnabled: true },
-        include: { productVariations: true },
       });
 
       expect(result.isEnabled).toBeTruthy();
@@ -643,11 +560,7 @@ describe('ProductsService', () => {
 
       const result = await service.toggleIsEnabled(productId, false);
 
-      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith(
-        { id: productId },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith({ id: productId });
       expect(prismaService.productVariation.updateMany).toHaveBeenCalledWith({
         where: { productId },
         data: { isEnabled: false },
@@ -658,7 +571,6 @@ describe('ProductsService', () => {
       expect(prismaService.product.update).toHaveBeenCalledWith({
         where: { id: productId },
         data: { isEnabled: false },
-        include: { productVariations: true },
       });
 
       expect(result.isEnabled).toBeFalsy();
@@ -672,11 +584,9 @@ describe('ProductsService', () => {
       await expect(service.toggleIsEnabled('nonexistent-id', true)).rejects.toThrow(
         NotFoundException,
       );
-      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith(
-        { id: 'nonexistent-id' },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith({
+        id: 'nonexistent-id',
+      });
       expect(prismaService.productVariation.updateMany).not.toHaveBeenCalled();
       expect(productCalculatedFieldsService.recalculateProductMinMaxPrices).not.toHaveBeenCalled();
       expect(prismaService.product.update).not.toHaveBeenCalled();
