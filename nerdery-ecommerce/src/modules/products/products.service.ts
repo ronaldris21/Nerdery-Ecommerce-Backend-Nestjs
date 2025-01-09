@@ -105,26 +105,6 @@ export class ProductsService {
     return this.idValidatorService.findUniqueProductById({ id });
   }
 
-  async findByIds(ids: string[]) {
-    return await this.prisma.product.findMany({
-      where: {
-        id: {
-          in: ids,
-        },
-      },
-    });
-  }
-
-  async findByCategoryIds(categoryIds: string[]) {
-    return await this.prisma.product.findMany({
-      where: {
-        categoryId: {
-          in: categoryIds,
-        },
-      },
-    });
-  }
-
   async create(input: CreateProductInput) {
     const { categoryId, ...rest } = input;
 

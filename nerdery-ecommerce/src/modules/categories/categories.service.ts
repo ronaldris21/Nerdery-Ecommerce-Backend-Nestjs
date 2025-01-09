@@ -23,16 +23,6 @@ export class CategoriesService {
     });
   }
 
-  async findByIds(ids: string[]) {
-    return this.prisma.category.findMany({
-      where: {
-        id: {
-          in: ids,
-        },
-      },
-    });
-  }
-
   async doesCategoryExist(id: string): Promise<boolean> {
     return (
       (await this.prisma.category.count({

@@ -93,57 +93,6 @@ describe('CategoriesService', () => {
     });
   });
 
-  describe('findByIds', () => {
-    it('should return categories matching the provided IDs', async () => {
-      const ids = [validUUID1, validUUID2];
-      prismaService.category.findMany.mockResolvedValue(mockCategories);
-
-      const result = await service.findByIds(ids);
-
-      expect(prismaService.category.findMany).toHaveBeenCalledWith({
-        where: {
-          id: {
-            in: ids,
-          },
-        },
-      });
-      expect(result).toEqual(mockCategories);
-    });
-
-    it('should return only the categories that exist among the provided IDs', async () => {
-      const ids = [validUUID1, 'cat-3']; // 'cat-3' does not exist
-      const existingCategories = [mockCategories[0]];
-      prismaService.category.findMany.mockResolvedValue(existingCategories);
-
-      const result = await service.findByIds(ids);
-
-      expect(prismaService.category.findMany).toHaveBeenCalledWith({
-        where: {
-          id: {
-            in: ids,
-          },
-        },
-      });
-      expect(result).toEqual(existingCategories);
-    });
-
-    it('should return an empty array when no IDs match any categories', async () => {
-      const ids = ['cat-3', 'cat-4'];
-      prismaService.category.findMany.mockResolvedValue([]);
-
-      const result = await service.findByIds(ids);
-
-      expect(prismaService.category.findMany).toHaveBeenCalledWith({
-        where: {
-          id: {
-            in: ids,
-          },
-        },
-      });
-      expect(result).toEqual([]);
-    });
-  });
-
   describe('doesCategoryExist', () => {
     it('should return true if the category exists', async () => {
       const categoryId = validUUID1;
