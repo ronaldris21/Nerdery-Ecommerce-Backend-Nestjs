@@ -1,10 +1,10 @@
 import { DeepMocked, createMock } from '@golevelup/ts-jest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Product } from '@prisma/client';
+import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 import { IdValidatorService } from 'src/common/services/id-validator/id-validator.service';
 import { ProductCalculatedFieldsService } from 'src/common/services/product-calculations/product-calculated-fields.service';
 import { validProduct1, validUUID7 } from 'src/common/testing-mocks/helper-data';
-import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 
 import { ProductLikesService } from './product-likes.service';
 
@@ -84,11 +84,7 @@ describe('ProductLikesService', () => {
       expect(productCalculatedFieldsService.recalculateProductLikesCount).toHaveBeenCalledWith([
         productId,
       ]);
-      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith(
-        { id: productId },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith({ id: productId });
       expect(result).toEqual(mockProduct);
     });
 
@@ -121,11 +117,7 @@ describe('ProductLikesService', () => {
       expect(productCalculatedFieldsService.recalculateProductLikesCount).toHaveBeenCalledWith([
         productId,
       ]);
-      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith(
-        { id: productId },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith({ id: productId });
       expect(result).toEqual(mockProduct);
     });
 
@@ -177,11 +169,7 @@ describe('ProductLikesService', () => {
       expect(productCalculatedFieldsService.recalculateProductLikesCount).toHaveBeenCalledWith([
         productId,
       ]);
-      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith(
-        { id: productId },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith({ id: productId });
       expect(result).toEqual(mockProduct);
     });
 
@@ -201,11 +189,7 @@ describe('ProductLikesService', () => {
         },
       });
       expect(productCalculatedFieldsService.recalculateProductLikesCount).not.toHaveBeenCalled();
-      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith(
-        { id: productId },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith({ id: productId });
       expect(result).toEqual(mockProduct);
     });
 
@@ -225,11 +209,7 @@ describe('ProductLikesService', () => {
         },
       });
       expect(productCalculatedFieldsService.recalculateProductLikesCount).not.toHaveBeenCalled();
-      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith(
-        { id: productId },
-        false,
-        false,
-      );
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith({ id: productId });
       expect(result).toEqual(mockProduct);
     });
   });
