@@ -1,13 +1,18 @@
 import { Injectable } from '@nestjs/common';
+import { Product, ProductVariation, StripePayment, VariationImage } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
+
+import { UserByOrder } from './orders/user-by-order.loader/user-by-order.loader';
+import { ProductByProductVariation } from './product-variation/product-by-product-variation.loader/product-by-product-variation.loader';
+import { CategoryByProduct } from './products/category-by-product.loader/category-by-product.loader';
 
 @Injectable()
 export class DataloadersService {
   constructor(private readonly prismaService: PrismaService) {}
 
   // ORDERS
-  async listStripePaymentsByOrder(OrderIds: string[]) {
+  async listStripePaymentsByOrder(OrderIds: string[]): Promise<StripePayment[]> {
     const stripePayments = await this.prismaService.stripePayment.findMany({
       where: {
         orderId: {
@@ -18,7 +23,7 @@ export class DataloadersService {
     return stripePayments;
   }
 
-  async listUserByOrder(OrderIds: string[]) {
+  async listUserByOrder(OrderIds: string[]): Promise<UserByOrder[]> {
     const users = await this.prismaService.user.findMany({
       where: {
         orders: {
@@ -40,7 +45,9 @@ export class DataloadersService {
   }
 
   //ORDER ITEMS
-  async listProductVariationByOrderItem(orderProductVariationIds: string[]) {
+  async listProductVariationByOrderItem(
+    orderProductVariationIds: string[],
+  ): Promise<ProductVariation[]> {
     const productVariations = await this.prismaService.productVariation.findMany({
       where: {
         id: {
@@ -53,7 +60,9 @@ export class DataloadersService {
   }
 
   // PRODUCT VARIATIONS
-  async listVariationImagesByProductVariation(productVariationIds: string[]) {
+  async listVariationImagesByProductVariation(
+    productVariationIds: string[],
+  ): Promise<VariationImage[]> {
     const variationImages = await this.prismaService.variationImage.findMany({
       where: {
         productVariationId: {
@@ -64,9 +73,9 @@ export class DataloadersService {
     return variationImages;
   }
 
-  async listProductByProductVariation(productVariationIds: string[]) {
-    //PRODUCT CAN BE REPEATED A LOT OF TIMES
-    //I NEED TO MAKE REQUEST EFICCIENT
+  async listProductByProductVariation(
+    productVariationIds: string[],
+  ): Promise<ProductByProductVariation[]> {
     const products = await this.prismaService.product.findMany({
       where: {
         productVariations: {
@@ -87,7 +96,7 @@ export class DataloadersService {
   }
 
   // PRODUCTS
-  async listCategoryByProduct(productIds: string[]) {
+  async listCategoryByProduct(productIds: string[]): Promise<CategoryByProduct[]> {
     const categories = await this.prismaService.category.findMany({
       where: {
         products: {
@@ -107,7 +116,7 @@ export class DataloadersService {
     return categories;
   }
 
-  async listProductVariationByProduct(productIds: string[]) {
+  async listProductVariationByProduct(productIds: string[]): Promise<ProductVariation[]> {
     const productVariations = await this.prismaService.productVariation.findMany({
       where: {
         productId: {
@@ -119,7 +128,7 @@ export class DataloadersService {
   }
 
   // CATEGORIES
-  async listProductsByCategory(categoryIds: string[]) {
+  async listProductsByCategory(categoryIds: string[]): Promise<Product[]> {
     const products = await this.prismaService.product.findMany({
       where: {
         categoryId: {
