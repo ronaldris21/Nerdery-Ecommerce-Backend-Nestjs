@@ -1,19 +1,28 @@
+import { DeepMocked, createMock } from '@golevelup/ts-jest';
 import { Test, TestingModule } from '@nestjs/testing';
+
+import { DataloadersService } from '../../dataloaders.service';
 
 import { CategoryByProductLoader } from './category-by-product.loader';
 
 describe('CategoryByProductLoader', () => {
-  let provider: CategoryByProductLoader;
+  let loader: CategoryByProductLoader;
+  let dataloadersService: DeepMocked<DataloadersService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [CategoryByProductLoader],
+      providers: [
+        CategoryByProductLoader,
+        { provide: DataloadersService, useValue: createMock<DataloadersService>() },
+      ],
     }).compile();
 
-    provider = module.get<CategoryByProductLoader>(CategoryByProductLoader);
+    loader = await module.resolve<CategoryByProductLoader>(CategoryByProductLoader);
+    dataloadersService = module.get(DataloadersService);
   });
 
   it('should be defined', () => {
-    expect(provider).toBeDefined();
+    expect(loader).toBeDefined();
+    expect(dataloadersService).toBeDefined();
   });
 });

@@ -86,4 +86,15 @@ describe('ProductsBycategoryLoader', () => {
 
     expect(results).toEqual(expectedResults);
   });
+
+  it('should batch load products by category - no products in the database', async () => {
+    const categoryIds = [validUUID1, validUUID3, validUUID2];
+    const mockProducts: Product[] = [];
+    const expectedResults: Product[][] = [[], [], []];
+    dataloadersService.listProductsByCategory.mockResolvedValueOnce(mockProducts);
+
+    const results = await loader.loadMany(categoryIds);
+
+    expect(results).toEqual(expectedResults);
+  });
 });

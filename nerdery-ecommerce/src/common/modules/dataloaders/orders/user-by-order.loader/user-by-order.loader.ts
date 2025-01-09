@@ -4,7 +4,7 @@ import DataLoader from 'dataloader';
 
 import { DataloadersService } from '../../dataloaders.service';
 // 1 to 1 loader
-type UserByOrder = User & { orders: { id: string }[] };
+export type UserByOrder = User & { orders: { id: string }[] };
 @Injectable({ scope: Scope.REQUEST })
 export class UserByOrderLoader extends DataLoader<string, User> {
   constructor(private readonly dataloadersService: DataloadersService) {
@@ -14,7 +14,7 @@ export class UserByOrderLoader extends DataLoader<string, User> {
   async batchLoadFunction(orderIds: string[]) {
     const users = await this.dataloadersService.listUserByOrder(orderIds);
 
-    return this.mapResults(orderIds, users as UserByOrder[]);
+    return this.mapResults(orderIds, users);
   }
 
   mapResults(orderIds: string[], users: UserByOrder[]): User[] {

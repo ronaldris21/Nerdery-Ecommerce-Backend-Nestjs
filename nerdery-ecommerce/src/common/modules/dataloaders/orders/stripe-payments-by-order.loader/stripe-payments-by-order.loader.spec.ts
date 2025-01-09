@@ -1,19 +1,28 @@
+import { DeepMocked, createMock } from '@golevelup/ts-jest';
 import { Test, TestingModule } from '@nestjs/testing';
+
+import { DataloadersService } from '../../dataloaders.service';
 
 import { StripePaymentsByOrderLoader } from './stripe-payments-by-order.loader';
 
 describe('StripePaymentsByOrderLoader', () => {
-  let provider: StripePaymentsByOrderLoader;
+  let loader: StripePaymentsByOrderLoader;
+  let dataloadersService: DeepMocked<DataloadersService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [StripePaymentsByOrderLoader],
+      providers: [
+        StripePaymentsByOrderLoader,
+        { provide: DataloadersService, useValue: createMock<DataloadersService>() },
+      ],
     }).compile();
 
-    provider = module.get<StripePaymentsByOrderLoader>(StripePaymentsByOrderLoader);
+    loader = await module.resolve<StripePaymentsByOrderLoader>(StripePaymentsByOrderLoader);
+    dataloadersService = module.get(DataloadersService);
   });
 
   it('should be defined', () => {
-    expect(provider).toBeDefined();
+    expect(loader).toBeDefined();
+    expect(dataloadersService).toBeDefined();
   });
 });

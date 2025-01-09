@@ -1,21 +1,30 @@
+import { DeepMocked, createMock } from '@golevelup/ts-jest';
 import { Test, TestingModule } from '@nestjs/testing';
+
+import { DataloadersService } from '../../dataloaders.service';
 
 import { VariationImagesByProductVariationLoader } from './variation-images-by-product-variation.loader';
 
-describe('VariationImageByProductVariationLoader', () => {
-  let provider: VariationImagesByProductVariationLoader;
+describe('VariationImagesByProductVariationLoader', () => {
+  let loader: VariationImagesByProductVariationLoader;
+  let dataloadersService: DeepMocked<DataloadersService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [VariationImageByProductVariationLoader],
+      providers: [
+        VariationImagesByProductVariationLoader,
+        { provide: DataloadersService, useValue: createMock<DataloadersService>() },
+      ],
     }).compile();
 
-    provider = module.get<VariationImageByProductVariationLoader>(
-      VariationImageByProductVariationLoader,
+    loader = await module.resolve<VariationImagesByProductVariationLoader>(
+      VariationImagesByProductVariationLoader,
     );
+    dataloadersService = module.get(DataloadersService);
   });
 
   it('should be defined', () => {
-    expect(provider).toBeDefined();
+    expect(loader).toBeDefined();
+    expect(dataloadersService).toBeDefined();
   });
 });

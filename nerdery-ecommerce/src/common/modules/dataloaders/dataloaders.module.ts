@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { AuthModule } from 'src/modules/auth/auth.module';
 
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -16,6 +17,7 @@ import { ProductVariationByProductLoader } from './products/product-variation-by
 
 @Module({
   providers: [
+    AuthModule,
     JwtService,
     StripePaymentsByOrderLoader,
     UserByOrderLoader,

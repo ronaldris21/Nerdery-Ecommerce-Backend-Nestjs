@@ -6,6 +6,7 @@ import { DataloadersService } from '../../dataloaders.service';
 
 // 1 to N relationship between Category and Product
 export type CategoryByProduct = Category & { products: { id: string }[] };
+
 @Injectable({ scope: Scope.REQUEST })
 export class CategoryByProductLoader extends DataLoader<string, Category> {
   constructor(private readonly dataloadersService: DataloadersService) {
