@@ -50,7 +50,7 @@ describe('CategoriesService', () => {
       const result = await service.findBySearch('');
 
       expect(prismaService.category.findMany).toHaveBeenCalledWith({
-        include: { subCategories: true, products: true },
+        include: { subCategories: true },
       });
       expect(result).toEqual(mockCategories);
     });
@@ -69,7 +69,7 @@ describe('CategoriesService', () => {
             mode: 'insensitive',
           },
         },
-        include: { subCategories: true, products: true },
+        include: { subCategories: true },
       });
       expect(result).toEqual(filteredCategories);
     });
@@ -87,7 +87,7 @@ describe('CategoriesService', () => {
             mode: 'insensitive',
           },
         },
-        include: { subCategories: true, products: true },
+        include: { subCategories: true },
       });
       expect(result).toEqual([]);
     });
