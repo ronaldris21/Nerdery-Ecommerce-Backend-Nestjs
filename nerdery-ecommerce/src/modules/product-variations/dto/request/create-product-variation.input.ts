@@ -40,6 +40,6 @@ export class CreateProductVariationInput {
   @IsNotEmpty()
   readonly color: string;
 
-  @Field(() => Boolean, { defaultValue: true })
+  @Field(() => Boolean)
   readonly isEnabled: boolean;
 }

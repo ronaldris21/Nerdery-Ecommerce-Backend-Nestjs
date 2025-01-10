@@ -21,6 +21,6 @@ export class CreateProductInput {
   @IsString()
   readonly description: string;
 
-  @Field(() => Boolean, { defaultValue: false })
+  @Field(() => Boolean)
   readonly isEnabled: boolean;
 }

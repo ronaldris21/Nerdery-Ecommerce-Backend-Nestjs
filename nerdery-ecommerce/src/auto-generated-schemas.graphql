@@ -200,8 +200,8 @@ scalar Decimal
 scalar DateTime
 
 type Query {
-  products(filter: ProductFiltersInput, sortBy: SortingProductInput, pagination: PaginationInput): ProductsPagination!
-  allProducts(filter: ProductFiltersInput, sortBy: SortingProductInput, pagination: PaginationInput): ProductsPagination!
+  products(productInputs: AllProductsNestedInput): ProductsPagination!
+  allProducts(productInputs: AllProductsNestedInput): ProductsPagination!
   productById(id: String!): ProductObject
   categories(search: String): [CategoryObject!]!
   productVariations(productId: String!): [ProductVariationObject!]!
@@ -213,12 +213,18 @@ type Query {
   retryPayment(orderId: String!): RetryPaymentPayload!
 }
 
+input AllProductsNestedInput {
+  filter: ProductFiltersInput
+  sortBy: SortingProductInput
+  pagination: PaginationInput
+}
+
 input ProductFiltersInput {
   gender: Gender
   categoryId: String
   search: String
   minPrice: Int
-  maxPrice: Int
+  maxPrice: Float!
 }
 
 input SortingProductInput {
@@ -248,10 +254,10 @@ type Mutation {
   createProduct(input: CreateProductInput!): ProductObject!
   updateProduct(input: UpdateProductInput!): ProductObject!
   deleteProduct(id: String!): ProductObject!
-  toggleProductEnable(id: String!, isEnabled: Boolean!): ProductObject!
+  toggleProductEnable(input: ToggleProductInput!): ProductObject!
   createProductVariation(input: CreateProductVariationInput!): ProductVariationObject!
   updateProductVariation(input: UpdateProductVariationInput!): ProductVariationObject!
-  toggleProductVariation(id: String!, isEnabled: Boolean!): ProductVariationObject!
+  toggleProductVariation(input: ToggleProductVariationInput!): ProductVariationObject!
   deleteProductVariation(id: String!): ProductVariationObject!
   createOrUpdateCartItem(cartItemInput: CartItemInput!): CartItemObject!
   deleteCartItem(productVariationId: String!): GenericResponseObject!
@@ -265,7 +271,7 @@ input CreateProductInput {
   gender: Gender!
   categoryId: String!
   description: String!
-  isEnabled: Boolean! = false
+  isEnabled: Boolean!
 }
 
 input UpdateProductInput {
@@ -273,8 +279,13 @@ input UpdateProductInput {
   gender: Gender
   categoryId: String
   description: String
-  isEnabled: Boolean = false
+  isEnabled: Boolean
   id: String!
+}
+
+input ToggleProductInput {
+  id: String!
+  isEnabled: Boolean!
 }
 
 input CreateProductVariationInput {
@@ -285,7 +296,7 @@ input CreateProductVariationInput {
   discountType: DiscountType = NONE
   size: String!
   color: String!
-  isEnabled: Boolean! = true
+  isEnabled: Boolean!
 }
 
 input UpdateProductVariationInput {
@@ -296,8 +307,13 @@ input UpdateProductVariationInput {
   discountType: DiscountType = NONE
   size: String
   color: String
-  isEnabled: Boolean = true
+  isEnabled: Boolean
   id: String!
+}
+
+input ToggleProductVariationInput {
+  id: String!
+  isEnabled: Boolean!
 }
 
 input CartItemInput {

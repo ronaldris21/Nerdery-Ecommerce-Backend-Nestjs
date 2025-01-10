@@ -11,9 +11,12 @@ import { ProductCalculatedFieldsService } from 'src/common/services/product-calc
 import { validProduct1, validProduct2, validUUID1 } from 'src/common/testing-mocks/helper-data';
 
 import { CategoriesService } from './../categories/categories.service';
+import { ProductFiltersInput } from './dto/request/all-products/product-filters.input';
+import {
+  SortingProductInput,
+  ProductSortableField,
+} from './dto/request/all-products/sorting-product.input';
 import { CreateProductInput } from './dto/request/create-product.input';
-import { ProductFiltersInput } from './dto/request/product-filters.input';
-import { SortingProductInput, ProductSortableField } from './dto/request/sorting-product.input';
 import { UpdateProductInput } from './dto/request/update-product.input';
 import { ProductsService } from './products.service';
 
@@ -151,7 +154,7 @@ describe('ProductsService', () => {
         },
       };
 
-      const result = await service.findAll(filters, sorting, pagination);
+      const result = await service.findAll({ filter: filters, sortBy: sorting, pagination });
 
       expect(prismaService.product.count).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -180,12 +183,56 @@ describe('ProductsService', () => {
       });
     });
 
-    it('should handle default pagination and no filters', async () => {
+    it.each([[undefined], [null]])(
+      'should handle default pagination and no filters or sorters',
+      async (input: any) => {
+        const expectedData = [mockProducts[0], mockProducts[1]];
+        prismaService.product.count.mockResolvedValue(2);
+        prismaService.product.findMany.mockResolvedValue(expectedData);
+
+        const result = await service.findAll(input);
+
+        expect(prismaService.product.count).toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: {
+              isDeleted: false,
+              isEnabled: true,
+            },
+          }),
+        );
+        expect(prismaService.product.findMany).toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: {
+              isDeleted: false,
+              isEnabled: true,
+            },
+            orderBy: {},
+            skip: expect.any(Number),
+            take: expect.any(Number),
+          }),
+        );
+        expect(result).toEqual({
+          meta: {
+            page: 1,
+            limit: 20,
+            totalItems: expect.any(Number),
+            totalPages: expect.any(Number),
+          },
+          collection: expectedData,
+        });
+      },
+    );
+
+    it.each([[undefined], [null]])('should handle query with no params', async (inputs: any) => {
       const expectedData = [mockProducts[0], mockProducts[1]];
       prismaService.product.count.mockResolvedValue(2);
       prismaService.product.findMany.mockResolvedValue(expectedData);
 
-      const result = await service.findAll(undefined, undefined, undefined);
+      const result = await service.findAll({
+        filter: inputs,
+        sortBy: inputs,
+        pagination: inputs,
+      }); //TODO: TESSSST
 
       expect(prismaService.product.count).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -224,7 +271,10 @@ describe('ProductsService', () => {
       prismaService.product.count.mockResolvedValue(2);
       prismaService.product.findMany.mockResolvedValue(expectedData);
 
-      const result = await service.findAll(undefined, undefined, undefined, isManagerOrSimilar);
+      const result = await service.findAll(
+        { filter: undefined, pagination: undefined, sortBy: null },
+        isManagerOrSimilar,
+      );
 
       expect(prismaService.product.count).toHaveBeenCalledWith({
         where: {},

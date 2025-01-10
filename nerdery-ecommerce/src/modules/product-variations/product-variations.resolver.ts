@@ -11,6 +11,7 @@ import { ProductObject } from '../products/entities/product.entity';
 
 import { ProductByProductVariationLoader } from './../../common/modules/dataloaders/product-variation/product-by-product-variation.loader/product-by-product-variation.loader';
 import { CreateProductVariationInput } from './dto/request/create-product-variation.input';
+import { ToggleProductVariationInput } from './dto/request/toggle-product-variation.input';
 import { UpdateProductVariationInput } from './dto/request/update-product-variation.input';
 import { ProductVariationObject } from './entities/product-variation.entity';
 import { ProductVariationsService } from './product-variations.service';
@@ -61,8 +62,7 @@ export class ProductVariationsResolver {
   @UseGuards(AccessTokenWithRolesGuard)
   @Roles([ROLES.MANAGER])
   toggleProductVariation(
-    @Args('id', { type: () => String }, ParseUUIDPipe) id: string,
-    @Args('isEnabled', { type: () => Boolean }) isEnabled: boolean,
+    @Args('input') { id, isEnabled }: ToggleProductVariationInput,
   ): Promise<ProductVariationObject> {
     return this.productVariationsService.toggleIsEnabled(id, isEnabled);
   }

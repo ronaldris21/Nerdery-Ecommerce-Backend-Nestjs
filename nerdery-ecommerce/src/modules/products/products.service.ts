@@ -8,9 +8,13 @@ import { IdValidatorService } from 'src/common/services/id-validator/id-validato
 import { ProductCalculatedFieldsService } from 'src/common/services/product-calculations/product-calculated-fields.service';
 
 import { CategoriesService } from './../categories/categories.service';
+import { AllProductsNestedInput } from './dto/request/all-products/all-products-nested.input';
+import { ProductFiltersInput } from './dto/request/all-products/product-filters.input';
+import {
+  ProductSortableField,
+  SortingProductInput,
+} from './dto/request/all-products/sorting-product.input';
 import { CreateProductInput } from './dto/request/create-product.input';
-import { ProductFiltersInput } from './dto/request/product-filters.input';
-import { ProductSortableField, SortingProductInput } from './dto/request/sorting-product.input';
 import { UpdateProductInput } from './dto/request/update-product.input';
 import { ProductsPagination } from './dto/response/products-pagination.object';
 
@@ -26,13 +30,15 @@ export class ProductsService {
   ) {}
 
   async findAll(
-    filters?: ProductFiltersInput,
-    sorting?: SortingProductInput,
-    pagination?: PaginationInput,
+    productInputs: AllProductsNestedInput,
     isManagerOrSimilar: boolean = false,
   ): Promise<ProductsPagination> {
-    const page = pagination?.page ?? 1;
-    const limit = pagination?.limit ?? 20;
+    const filters: ProductFiltersInput = productInputs?.filter;
+    const sorting: SortingProductInput = productInputs?.sortBy;
+    const pagination: PaginationInput = productInputs?.pagination;
+
+    const page = pagination?.page;
+    const limit = pagination?.limit;
 
     const where = { isDeleted: false, isEnabled: true };
     if (isManagerOrSimilar) {

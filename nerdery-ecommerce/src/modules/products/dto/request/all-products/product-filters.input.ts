@@ -1,7 +1,6 @@
 import { InputType, Field, Int } from '@nestjs/graphql';
 import { IsUUID, IsString, IsOptional, IsPositive } from 'class-validator';
-
-import { Gender } from '../../../../common/data/enums/gender.enum';
+import { Gender } from 'src/common/data/enums/gender.enum';
 
 @InputType()
 export class ProductFiltersInput {
@@ -24,7 +23,7 @@ export class ProductFiltersInput {
   @IsOptional()
   readonly minPrice?: number;
 
-  @Field(() => Int, { nullable: true })
+  @Field()
   @IsPositive()
   @IsOptional()
   readonly maxPrice?: number;

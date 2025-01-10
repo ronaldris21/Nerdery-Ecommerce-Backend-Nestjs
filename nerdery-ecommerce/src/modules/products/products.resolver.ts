@@ -1,7 +1,6 @@
 import { ParseUUIDPipe, UseGuards } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation, Parent, ResolveField } from '@nestjs/graphql';
 import { ROLES } from 'src/common/constants';
-import { PaginationInput } from 'src/common/data/pagination/pagination.input';
 import { AfterLoadersService } from 'src/common/modules/dataloaders/after-loaders.service';
 import { CategoryByProductLoader } from 'src/common/modules/dataloaders/products/category-by-product.loader/category-by-product.loader';
 import { ProductVariationByProductLoader } from 'src/common/modules/dataloaders/products/product-variation-by-product.loader/product-variation-by-product.loader';
@@ -12,9 +11,9 @@ import { GetAccessToken } from '../auth/decoratos/get-jwtPayload.decorator';
 import { CategoryObject } from '../categories/entities/category.entity';
 import { ProductVariationObject } from '../product-variations/entities/product-variation.entity';
 
+import { AllProductsNestedInput } from './dto/request/all-products/all-products-nested.input';
 import { CreateProductInput } from './dto/request/create-product.input';
-import { ProductFiltersInput } from './dto/request/product-filters.input';
-import { SortingProductInput } from './dto/request/sorting-product.input';
+import { ToggleProductInput } from './dto/request/toggle-product.input';
 import { UpdateProductInput } from './dto/request/update-product.input';
 import { ProductsPagination } from './dto/response/products-pagination.object';
 import { ProductObject } from './entities/product.entity';
@@ -31,22 +30,18 @@ export class ProductsResolver {
 
   @Query(() => ProductsPagination)
   products(
-    @Args('filter', { nullable: true }) filter?: ProductFiltersInput,
-    @Args('sortBy', { nullable: true }) sortBy?: SortingProductInput,
-    @Args('pagination', { nullable: true }) pagination?: PaginationInput,
+    @Args('productInputs', { nullable: true }) productInputs?: AllProductsNestedInput,
   ): Promise<ProductsPagination> {
-    return this.productsService.findAll(filter, sortBy, pagination);
+    return this.productsService.findAll(productInputs);
   }
 
   @Query(() => ProductsPagination)
   @UseGuards(AccessTokenWithRolesGuard)
   @Roles([ROLES.MANAGER])
   allProducts(
-    @Args('filter', { nullable: true }) filter?: ProductFiltersInput,
-    @Args('sortBy', { nullable: true }) sortBy?: SortingProductInput,
-    @Args('pagination', { nullable: true }) pagination?: PaginationInput,
+    @Args('productInputs', { nullable: true }) productInputs?: AllProductsNestedInput,
   ): Promise<ProductsPagination> {
-    return this.productsService.findAll(filter, sortBy, pagination, true);
+    return this.productsService.findAll(productInputs, true);
   }
 
   @Query(() => ProductObject, { nullable: true })
@@ -82,11 +77,8 @@ export class ProductsResolver {
   @Mutation(() => ProductObject)
   @UseGuards(AccessTokenWithRolesGuard)
   @Roles([ROLES.MANAGER])
-  toggleProductEnable(
-    @Args('id', { type: () => String }, ParseUUIDPipe) id: string,
-    @Args('isEnabled') isEnabled: boolean,
-  ): Promise<ProductObject> {
-    return this.productsService.toggleIsEnabled(id, isEnabled);
+  toggleProductEnable(@Args('input') input: ToggleProductInput): Promise<ProductObject> {
+    return this.productsService.toggleIsEnabled(input.id, input.isEnabled);
   }
 
   @ResolveField(() => [ProductVariationObject])
