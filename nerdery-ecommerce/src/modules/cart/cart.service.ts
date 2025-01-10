@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import Decimal from 'decimal.js';
 import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 import { ProductCalculatedFieldsService } from 'src/common/services/product-calculations/product-calculated-fields.service';
 
@@ -11,7 +12,7 @@ export class CartService {
     private readonly productCalculatedFieldsService: ProductCalculatedFieldsService,
   ) {}
 
-  async myCart(userId: string) {
+  async myCart(userId: string): Promise<CartObject> {
     let cartItems = await this.prisma.cartItem.findMany({
       where: {
         userId,
@@ -32,9 +33,9 @@ export class CartService {
 
     let result: CartObject = {
       items: [],
-      discount: 0,
-      subTotal: 0,
-      total: 0,
+      discount: new Decimal(0),
+      subTotal: new Decimal(0),
+      total: new Decimal(0),
     };
 
     result = cartItems.reduce((resultAcc, cartItem) => {
@@ -42,25 +43,27 @@ export class CartService {
         cartItem,
         cartItem.productVariation,
       );
-      tempResult.productVariation = cartItem.productVariation as any;
+      // tempResult.productVariation = plainToInstance(ProductVariationDto, cartItem.productVariation);
+      tempResult.productVariation = cartItem.productVariation;
 
       resultAcc.items.push(tempResult);
-      resultAcc.discount += tempResult.discount;
-      resultAcc.subTotal += tempResult.subTotal;
-      resultAcc.total += tempResult.total;
+      resultAcc.discount = resultAcc.discount.add(tempResult.discount);
+      resultAcc.subTotal = resultAcc.subTotal.add(tempResult.subTotal);
+      resultAcc.total = resultAcc.total.add(tempResult.total);
 
       return resultAcc;
     }, result);
 
-    return {
-      ...result,
-      discount: Number(result.discount.toFixed(2)),
-      subTotal: Number(result.subTotal.toFixed(2)),
-      total: Number(result.total.toFixed(2)),
-    };
+    return result;
+    // return {
+    //   ...result,
+    //   discount: Number(result.discount.toFixed(2)),
+    //   subTotal: Number(result.subTotal.toFixed(2)),
+    //   total: Number(result.total.toFixed(2)),
+    // };
   }
 
-  async deleteAllItems(userId: string, productVariationIds: string[]) {
+  async deleteAllItems(userId: string, productVariationIds: string[]): Promise<number> {
     const result = await this.prisma.cartItem.deleteMany({
       where: {
         userId,

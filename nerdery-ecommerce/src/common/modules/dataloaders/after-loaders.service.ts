@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ProductVariation } from '@prisma/client';
 import { checkAnyRequiredRoles } from 'src/common/helpers/utils';
-import { JwtPayloadDto } from 'src/modules/auth/dto/jwtPayload.dto';
+import { JwtPayloadDto } from 'src/modules/auth/dto/response/jwtPayload.dto';
 
 @Injectable()
 export class AfterLoadersService {
@@ -21,7 +21,7 @@ export class AfterLoadersService {
     return productVariations.filter((p) => p.isEnabled && !p.isDeleted);
   }
 
-  async hasAnyRequiredRoles(accessToken: string, requiredRoles: string[]) {
+  hasAnyRequiredRoles(accessToken: string, requiredRoles: string[]): boolean {
     const userRoles = this.getRolesFromAccessToken(accessToken);
     return checkAnyRequiredRoles(userRoles, requiredRoles);
   }

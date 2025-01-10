@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { Product } from '@prisma/client';
 import { Gender } from 'src/common/data/enums/gender.enum';
 import { PaginationMeta } from 'src/common/data/pagination/pagination-meta.object';
 import { PaginationInput } from 'src/common/data/pagination/pagination.input';
@@ -11,6 +12,7 @@ import { CreateProductInput } from './dto/request/create-product.input';
 import { ProductFiltersInput } from './dto/request/product-filters.input';
 import { ProductSortableField, SortingProductInput } from './dto/request/sorting-product.input';
 import { UpdateProductInput } from './dto/request/update-product.input';
+import { ProductsPagination } from './dto/response/products-pagination.object';
 
 @Injectable()
 //TODO: remove include and use ResolveFields
@@ -28,7 +30,7 @@ export class ProductsService {
     sorting?: SortingProductInput,
     pagination?: PaginationInput,
     isManagerOrSimilar: boolean = false,
-  ) {
+  ): Promise<ProductsPagination> {
     const page = pagination?.page ?? 1;
     const limit = pagination?.limit ?? 20;
 
@@ -101,11 +103,11 @@ export class ProductsService {
     };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<Product> {
     return this.idValidatorService.findUniqueProductById({ id });
   }
 
-  async create(input: CreateProductInput) {
+  async create(input: CreateProductInput): Promise<Product> {
     const { categoryId, ...rest } = input;
 
     if (!categoryId) {
@@ -128,7 +130,7 @@ export class ProductsService {
     });
   }
 
-  async update(input: UpdateProductInput) {
+  async update(input: UpdateProductInput): Promise<Product> {
     const { categoryId, ...rest } = input;
 
     if (categoryId) {
@@ -155,7 +157,7 @@ export class ProductsService {
     });
   }
 
-  async delete(id: string) {
+  async delete(id: string): Promise<Product> {
     await this.idValidatorService.findUniqueProductById({ id });
 
     await this.prisma.productVariation.updateMany({
@@ -168,7 +170,7 @@ export class ProductsService {
     });
   }
 
-  async toggleIsEnabled(id: string, isEnabled: boolean) {
+  async toggleIsEnabled(id: string, isEnabled: boolean): Promise<Product> {
     await this.idValidatorService.findUniqueProductById({ id });
 
     await this.prisma.productVariation.updateMany({

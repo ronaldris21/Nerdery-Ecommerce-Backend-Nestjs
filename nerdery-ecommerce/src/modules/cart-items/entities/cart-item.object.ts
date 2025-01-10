@@ -1,5 +1,6 @@
-import { Int, Field, Float, ObjectType } from '@nestjs/graphql';
+import { Int, Field, ObjectType } from '@nestjs/graphql';
 import { IsInt, IsUUID, Min } from 'class-validator';
+import Decimal from 'decimal.js';
 import { ProductVariationObject } from 'src/modules/product-variations/entities/product-variation.entity';
 
 @ObjectType()
@@ -19,17 +20,17 @@ export class CartItemObject {
   quantity: number;
 
   //Calculated fields on the server
-  @Field(() => Float)
-  unitPrice: number;
+  @Field()
+  unitPrice: Decimal;
 
-  @Field(() => Float)
-  subTotal: number;
+  @Field()
+  subTotal: Decimal;
 
-  @Field(() => Float)
-  discount: number;
+  @Field()
+  discount: Decimal;
 
-  @Field(() => Float)
-  total: number;
+  @Field()
+  total: Decimal;
 
   //relationship - resolved fields
   @Field(() => ProductVariationObject)

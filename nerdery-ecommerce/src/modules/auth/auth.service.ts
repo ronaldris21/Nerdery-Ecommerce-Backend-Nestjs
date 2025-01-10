@@ -15,11 +15,11 @@ import { ConfigNames, FrontendConfig } from 'src/common/modules/config-env/confi
 import { MailService } from 'src/common/modules/mail/mail.service';
 import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 
-import { AuthResponseDto } from './dto/authResponse.dto';
-import { JwtPayloadDto } from './dto/jwtPayload.dto';
-import { LoginDto } from './dto/login.dto';
-import { ResetPasswordDto } from './dto/resetPassword.dto';
-import { SignUpDto } from './dto/signup.dto';
+import { LoginDto } from './dto/request/login.dto';
+import { AuthResponseDto } from './dto/response/authResponse.dto';
+import { JwtPayloadDto } from './dto/response/jwtPayload.dto';
+import { ResetPasswordDto } from './dto/response/resetPassword.dto';
+import { SignUpDto } from './dto/response/signup.dto';
 import { PasswordService } from './services/password/password.service';
 import { TokenService } from './services/token/token.service';
 import { UsersService } from './services/users/users.service';
@@ -97,7 +97,7 @@ export class AuthService {
     };
   }
 
-  async logout(refreshToken: string, accessToken): Promise<void> {
+  async logout(refreshToken: string, accessToken: string): Promise<void> {
     await this.tokenService.invalidateRefreshToken(refreshToken);
 
     try {

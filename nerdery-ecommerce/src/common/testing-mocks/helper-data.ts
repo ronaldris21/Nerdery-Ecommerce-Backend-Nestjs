@@ -1,13 +1,13 @@
 import {
   Category,
   Product,
-  Prisma,
   ProductVariation,
   StripePayment,
   StripePaymentIntentEnum,
   VariationImage,
 } from '@prisma/client';
-import { JwtPayloadDto } from 'src/modules/auth/dto/jwtPayload.dto';
+import Decimal from 'decimal.js';
+import { JwtPayloadDto } from 'src/modules/auth/dto/response/jwtPayload.dto';
 
 import { ROLES } from '../constants';
 import { DiscountType } from '../data/enums/discount-type.enum';
@@ -50,8 +50,8 @@ export const validProduct1: Product = {
   thumbnailUrl: 'http://thumbnail.url',
   isDeleted: false,
   isEnabled: true,
-  minPrice: new Prisma.Decimal(100.0),
-  maxPrice: new Prisma.Decimal(150.0),
+  minPrice: new Decimal(100.0),
+  maxPrice: new Decimal(150.0),
   likesCount: 5,
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -66,8 +66,8 @@ export const validProduct2: Product = {
   thumbnailUrl: 'http://thumbnail.url',
   isDeleted: false,
   isEnabled: true,
-  minPrice: new Prisma.Decimal(100.0),
-  maxPrice: new Prisma.Decimal(150.0),
+  minPrice: new Decimal(100.0),
+  maxPrice: new Decimal(150.0),
   likesCount: 5,
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -76,8 +76,8 @@ export const validProduct2: Product = {
 export const validProductVariation1: ProductVariation = {
   id: validUUID4,
   productId: validUUID2,
-  price: new Prisma.Decimal(100.0),
-  discount: new Prisma.Decimal(0),
+  price: new Decimal(100.0),
+  discount: new Decimal(0),
   discountType: DiscountType.PERCENTAGE,
   isEnabled: true,
   isDeleted: false,
@@ -89,8 +89,8 @@ export const validProductVariation1: ProductVariation = {
 export const validProductVariation2: ProductVariation = {
   id: validUUID5,
   productId: validUUID2,
-  price: new Prisma.Decimal(100.0),
-  discount: new Prisma.Decimal(0),
+  price: new Decimal(100.0),
+  discount: new Decimal(0),
   discountType: DiscountType.PERCENTAGE,
   isEnabled: true,
   isDeleted: false,
@@ -108,8 +108,8 @@ export const cartItems: CartItemWithProductVariation[] = [
     productVariation: {
       id: '67062ffa-b66b-4b3e-ba09-342e0b9ebb80',
       productId: '6d8930e3-ca1f-446a-97b1-5dacbd0bfbb3',
-      price: new Prisma.Decimal(73.65),
-      discount: new Prisma.Decimal(10),
+      price: new Decimal(73.65),
+      discount: new Decimal(10),
       discountType: 'PERCENTAGE',
       size: 'S',
       color: 'mint green',
@@ -126,8 +126,8 @@ export const cartItems: CartItemWithProductVariation[] = [
     productVariation: {
       id: 'aefff0c5-04f7-49eb-ab6d-1ab34d1bef53',
       productId: 'e4c810a8-cb5a-4d60-9c0f-acf238a4ad1b',
-      price: new Prisma.Decimal(46.59),
-      discount: new Prisma.Decimal(5),
+      price: new Decimal(46.59),
+      discount: new Decimal(5),
       discountType: 'PERCENTAGE',
       size: 'XL',
       color: 'Blue',
@@ -159,8 +159,8 @@ export const validVariationImages: VariationImage[] = [
 export const productVariationWithDetails1: ProductVariationWithImagesAndProduct = {
   id: '67062ffa-b66b-4b3e-ba09-342e0b9ebb80',
   productId: '6d8930e3-ca1f-446a-97b1-5dacbd0bfbb3',
-  price: new Prisma.Decimal(73.65),
-  discount: new Prisma.Decimal(10),
+  price: new Decimal(73.65),
+  discount: new Decimal(10),
   discountType: DiscountType.PERCENTAGE,
   size: 'S',
   color: 'mint green',
@@ -178,8 +178,8 @@ export const productVariationWithDetails1: ProductVariationWithImagesAndProduct 
     isEnabled: true,
     isDeleted: false,
     likesCount: 0,
-    minPrice: new Prisma.Decimal(73.65),
-    maxPrice: new Prisma.Decimal(79.29),
+    minPrice: new Decimal(73.65),
+    maxPrice: new Decimal(79.29),
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -189,8 +189,8 @@ export const productVariationWithDetails1: ProductVariationWithImagesAndProduct 
 export const productVariationWithDetails2: ProductVariationWithImagesAndProduct = {
   id: 'aefff0c5-04f7-49eb-ab6d-1ab34d1bef53',
   productId: 'e4c810a8-cb5a-4d60-9c0f-acf238a4ad1b',
-  price: new Prisma.Decimal(46.59),
-  discount: new Prisma.Decimal(5),
+  price: new Decimal(46.59),
+  discount: new Decimal(5),
   discountType: DiscountType.PERCENTAGE,
   size: 'XL',
   color: 'Blue',
@@ -208,8 +208,8 @@ export const productVariationWithDetails2: ProductVariationWithImagesAndProduct 
     isEnabled: true,
     isDeleted: false,
     likesCount: 0,
-    minPrice: new Prisma.Decimal(20.8),
-    maxPrice: new Prisma.Decimal(51.05),
+    minPrice: new Decimal(20.8),
+    maxPrice: new Decimal(51.05),
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -264,7 +264,7 @@ export const fakeDecodedUser: JwtPayloadDto = {
 export const mockStripePayment: StripePayment = {
   id: validUUID5,
   orderId: validUUID6,
-  amount: new Prisma.Decimal(300),
+  amount: new Decimal(300),
   currency: 'usd',
   webhookPaymentIntent: StripePaymentIntentEnum.requires_payment_method,
   stripePaymentId: 'stripe-pi-2',

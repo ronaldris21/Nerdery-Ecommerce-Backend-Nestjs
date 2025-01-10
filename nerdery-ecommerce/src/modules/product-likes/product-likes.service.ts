@@ -3,6 +3,8 @@ import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 import { IdValidatorService } from 'src/common/services/id-validator/id-validator.service';
 import { ProductCalculatedFieldsService } from 'src/common/services/product-calculations/product-calculated-fields.service';
 
+import { ProductObject } from '../products/entities/product.entity';
+
 @Injectable()
 export class ProductLikesService {
   constructor(
@@ -10,7 +12,7 @@ export class ProductLikesService {
     private readonly idValidatorService: IdValidatorService,
     private readonly productCalculatedFieldsService: ProductCalculatedFieldsService,
   ) {}
-  async like(userId: string, productId: string) {
+  async like(userId: string, productId: string): Promise<ProductObject> {
     await this.prisma.productLike.upsert({
       create: {
         productId: productId,
@@ -29,9 +31,10 @@ export class ProductLikesService {
     });
 
     await this.productCalculatedFieldsService.recalculateProductLikesCount([productId]);
-    return await this.idValidatorService.findUniqueProductById({ id: productId });
+    const product = await this.idValidatorService.findUniqueProductById({ id: productId });
+    return product;
   }
-  async dislike(userId: string, productId: string) {
+  async dislike(userId: string, productId: string): Promise<ProductObject> {
     try {
       await this.prisma.productLike.delete({
         where: {
@@ -48,6 +51,7 @@ export class ProductLikesService {
       //Ignore Error
     }
 
-    return await this.idValidatorService.findUniqueProductById({ id: productId });
+    const product = await this.idValidatorService.findUniqueProductById({ id: productId });
+    return product;
   }
 }

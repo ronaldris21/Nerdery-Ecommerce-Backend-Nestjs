@@ -6,9 +6,9 @@ export class CartItemInput {
   @Field(() => Int)
   @IsInt()
   @Min(1)
-  quantity: number;
+  readonly quantity: number;
 
   @Field()
   @IsUUID()
-  productVariationId: string;
+  readonly productVariationId: string;
 }

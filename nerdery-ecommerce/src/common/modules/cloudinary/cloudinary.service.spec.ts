@@ -23,6 +23,7 @@ describe('CloudinaryService', () => {
   });
 
   it('should upload a file successfully', async () => {
+    // eslint-disable-next-line no-undef
     const mockFile = { buffer: Buffer.from('test') } as Express.Multer.File;
     const mockResult = { secure_url: 'http://example.com/image.jpg' };
 
@@ -39,6 +40,7 @@ describe('CloudinaryService', () => {
   }, 10000);
 
   it('should throw an exception while uploading a file if any cloudinary error', async () => {
+    // eslint-disable-next-line no-undef
     const mockFile = { buffer: Buffer.from('test') } as Express.Multer.File;
     const mockError = new Error('Upload error');
     const uploadStreamMock = jest.fn((options, callback) => {

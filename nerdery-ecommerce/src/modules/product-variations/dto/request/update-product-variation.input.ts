@@ -7,5 +7,5 @@ import { CreateProductVariationInput } from './create-product-variation.input';
 export class UpdateProductVariationInput extends PartialType(CreateProductVariationInput) {
   @Field(() => String)
   @IsUUID()
-  id: string;
+  readonly id: string;
 }

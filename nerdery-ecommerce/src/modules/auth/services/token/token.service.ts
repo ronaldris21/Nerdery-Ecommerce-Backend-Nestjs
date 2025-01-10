@@ -1,12 +1,13 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { RefreshToken } from '@prisma/client';
 import ms from 'ms';
 import { validateStringUUID } from 'src/common/helpers/utils';
 import { ConfigNames, JwtConfig } from 'src/common/modules/config-env/config.interface';
 import { PrismaService } from 'src/common/modules/prisma/prisma.service';
-import { AuthResponseDto } from 'src/modules/auth/dto/authResponse.dto';
-import { JwtPayloadDto } from 'src/modules/auth/dto/jwtPayload.dto';
+import { AuthResponseDto } from 'src/modules/auth/dto/response/authResponse.dto';
+import { JwtPayloadDto } from 'src/modules/auth/dto/response/jwtPayload.dto';
 import { v4 as uuid4 } from 'uuid';
 
 import { RedisService } from '../redis/redis.service';
@@ -93,7 +94,7 @@ export class TokenService {
 
   // DATABASE OPERATIONS
 
-  async validateRefreshTokenOrThrow(refreshToken: string) {
+  async validateRefreshTokenOrThrow(refreshToken: string): Promise<RefreshToken> {
     const token = await this.prismaService.refreshToken.findUnique({
       where: { refreshToken },
     });

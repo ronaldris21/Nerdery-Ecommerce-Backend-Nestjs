@@ -10,7 +10,7 @@ export class VariationImagesByProductVariationLoader extends DataLoader<string, 
     super((keys: string[]) => this.batchLoadFunction(keys));
   }
 
-  async batchLoadFunction(productVariationIds: string[]) {
+  async batchLoadFunction(productVariationIds: string[]): Promise<VariationImage[][]> {
     const details =
       await this.dataloadersService.listVariationImagesByProductVariation(productVariationIds);
 

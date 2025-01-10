@@ -1,8 +1,9 @@
-import { v2 as cloudinary } from 'cloudinary';
+import { v2 as cloudinary, ConfigOptions } from 'cloudinary';
 
 export const CloudinaryProvider = {
   provide: 'CLOUDINARY',
-  useFactory: () => {
+  //TODO: NOT SURE ABOUT THIS, type just added
+  useFactory: (): ConfigOptions => {
     return cloudinary.config({
       cloud_name: process.env.CLOUDINARY_NAME,
       api_key: process.env.CLOUDINARY_API_KEY,

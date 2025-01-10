@@ -70,7 +70,7 @@ export class MailService {
     this.logger.log('Password change notification sent');
   }
 
-  async sendLowStockEmailInitProcess(prodVariation: ProductVariation) {
+  async sendLowStockEmailInitProcess(prodVariation: ProductVariation): Promise<void> {
     setTimeout(async () => {
       try {
         await this.sendLowStockEmail(prodVariation);
@@ -80,7 +80,7 @@ export class MailService {
     }, 1);
   }
 
-  async sendLowStockEmail(prodVariation: ProductVariation) {
+  async sendLowStockEmail(prodVariation: ProductVariation): Promise<void> {
     //last liked and not bought user:
     const likes = await this.prismaService.productLike.findMany({
       where: {

@@ -21,10 +21,10 @@ export class SortingProductInput {
   })
   @IsOptional()
   @IsEnum(ProductSortableField)
-  field: ProductSortableField;
+  readonly field: ProductSortableField;
 
   @Field(() => SortOrder, { defaultValue: SortOrder.ASC })
   @IsOptional()
   @IsEnum(SortOrder)
-  order: SortOrder;
+  readonly order: SortOrder;
 }

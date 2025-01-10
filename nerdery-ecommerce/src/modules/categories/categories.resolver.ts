@@ -1,4 +1,5 @@
 import { Resolver, Query, Args, Parent, ResolveField } from '@nestjs/graphql';
+import { Product } from '@prisma/client';
 import { ProductsBycategoryLoader } from 'src/common/modules/dataloaders/categories/products-bycategory.loader/products-by-category.loader';
 
 import { ProductObject } from '../products/entities/product.entity';
@@ -14,12 +15,12 @@ export class CategoriesResolver {
   ) {}
 
   @Query(() => [CategoryObject])
-  async categories(@Args('search', { nullable: true }) search: string) {
+  async categories(@Args('search', { nullable: true }) search: string): Promise<CategoryObject[]> {
     return this.categoriesService.findBySearch(search);
   }
 
   @ResolveField(() => [ProductObject])
-  async products(@Parent() category: CategoryObject) {
+  async products(@Parent() category: CategoryObject): Promise<Product[]> {
     return this.productsBycategoryLoader.load(category.id);
   }
 }

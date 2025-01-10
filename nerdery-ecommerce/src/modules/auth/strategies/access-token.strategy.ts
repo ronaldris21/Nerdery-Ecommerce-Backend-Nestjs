@@ -4,7 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, ExtractJwt } from 'passport-jwt';
 import { ConfigNames, JwtConfig } from 'src/common/modules/config-env/config.interface';
 
-import { JwtPayloadDto } from '../dto/jwtPayload.dto';
+import { JwtPayloadDto } from '../dto/response/jwtPayload.dto';
 import { RedisService } from '../services/redis/redis.service';
 import { UsersService } from '../services/users/users.service';
 

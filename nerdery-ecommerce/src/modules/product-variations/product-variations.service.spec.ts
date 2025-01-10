@@ -1,7 +1,8 @@
 import { DeepMocked, createMock } from '@golevelup/ts-jest';
 import { NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { TestingModule, Test } from '@nestjs/testing';
-import { Prisma, ProductVariation } from '@prisma/client';
+import { ProductVariation } from '@prisma/client';
+import Decimal from 'decimal.js';
 import { DiscountType } from 'src/common/data/enums/discount-type.enum';
 import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 import {
@@ -71,8 +72,8 @@ describe('ProductVariationsService', () => {
   const existingVariation: ProductVariation = {
     id: variationId,
     productId: productId,
-    price: new Prisma.Decimal(100.0),
-    discount: new Prisma.Decimal(10.0),
+    price: new Decimal(100.0),
+    discount: new Decimal(10.0),
     discountType: DiscountType.PERCENTAGE,
     isEnabled: true,
     isDeleted: false,
@@ -219,8 +220,8 @@ describe('ProductVariationsService', () => {
     const createdVariation: ProductVariation = {
       id: validUUID4,
       productId: productId,
-      price: new Prisma.Decimal(120.46),
-      discount: new Prisma.Decimal(15),
+      price: new Decimal(120.46),
+      discount: new Decimal(15),
       discountType: DiscountType.PERCENTAGE,
       isEnabled: true,
       isDeleted: false,
@@ -233,12 +234,6 @@ describe('ProductVariationsService', () => {
     it('should create a new product variation successfully', async () => {
       idValidatorService.findUniqueProductById.mockResolvedValue(existingProduct);
       prismaService.productVariation.create.mockResolvedValue(createdVariation);
-      const expected = {
-        ...createdVariation,
-        product: existingProduct,
-        variationImages: [],
-      };
-      idValidatorService.findUniqueProductVariationById.mockResolvedValue(expected);
 
       const result = await service.create(createInput);
 
@@ -260,10 +255,7 @@ describe('ProductVariationsService', () => {
       expect(productCalculatedFieldsService.recalculateProductMinMaxPrices).toHaveBeenCalledWith([
         productId,
       ]);
-      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith({
-        id: createdVariation.id,
-      });
-      expect(result).toEqual(expected);
+      expect(result).toEqual(createdVariation);
     });
 
     it('should throw NotFoundException if product does not exist', async () => {
@@ -323,8 +315,8 @@ describe('ProductVariationsService', () => {
     const updatedVariation: ProductVariation = {
       ...existingVariation,
       ...updateInput,
-      price: new Prisma.Decimal(110.79),
-      discount: new Prisma.Decimal(20),
+      price: new Decimal(110.79),
+      discount: new Decimal(20),
       discountType: DiscountType.PERCENTAGE,
       stockRefilledAt: new Date(),
     };
@@ -338,12 +330,6 @@ describe('ProductVariationsService', () => {
       );
       prismaService.productVariation.update.mockResolvedValue(updatedVariation);
       productCalculatedFieldsService.recalculateProductMinMaxPrices.mockResolvedValue(true);
-      const expected = {
-        ...updatedVariation,
-        product: validProduct1,
-        variationImages: [],
-      };
-      idValidatorService.findUniqueProductVariationById.mockResolvedValue(expected);
 
       const result = await service.update(updateInput);
 
@@ -363,10 +349,7 @@ describe('ProductVariationsService', () => {
       expect(productCalculatedFieldsService.recalculateProductMinMaxPrices).toHaveBeenCalledWith([
         productId,
       ]);
-      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith({
-        id: variationId,
-      });
-      expect(result).toEqual(expected);
+      expect(result).toEqual(updatedVariation);
     });
 
     it('should throw NotFoundException if product does not exist during update', async () => {
@@ -472,13 +455,6 @@ describe('ProductVariationsService', () => {
         isEnabled: true,
       });
       productCalculatedFieldsService.recalculateProductMinMaxPrices.mockResolvedValue(true);
-      const expected = {
-        ...existingVariation,
-        isEnabled: true,
-        product: validProduct1,
-        variationImages: [],
-      };
-      idValidatorService.findUniqueProductVariationById.mockResolvedValue(expected);
 
       const result = await service.toggleIsEnabled(variationId, true);
 
@@ -492,10 +468,10 @@ describe('ProductVariationsService', () => {
       expect(productCalculatedFieldsService.recalculateProductMinMaxPrices).toHaveBeenCalledWith([
         productId,
       ]);
-      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith({
-        id: variationId,
+      expect(result).toEqual({
+        ...existingVariation,
+        isEnabled: true,
       });
-      expect(result).toEqual(expected);
     });
 
     it('should disable a product variation and recalculate prices', async () => {
@@ -504,12 +480,6 @@ describe('ProductVariationsService', () => {
       );
       prismaService.productVariation.update.mockResolvedValue(updatedVariation);
       productCalculatedFieldsService.recalculateProductMinMaxPrices.mockResolvedValue(true);
-      const expected = {
-        ...updatedVariation,
-        product: validProduct1,
-        variationImages: [],
-      };
-      idValidatorService.findUniqueProductVariationById.mockResolvedValue(expected);
 
       const result = await service.toggleIsEnabled(variationId, false);
 
@@ -523,10 +493,7 @@ describe('ProductVariationsService', () => {
       expect(productCalculatedFieldsService.recalculateProductMinMaxPrices).toHaveBeenCalledWith([
         productId,
       ]);
-      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith({
-        id: variationId,
-      });
-      expect(result).toEqual(expected);
+      expect(result).toEqual(updatedVariation);
     });
 
     it('should throw NotFoundException if variation does not exist during toggle', async () => {
@@ -578,12 +545,6 @@ describe('ProductVariationsService', () => {
       );
       prismaService.productVariation.update.mockResolvedValue(deletedVariation);
       productCalculatedFieldsService.recalculateProductMinMaxPrices.mockResolvedValue(true);
-      const expected = {
-        ...deletedVariation,
-        product: validProduct1,
-        variationImages: [],
-      };
-      idValidatorService.findUniqueProductVariationById.mockResolvedValue(expected);
 
       const result = await service.delete(variationId);
 
@@ -597,10 +558,7 @@ describe('ProductVariationsService', () => {
       expect(productCalculatedFieldsService.recalculateProductMinMaxPrices).toHaveBeenCalledWith([
         productId,
       ]);
-      expect(idValidatorService.findUniqueProductVariationById).toHaveBeenCalledWith({
-        id: variationId,
-      });
-      expect(result).toEqual(expected);
+      expect(result).toEqual(deletedVariation);
     });
 
     it('should throw NotFoundException if variation does not exist during deletion', async () => {

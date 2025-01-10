@@ -91,11 +91,11 @@ class EnvironmentVariables {
   STRIPE_WEBHOOK_SECRET: string;
 }
 
-const printVariableToTime = (variable: string, time: number) => {
+const printVariableToTime = (variable: string, time: number): string => {
   return `${variable} - expires in: ${time / 1000} seconds  = ${time / 1000 / 60} minutes  = ${time / 1000 / 60 / 60} hours  =  ${time / 1000 / 60 / 60 / 24} days`;
 };
 
-export const validateEnv = (config: Record<string, unknown>) => {
+export const validateEnv = (config: Record<string, unknown>): EnvironmentVariables => {
   debug('Validating environment variables\n\n');
   const validatedConfig = plainToInstance(EnvironmentVariables, config, {
     enableImplicitConversion: true,

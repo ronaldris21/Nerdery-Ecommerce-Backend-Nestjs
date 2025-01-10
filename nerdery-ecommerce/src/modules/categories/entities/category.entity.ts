@@ -16,5 +16,5 @@ export class CategoryObject {
   subCategories?: CategoryObject[];
 
   @Field(() => [ProductObject])
-  products: ProductObject[];
+  products?: ProductObject[];
 }

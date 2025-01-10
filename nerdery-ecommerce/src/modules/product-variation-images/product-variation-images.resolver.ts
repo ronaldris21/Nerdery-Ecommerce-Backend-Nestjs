@@ -6,4 +6,6 @@ import { ProductVariationImagesService } from './product-variation-images.servic
 @Resolver(() => ProductVariationImageObject)
 export class ProductVariationImagesResolver {
   constructor(private readonly productVariationImagesService: ProductVariationImagesService) {}
+
+  //TODO: delete image mutation goes here
 }

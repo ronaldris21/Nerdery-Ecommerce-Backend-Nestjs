@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 
+import { CategoryObject } from './entities/category.entity';
+
 @Injectable()
 export class CategoriesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findBySearch(search: string) {
+  async findBySearch(search: string): Promise<CategoryObject[]> {
     if (!search) {
       return this.prisma.category.findMany({
         include: { subCategories: true },

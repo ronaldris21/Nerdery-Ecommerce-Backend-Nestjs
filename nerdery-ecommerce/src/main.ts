@@ -8,7 +8,7 @@ import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/modules/graphql/exception-filters/http-exception/http-exception.filter';
 import { PrismaClientExceptionFilter } from './common/modules/graphql/exception-filters/prisma-exception.filter/prisma-exception.filter.filter';
 
-async function bootstrap() {
+async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api');
 

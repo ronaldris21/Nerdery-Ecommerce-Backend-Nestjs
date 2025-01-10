@@ -3,6 +3,8 @@ import { join } from 'path';
 import { ApolloDriver } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
+import { DateTimeScalar } from 'src/common/modules/graphql/scalars/date-time.scalar';
+import { DecimalScalar } from 'src/common/modules/graphql/scalars/decimal.scalar';
 
 @Module({
   imports: [
@@ -27,5 +29,6 @@ import { GraphQLModule } from '@nestjs/graphql';
       }),
     }),
   ],
+  providers: [DecimalScalar, DateTimeScalar],
 })
 export class GraphqlModule {}

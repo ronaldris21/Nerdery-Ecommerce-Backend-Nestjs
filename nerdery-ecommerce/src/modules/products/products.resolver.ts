@@ -9,6 +9,7 @@ import { Roles } from 'src/modules/auth/decoratos/roles.decorator';
 import { AccessTokenWithRolesGuard } from 'src/modules/auth/guards/access-token-with-roles.guard';
 
 import { GetAccessToken } from '../auth/decoratos/get-jwtPayload.decorator';
+import { CategoryObject } from '../categories/entities/category.entity';
 import { ProductVariationObject } from '../product-variations/entities/product-variation.entity';
 
 import { CreateProductInput } from './dto/request/create-product.input';
@@ -33,7 +34,7 @@ export class ProductsResolver {
     @Args('filter', { nullable: true }) filter?: ProductFiltersInput,
     @Args('sortBy', { nullable: true }) sortBy?: SortingProductInput,
     @Args('pagination', { nullable: true }) pagination?: PaginationInput,
-  ) {
+  ): Promise<ProductsPagination> {
     return this.productsService.findAll(filter, sortBy, pagination);
   }
 
@@ -44,33 +45,37 @@ export class ProductsResolver {
     @Args('filter', { nullable: true }) filter?: ProductFiltersInput,
     @Args('sortBy', { nullable: true }) sortBy?: SortingProductInput,
     @Args('pagination', { nullable: true }) pagination?: PaginationInput,
-  ) {
+  ): Promise<ProductsPagination> {
     return this.productsService.findAll(filter, sortBy, pagination, true);
   }
 
   @Query(() => ProductObject, { nullable: true })
-  productById(@Args('id', { type: () => String }, ParseUUIDPipe) id: string) {
+  productById(
+    @Args('id', { type: () => String }, ParseUUIDPipe) id: string,
+  ): Promise<ProductObject> {
     return this.productsService.findOne(id);
   }
 
   @Mutation(() => ProductObject)
   @UseGuards(AccessTokenWithRolesGuard)
   @Roles([ROLES.MANAGER])
-  createProduct(@Args('input') input: CreateProductInput) {
+  createProduct(@Args('input') input: CreateProductInput): Promise<ProductObject> {
     return this.productsService.create(input);
   }
 
   @Mutation(() => ProductObject)
   @UseGuards(AccessTokenWithRolesGuard)
   @Roles([ROLES.MANAGER])
-  updateProduct(@Args('input') input: UpdateProductInput) {
+  updateProduct(@Args('input') input: UpdateProductInput): Promise<ProductObject> {
     return this.productsService.update(input);
   }
 
   @Mutation(() => ProductObject)
   @UseGuards(AccessTokenWithRolesGuard)
   @Roles([ROLES.MANAGER])
-  deleteProduct(@Args('id', { type: () => String }, ParseUUIDPipe) id: string) {
+  deleteProduct(
+    @Args('id', { type: () => String }, ParseUUIDPipe) id: string,
+  ): Promise<ProductObject> {
     return this.productsService.delete(id);
   }
 
@@ -80,12 +85,15 @@ export class ProductsResolver {
   toggleProductEnable(
     @Args('id', { type: () => String }, ParseUUIDPipe) id: string,
     @Args('isEnabled') isEnabled: boolean,
-  ) {
+  ): Promise<ProductObject> {
     return this.productsService.toggleIsEnabled(id, isEnabled);
   }
 
   @ResolveField(() => [ProductVariationObject])
-  async productVariations(@Parent() product: ProductObject, @GetAccessToken() accessToken: string) {
+  async productVariations(
+    @Parent() product: ProductObject,
+    @GetAccessToken() accessToken: string,
+  ): Promise<ProductVariationObject[]> {
     //FILTER BY ROLE
     const loaderResults = await this.productVariationByProductLoader.load(product.id);
     return this.afterLoadersService.filterProductVariationsIfNoRequiredRole(
@@ -95,8 +103,8 @@ export class ProductsResolver {
     );
   }
 
-  @ResolveField(() => [ProductVariationObject])
-  async category(@Parent() product: ProductObject) {
+  @ResolveField(() => [CategoryObject])
+  async category(@Parent() product: ProductObject): Promise<CategoryObject> {
     return this.categoryByProductLoader.load(product.id);
   }
 }

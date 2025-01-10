@@ -2,6 +2,7 @@ import { DeepMocked, createMock } from '@golevelup/ts-jest';
 import { ConflictException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProductVariation } from '@prisma/client';
+import Decimal from 'decimal.js';
 import { MailService } from 'src/common/modules/mail/mail.service';
 import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 import {
@@ -59,19 +60,19 @@ describe('StockReservationManagementService', () => {
         productVariationId: validProductVariation1.id,
         quantity: 2,
         userId: validUUID6,
-        unitPrice: 50,
-        subTotal: 100,
-        total: 100,
-        discount: 0,
+        unitPrice: new Decimal(50),
+        subTotal: new Decimal(100),
+        total: new Decimal(100),
+        discount: new Decimal(0),
       },
       {
         productVariationId: validProductVariation2.id,
         quantity: 1,
         userId: validUUID6,
-        unitPrice: 30,
-        subTotal: 30,
-        total: 30,
-        discount: 0,
+        unitPrice: new Decimal(30),
+        subTotal: new Decimal(30),
+        total: new Decimal(30),
+        discount: new Decimal(0),
       },
     ];
 

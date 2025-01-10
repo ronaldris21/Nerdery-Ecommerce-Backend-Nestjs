@@ -5,7 +5,7 @@ import { getRequestFromContext } from 'src/common/helpers/context-request';
 import { validUUID7 } from 'src/common/testing-mocks/helper-data';
 
 import { ROLES_KEY } from '../decoratos/roles.decorator';
-import { JwtPayloadDto } from '../dto/jwtPayload.dto';
+import { JwtPayloadDto } from '../dto/response/jwtPayload.dto';
 
 import { AccessTokenWithRolesGuard } from './access-token-with-roles.guard';
 import { AccessTokenGuard } from './access-token.guard';
@@ -32,10 +32,10 @@ describe('AccessTokenWithRolesGuard', () => {
     expect(reflector).toBeDefined();
   });
 
-  function createMockExecutionContext(user: any) {
+  function createMockExecutionContext(user: any): ExecutionContext {
     return {
-      switchToHttp: () => ({
-        getRequest: () => ({ user }),
+      switchToHttp: (): any => ({
+        getRequest: (): any => ({ user }),
       }),
       getHandler: jest.fn(),
     } as unknown as ExecutionContext;
@@ -65,7 +65,7 @@ describe('AccessTokenWithRolesGuard', () => {
 
     it('should return true if user is authenticated and no roles are required', async () => {
       jest.spyOn(AccessTokenGuard.prototype, 'canActivate').mockResolvedValueOnce(true);
-      jest.spyOn(guard, 'checkRoles').mockResolvedValueOnce(true);
+      jest.spyOn(guard, 'checkRoles').mockReturnValue(true);
       const executionContext = createMockExecutionContext(userClientPayload);
 
       const result = await guard.canActivate(executionContext);
@@ -81,21 +81,31 @@ describe('AccessTokenWithRolesGuard', () => {
         user: userClientPayload,
       });
 
-      const result = await guard.checkRoles(executionContext);
+      const result = guard.checkRoles(executionContext);
 
       expect(reflector.get).toHaveBeenCalledWith(ROLES_KEY, executionContext.getHandler());
       expect(result).toBe(true);
     });
 
-    it('should throw ForbiddenException if user does not have any of the required roles', async () => {
+    it('should throw ForbiddenException if user does not have any of the required roles', () => {
       const requiredRoles = ['Wizard', 'Warrior'];
-      jest.spyOn(reflector, 'get').mockReturnValueOnce(requiredRoles as string[]);
+      jest.spyOn(reflector, 'get').mockReturnValueOnce(requiredRoles);
       const executionContext = createMockExecutionContext(userClientPayload);
       (getRequestFromContext as jest.Mock).mockReturnValue({
         user: userClientPayload,
       });
 
-      await expect(guard.checkRoles(executionContext)).rejects.toThrow(ForbiddenException);
+      expect(() => guard.checkRoles(executionContext)).toThrow(ForbiddenException);
+
+      expect(reflector.get).toHaveBeenCalledWith(ROLES_KEY, executionContext.getHandler());
+    });
+    it('should throw UnauthorizedException if user is missing in request', () => {
+      const requiredRoles = ['Wizard', 'Warrior'];
+      jest.spyOn(reflector, 'get').mockReturnValueOnce(requiredRoles as string[]);
+      const executionContext = createMockExecutionContext(null);
+      (getRequestFromContext as jest.Mock).mockReturnValue({ user: null });
+
+      expect(() => guard.checkRoles(executionContext)).toThrow(UnauthorizedException);
 
       expect(reflector.get).toHaveBeenCalledWith(ROLES_KEY, executionContext.getHandler());
     });
@@ -108,21 +118,10 @@ describe('AccessTokenWithRolesGuard', () => {
         user: userClientPayload,
       });
 
-      const result = await guard.checkRoles(executionContext);
+      const result = guard.checkRoles(executionContext);
 
       expect(reflector.get).toHaveBeenCalledWith(ROLES_KEY, executionContext.getHandler());
       expect(result).toBeTruthy();
-    });
-
-    it('should throw UnauthorizedException if user is missing in request', async () => {
-      const requiredRoles = ['Wizard', 'Warrior'];
-      jest.spyOn(reflector, 'get').mockReturnValueOnce(requiredRoles as string[]);
-      const executionContext = createMockExecutionContext(null);
-      (getRequestFromContext as jest.Mock).mockReturnValue({ user: null });
-
-      await expect(guard.checkRoles(executionContext)).rejects.toThrow(UnauthorizedException);
-
-      expect(reflector.get).toHaveBeenCalledWith(ROLES_KEY, executionContext.getHandler());
     });
   });
 });

@@ -1,4 +1,5 @@
 import { Resolver, ResolveField, Parent } from '@nestjs/graphql';
+import { ProductVariation } from '@prisma/client';
 import { ProductVariationByOrderItemLoader } from 'src/common/modules/dataloaders/order-items/product-variation-by-order-item.loader/product-variation-by-order-item.loader';
 
 import { ProductVariationObject } from '../product-variations/entities/product-variation.entity';
@@ -12,7 +13,7 @@ export class OrderItemsResolver {
   ) {}
 
   @ResolveField(() => ProductVariationObject)
-  async productVariation(@Parent() orderItem: OrderItemObject) {
+  async productVariation(@Parent() orderItem: OrderItemObject): Promise<ProductVariation> {
     return this.productVariationByOrderItemLoader.load(orderItem.productVariationId);
   }
 }

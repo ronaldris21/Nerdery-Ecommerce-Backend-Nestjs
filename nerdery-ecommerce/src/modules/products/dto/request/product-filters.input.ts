@@ -1,4 +1,4 @@
-import { InputType, Field } from '@nestjs/graphql';
+import { InputType, Field, Int } from '@nestjs/graphql';
 import { IsUUID, IsString, IsOptional, IsPositive } from 'class-validator';
 
 import { Gender } from '../../../../common/data/enums/gender.enum';
@@ -7,25 +7,25 @@ import { Gender } from '../../../../common/data/enums/gender.enum';
 export class ProductFiltersInput {
   @Field(() => Gender, { nullable: true })
   @IsOptional()
-  gender?: Gender;
+  readonly gender?: Gender;
 
   @Field(() => String, { nullable: true })
   @IsUUID()
   @IsOptional()
-  categoryId?: string;
+  readonly categoryId?: string;
 
   @Field(() => String, { nullable: true })
   @IsString()
   @IsOptional()
-  search?: string;
+  readonly search?: string;
 
-  @Field(() => Number, { nullable: true })
+  @Field(() => Int, { nullable: true })
   @IsPositive()
   @IsOptional()
-  minPrice?: number;
+  readonly minPrice?: number;
 
-  @Field(() => Number, { nullable: true })
+  @Field(() => Int, { nullable: true })
   @IsPositive()
   @IsOptional()
-  maxPrice?: number;
+  readonly maxPrice?: number;
 }

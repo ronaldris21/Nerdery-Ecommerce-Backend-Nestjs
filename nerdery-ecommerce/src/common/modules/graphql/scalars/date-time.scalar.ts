@@ -1,7 +1,10 @@
 import { CustomScalar, Scalar } from '@nestjs/graphql';
 import { Kind, ValueNode } from 'graphql';
 
-@Scalar('DateTime')
+//TODO: CHECK THIS IF I'M GOING TO USE A LIBRARY??
+// npm install  @nestjs/graphql graphql graphql-scalars
+
+@Scalar('DateTime', () => Date)
 export class DateTimeScalar implements CustomScalar<string, Date> {
   description = 'DateTime custom scalar type';
 
@@ -20,5 +23,3 @@ export class DateTimeScalar implements CustomScalar<string, Date> {
     return null;
   }
 }
-
-//TODO: CHECK THIS IF I'M GOING TO USE A LIBRARY??

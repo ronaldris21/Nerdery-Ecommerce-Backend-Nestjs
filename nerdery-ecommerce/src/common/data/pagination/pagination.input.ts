@@ -7,11 +7,11 @@ export class PaginationInput {
   @IsInt()
   @IsOptional()
   @IsPositive()
-  page?: number;
+  readonly page?: number;
 
   @Field(() => Int, { nullable: true, defaultValue: 20 })
   @IsInt()
   @IsOptional()
   @IsPositive()
-  limit?: number;
+  readonly limit?: number;
 }

@@ -1,4 +1,5 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import { VariationImage } from '@prisma/client';
 import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 import { IdValidatorService } from 'src/common/services/id-validator/id-validator.service';
 
@@ -12,7 +13,7 @@ export class ImagesService {
     private readonly idValidatorService: IdValidatorService,
   ) {}
 
-  async uploadFile(productVariationId: string, file: Express.Multer.File) {
+  async uploadFile(productVariationId: string, file: Express.Multer.File): Promise<VariationImage> {
     const prodVariation = await this.idValidatorService.findUniqueProductVariationById({
       id: productVariationId,
     });

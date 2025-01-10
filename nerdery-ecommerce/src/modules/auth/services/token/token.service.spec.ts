@@ -5,7 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import ms from 'ms';
 import { JwtConfig } from 'src/common/modules/config-env/config.interface';
 import { PrismaService } from 'src/common/modules/prisma/prisma.service';
-import { AuthResponseDto } from 'src/modules/auth/dto/authResponse.dto';
+import { AuthResponseDto } from 'src/modules/auth/dto/response/authResponse.dto';
 
 import { RedisService } from '../redis/redis.service';
 
@@ -252,7 +252,7 @@ describe('TokenService', () => {
       expect(prismaService.refreshToken.deleteMany).toHaveBeenCalledWith({
         where: { userId: validUUID },
       });
-      expect(result).toEqual(2);
+      expect(result).toBe(2);
     });
 
     it('should throw error for userId invalid', async () => {

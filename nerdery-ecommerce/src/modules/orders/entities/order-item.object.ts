@@ -1,4 +1,5 @@
-import { Field, Float, ObjectType, ID } from '@nestjs/graphql';
+import { Field, ObjectType, ID } from '@nestjs/graphql';
+import Decimal from 'decimal.js';
 import { ProductVariationObject } from 'src/modules/product-variations/entities/product-variation.entity';
 
 @ObjectType()
@@ -13,17 +14,17 @@ export class OrderItemObject {
   productVariationId: string;
 
   @Field()
-  unitPrice: number;
+  unitPrice: Decimal;
 
-  @Field(() => Float)
-  subTotal: number;
+  @Field()
+  subTotal: Decimal;
 
-  @Field(() => Float)
-  discount: number;
+  @Field()
+  discount: Decimal;
 
-  @Field(() => Float)
-  total: number;
+  @Field()
+  total: Decimal;
 
   @Field(() => ProductVariationObject)
-  productVariation: ProductVariationObject;
+  productVariation?: ProductVariationObject;
 }

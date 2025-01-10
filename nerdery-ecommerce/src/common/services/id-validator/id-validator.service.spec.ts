@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Prisma, Product, ProductVariation } from '@prisma/client';
+import { Product, ProductVariation } from '@prisma/client';
+import Decimal from 'decimal.js';
 import { DiscountType } from 'src/common/data/enums/discount-type.enum';
 import { Gender } from 'src/common/data/enums/gender.enum';
 import { PrismaService } from 'src/common/modules/prisma/prisma.service';
@@ -26,8 +27,8 @@ const validProduct: Product = {
   thumbnailUrl: 'http://thumbnail.url',
   isDeleted: false,
   isEnabled: true,
-  minPrice: new Prisma.Decimal(100.0),
-  maxPrice: new Prisma.Decimal(150.0),
+  minPrice: new Decimal(100.0),
+  maxPrice: new Decimal(150.0),
   likesCount: 5,
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -36,8 +37,8 @@ const validProduct: Product = {
 const validProductVariation: ProductVariation = {
   id: validUUID3,
   productId: validUUID1,
-  price: new Prisma.Decimal(100.0),
-  discount: new Prisma.Decimal(0),
+  price: new Decimal(100.0),
+  discount: new Decimal(0),
   discountType: DiscountType.PERCENTAGE,
   isEnabled: true,
   isDeleted: false,
