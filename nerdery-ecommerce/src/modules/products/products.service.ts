@@ -33,12 +33,16 @@ export class ProductsService {
     productInputs: AllProductsNestedInput,
     isManagerOrSimilar: boolean = false,
   ): Promise<ProductsPagination> {
+    if (!productInputs) {
+      throw new UnprocessableEntityException('Product inputs are required');
+    }
+
     const filters: ProductFiltersInput = productInputs?.filter;
     const sorting: SortingProductInput = productInputs?.sortBy;
     const pagination: PaginationInput = productInputs?.pagination;
 
-    const page = pagination?.page;
-    const limit = pagination?.limit;
+    const page: number = pagination?.page ?? 1;
+    const limit: number = pagination?.limit ?? 20;
 
     const where = { isDeleted: false, isEnabled: true };
     if (isManagerOrSimilar) {
