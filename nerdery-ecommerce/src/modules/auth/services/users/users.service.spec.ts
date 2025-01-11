@@ -63,7 +63,7 @@ describe('UsersService', () => {
 
       const result = await service.findById(userId);
 
-      expect(result).toEqual(null);
+      expect(result).toBeNull();
       expect(prismaService.user.findUnique).toHaveBeenCalledWith({
         where: { id: userId },
       });
@@ -100,7 +100,7 @@ describe('UsersService', () => {
       jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(null);
 
       const result = await service.getUserByEmail(email);
-      expect(result).toEqual(null);
+      expect(result).toBeNull();
       expect(prismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email: email },
       });

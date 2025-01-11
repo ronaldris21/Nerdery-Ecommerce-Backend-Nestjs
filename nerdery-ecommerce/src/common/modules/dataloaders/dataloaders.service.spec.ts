@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProductVariation, User, Category, StripePayment, Prisma, Product } from '@prisma/client';
+import { ProductVariation, User, Category, StripePayment, Product } from '@prisma/client';
+import Decimal from 'decimal.js';
 import {
   mockStripePayment,
   validProduct1,
@@ -58,13 +59,13 @@ describe('DataloadersService', () => {
     const mockStripePayment1: StripePayment = {
       ...mockStripePayment,
       id: validUUID1,
-      amount: new Prisma.Decimal('100.00'),
+      amount: new Decimal('100.00'),
     };
 
     const mockStripePayment2: StripePayment = {
       ...mockStripePayment,
       id: validUUID2,
-      amount: new Prisma.Decimal('100.00'),
+      amount: new Decimal('100.00'),
     };
 
     it('should return stripe payments for given order IDs', async () => {

@@ -7,20 +7,20 @@ export class CreateProductInput {
   @Field()
   @IsNotEmpty()
   @IsString()
-  name: string;
+  readonly name: string;
 
   @Field(() => Gender)
   @IsNotEmpty()
-  gender: Gender;
+  readonly gender: Gender;
 
   @Field()
   @IsUUID()
-  categoryId: string;
+  readonly categoryId: string;
 
   @Field()
   @IsString()
-  description: string;
+  readonly description: string;
 
-  @Field(() => Boolean, { defaultValue: false })
-  isEnabled: boolean;
+  @Field(() => Boolean)
+  readonly isEnabled: boolean;
 }

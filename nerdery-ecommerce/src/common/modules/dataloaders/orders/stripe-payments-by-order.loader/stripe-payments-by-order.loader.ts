@@ -10,7 +10,7 @@ export class StripePaymentsByOrderLoader extends DataLoader<string, StripePaymen
     super((keys: string[]) => this.batchLoadFunction(keys));
   }
 
-  async batchLoadFunction(OrderIds: string[]) {
+  async batchLoadFunction(OrderIds: string[]): Promise<StripePayment[][]> {
     const details = await this.dataloadersService.listStripePaymentsByOrder(OrderIds);
 
     return this.mapResults(OrderIds, details);

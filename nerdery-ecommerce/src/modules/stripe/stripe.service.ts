@@ -28,7 +28,7 @@ export class StripeService {
     );
   }
 
-  async createPaymentIntent(amount: number, orderId: string) {
+  async createPaymentIntent(amount: number, orderId: string): Promise<Stripe.PaymentIntent> {
     try {
       const paymentResponse = await this.stripe.paymentIntents.create({
         amount: Math.round(amount * 100),
@@ -46,7 +46,7 @@ export class StripeService {
     }
   }
 
-  async handleWebhook(req: RawBodyRequest<Request>) {
+  async handleWebhook(req: RawBodyRequest<Request>): Promise<void> {
     try {
       const signature = req.headers['stripe-signature'];
       const payload = req.rawBody;
@@ -87,7 +87,7 @@ export class StripeService {
   private async updatePaymentStatus(
     paymentIntentId: string,
     webhookPaymentIntent: StripePaymentIntentEnum,
-  ) {
+  ): Promise<void> {
     try {
       await this.prismaService.stripePayment.updateMany({
         where: {
@@ -102,7 +102,7 @@ export class StripeService {
     }
   }
 
-  private async updateOrderStatus(orderId: string, status: OrderStatusEnum) {
+  private async updateOrderStatus(orderId: string, status: OrderStatusEnum): Promise<void> {
     try {
       await this.prismaService.order.update({
         where: {

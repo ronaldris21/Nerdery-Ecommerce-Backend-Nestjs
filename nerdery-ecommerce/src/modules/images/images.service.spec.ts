@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { DeepMocked, createMock } from '@golevelup/ts-jest';
 import { UnprocessableEntityException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';

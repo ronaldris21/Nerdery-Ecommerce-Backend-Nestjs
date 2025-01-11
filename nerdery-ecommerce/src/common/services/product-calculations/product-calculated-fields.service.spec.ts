@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CartItem, Prisma, Product, ProductVariation } from '@prisma/client';
+import { CartItem, Product, ProductVariation } from '@prisma/client';
+import Decimal from 'decimal.js';
 import { PriceSummaryInput } from 'src/common/data/dto/price-summary-input.dto ';
 import { PriceSummary } from 'src/common/data/dto/price-summary.dto';
 import { DiscountType } from 'src/common/data/enums/discount-type.enum';
@@ -65,16 +66,16 @@ describe('ProductCalculatedFieldsService', () => {
       isEnabled: true,
       isDeleted: false,
       likesCount: 0,
-      minPrice: new Prisma.Decimal(59.99),
-      maxPrice: new Prisma.Decimal(79.99),
+      minPrice: new Decimal(59.99),
+      maxPrice: new Decimal(79.99),
       createdAt: new Date(),
       updatedAt: new Date(),
       productVariations: [
         {
           id: '0a8ccd15-31c1-4e18-95df-01837c5f37f8',
           productId: 'd7355e6e-4107-4545-afaf-6b152c0b2ae2',
-          price: new Prisma.Decimal(59.99),
-          discount: new Prisma.Decimal(10),
+          price: new Decimal(59.99),
+          discount: new Decimal(10),
           discountType: 'FIXED',
           size: 'M',
           color: 'Black',
@@ -86,8 +87,8 @@ describe('ProductCalculatedFieldsService', () => {
         {
           id: '7e0aeda0-af2b-4b1f-a3ec-700cd652bb8f',
           productId: 'd7355e6e-4107-4545-afaf-6b152c0b2ae2',
-          price: new Prisma.Decimal(69.99),
-          discount: new Prisma.Decimal(5),
+          price: new Decimal(69.99),
+          discount: new Decimal(5),
           discountType: 'PERCENTAGE',
           size: 'L',
           color: 'Blue',
@@ -99,8 +100,8 @@ describe('ProductCalculatedFieldsService', () => {
         {
           id: '426a5f2d-f850-44bf-a423-d8e956b93b07',
           productId: 'd7355e6e-4107-4545-afaf-6b152c0b2ae2',
-          price: new Prisma.Decimal(79.99),
-          discount: new Prisma.Decimal(0),
+          price: new Decimal(79.99),
+          discount: new Decimal(0),
           discountType: 'NONE',
           size: 'XL',
           color: 'Red',
@@ -122,16 +123,16 @@ describe('ProductCalculatedFieldsService', () => {
       isEnabled: true,
       isDeleted: false,
       likesCount: 0,
-      minPrice: new Prisma.Decimal(89.99),
-      maxPrice: new Prisma.Decimal(119.99),
+      minPrice: new Decimal(89.99),
+      maxPrice: new Decimal(119.99),
       createdAt: new Date(),
       updatedAt: new Date(),
       productVariations: [
         {
           id: '124b41a4-a6f6-458b-9ce0-1753bbf75b2a',
           productId: '481e290b-c03a-40de-b949-48b13a89dced',
-          price: new Prisma.Decimal(145),
-          discount: new Prisma.Decimal(15),
+          price: new Decimal(145),
+          discount: new Decimal(15),
           discountType: 'PERCENTAGE',
           size: 'S',
           color: 'Green',
@@ -143,8 +144,8 @@ describe('ProductCalculatedFieldsService', () => {
         {
           id: 'a71a9adc-b989-4e9c-a960-82aa7fd1f6c3',
           productId: '481e290b-c03a-40de-b949-48b13a89dced',
-          price: new Prisma.Decimal(99.99),
-          discount: new Prisma.Decimal(10),
+          price: new Decimal(99.99),
+          discount: new Decimal(10),
           discountType: 'PERCENTAGE',
           size: 'M',
           color: 'Black',
@@ -156,8 +157,8 @@ describe('ProductCalculatedFieldsService', () => {
         {
           id: 'fb6152e1-ac33-45bd-85f2-9110e2c9da62',
           productId: '481e290b-c03a-40de-b949-48b13a89dced',
-          price: new Prisma.Decimal(119.99),
-          discount: new Prisma.Decimal(19.99),
+          price: new Decimal(119.99),
+          discount: new Decimal(19.99),
           discountType: 'FIXED',
           size: 'L',
           color: 'Blue',
@@ -179,8 +180,8 @@ describe('ProductCalculatedFieldsService', () => {
       isEnabled: true,
       isDeleted: false,
       likesCount: 0,
-      minPrice: new Prisma.Decimal(0),
-      maxPrice: new Prisma.Decimal(0),
+      minPrice: new Decimal(0),
+      maxPrice: new Decimal(0),
       createdAt: new Date(),
       updatedAt: new Date(),
       productVariations: [],
@@ -353,17 +354,17 @@ describe('ProductCalculatedFieldsService', () => {
   describe('calculatePriceSummary', () => {
     it('should calculate price summary correctly for PERCENTAGE discount', () => {
       const input: PriceSummaryInput = {
-        unitPrice: 100,
+        unitPrice: new Decimal(100),
         discountType: DiscountType.PERCENTAGE,
-        discount: 10, // 10%
+        discount: new Decimal(10), // 10%
         quantity: 2,
       };
 
       const expected: PriceSummary = {
-        unitPrice: 100,
-        subTotal: 200,
-        discount: 20, // 10% of 200
-        total: 180,
+        unitPrice: new Decimal(100),
+        subTotal: new Decimal(200),
+        discount: new Decimal(20), // 10% of 200
+        total: new Decimal(180),
       };
 
       const result = service.calculatePriceSummary(input);
@@ -373,17 +374,17 @@ describe('ProductCalculatedFieldsService', () => {
 
     it('should calculate price summary correctly for FIXED discount', () => {
       const input: PriceSummaryInput = {
-        unitPrice: 50,
+        unitPrice: new Decimal(50),
         discountType: DiscountType.FIXED,
-        discount: 5, // $5 per unit
+        discount: new Decimal(5), // $5 per unit
         quantity: 3,
       };
 
       const expected: PriceSummary = {
-        unitPrice: 50,
-        subTotal: 150,
-        discount: 15, // 5 * 3
-        total: 135,
+        unitPrice: new Decimal(50),
+        subTotal: new Decimal(150),
+        discount: new Decimal(15), // 5 * 3
+        total: new Decimal(135),
       };
 
       const result = service.calculatePriceSummary(input);
@@ -393,17 +394,17 @@ describe('ProductCalculatedFieldsService', () => {
 
     it('should verified discount neved exceeds subTotal', () => {
       const input: PriceSummaryInput = {
-        unitPrice: 30,
+        unitPrice: new Decimal(30),
         discountType: DiscountType.FIXED,
-        discount: 40,
+        discount: new Decimal(40),
         quantity: 1,
       };
 
       const expected: PriceSummary = {
-        unitPrice: 30,
-        subTotal: 30,
-        discount: 30,
-        total: 0,
+        unitPrice: new Decimal(30),
+        subTotal: new Decimal(30),
+        discount: new Decimal(30),
+        total: new Decimal(0),
       };
 
       const result = service.calculatePriceSummary(input);
@@ -415,17 +416,17 @@ describe('ProductCalculatedFieldsService', () => {
       'should handle zero discount',
       (discountType: DiscountType) => {
         const input: PriceSummaryInput = {
-          unitPrice: 80,
+          unitPrice: new Decimal(80),
           discountType: discountType,
-          discount: 0,
+          discount: new Decimal(0),
           quantity: 1,
         };
 
         const expected: PriceSummary = {
-          unitPrice: 80,
-          subTotal: 80,
-          discount: 0,
-          total: 80,
+          unitPrice: new Decimal(80),
+          subTotal: new Decimal(80),
+          discount: new Decimal(0),
+          total: new Decimal(80),
         };
 
         const result = service.calculatePriceSummary(input);
@@ -434,19 +435,19 @@ describe('ProductCalculatedFieldsService', () => {
       },
     );
 
-    it.each([[0], [-1]])('should handle invalid discount values: \% %d', (discount: number) => {
+    it.each([[0], [-1]])('should handle invalid discount values: %d', (discount: number) => {
       const input: PriceSummaryInput = {
-        unitPrice: 80,
+        unitPrice: new Decimal(80),
         discountType: DiscountType.PERCENTAGE,
-        discount: discount,
+        discount: new Decimal(discount),
         quantity: 1,
       };
 
       const expected: PriceSummary = {
-        unitPrice: 80,
-        subTotal: 80,
-        discount: 0,
-        total: 80,
+        unitPrice: new Decimal(80),
+        subTotal: new Decimal(80),
+        discount: new Decimal(0),
+        total: new Decimal(80),
       };
 
       const result = service.calculatePriceSummary(input);
@@ -455,20 +456,20 @@ describe('ProductCalculatedFieldsService', () => {
     });
 
     it.each([[255], [100], [110]])(
-      'should handle invalid discount values: \% %d',
+      'should handle invalid discount values: %d',
       (discount: number) => {
         const input: PriceSummaryInput = {
-          unitPrice: 200,
+          unitPrice: new Decimal(200),
           discountType: DiscountType.PERCENTAGE,
-          discount: discount,
+          discount: new Decimal(discount),
           quantity: 1,
         };
 
         const expected: PriceSummary = {
-          unitPrice: 200,
-          subTotal: 200,
-          discount: 200,
-          total: 0,
+          unitPrice: new Decimal(200),
+          subTotal: new Decimal(200),
+          discount: new Decimal(200),
+          total: new Decimal(0),
         };
 
         const result = service.calculatePriceSummary(input);
@@ -488,18 +489,18 @@ describe('ProductCalculatedFieldsService', () => {
 
       const productVariation: ProductVariation = {
         ...validProductVariation1,
-        price: new Prisma.Decimal(50),
-        discount: new Prisma.Decimal(10),
+        price: new Decimal(50),
+        discount: new Decimal(10),
         discountType: DiscountType.PERCENTAGE,
       };
 
       const expectedCartItemObject = {
         userId: validUUID1,
         productVariationId: validProductVariation1.id,
-        unitPrice: 50,
-        subTotal: 100,
-        discount: 10,
-        total: 90,
+        unitPrice: new Decimal(50),
+        subTotal: new Decimal(100),
+        discount: new Decimal(10),
+        total: new Decimal(90),
         quantity: 2,
       };
 

@@ -1,5 +1,6 @@
 import { DeepMocked, createMock } from '@golevelup/ts-jest';
 import { Test, TestingModule } from '@nestjs/testing';
+import Decimal from 'decimal.js';
 import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 import { CartItemWithFullDetails } from 'src/common/prisma-types';
 import { ProductCalculatedFieldsService } from 'src/common/services/product-calculations/product-calculated-fields.service';
@@ -57,6 +58,13 @@ describe('CartService', () => {
       prismaService.cartItem.findMany.mockReset();
     });
 
+    const emptyCart: CartObject = {
+      items: [],
+      discount: new Decimal(0),
+      subTotal: new Decimal(0),
+      total: new Decimal(0),
+    };
+
     it('should return a populated CartObject with valid cart items', async () => {
       const userCart: CartItemWithFullDetails[] = [
         {
@@ -74,20 +82,20 @@ describe('CartService', () => {
         productVariationId: productVariationId1,
         userId: userId,
         quantity: 2,
-        unitPrice: 73.65,
-        subTotal: 147.3,
-        discount: 14.73,
-        total: 132.57,
+        unitPrice: new Decimal(73.65),
+        subTotal: new Decimal(147.3),
+        discount: new Decimal(14.73),
+        total: new Decimal(132.57),
       };
 
       const expectedCartItem2 = {
         productVariationId: productVariationId2,
         userId: userId,
         quantity: 3,
-        unitPrice: 46.59,
-        subTotal: 139.77,
-        discount: 6.99,
-        total: 132.78,
+        unitPrice: new Decimal(46.59),
+        subTotal: new Decimal(139.77),
+        discount: new Decimal(6.99),
+        total: new Decimal(132.78),
       };
       productCalculatedFieldsService.createCartItemWithPriceSummary.mockReturnValueOnce(
         expectedCartItem1,
@@ -97,9 +105,9 @@ describe('CartService', () => {
       );
 
       const expectedResult: any = {
-        subTotal: 287.07,
-        discount: 21.72,
-        total: 265.35,
+        subTotal: new Decimal(287.07),
+        discount: new Decimal(21.72),
+        total: new Decimal(265.35),
         items: [expectedCartItem1, expectedCartItem2],
       };
 
@@ -121,13 +129,6 @@ describe('CartService', () => {
     it('should return an empty CartObject if user has no cart items', async () => {
       prismaService.cartItem.findMany.mockResolvedValue([]);
 
-      const expectedCartObject: CartObject = {
-        items: [],
-        discount: 0,
-        subTotal: 0,
-        total: 0,
-      };
-
       const result = await service.myCart(userId);
 
       expect(prismaService.cartItem.findMany).toHaveBeenCalledWith({
@@ -139,7 +140,7 @@ describe('CartService', () => {
 
       expect(productCalculatedFieldsService.createCartItemWithPriceSummary).not.toHaveBeenCalled();
 
-      expect(result).toEqual(expectedCartObject);
+      expect(result).toEqual(emptyCart);
     });
 
     it('should handle cart items with invalid variations by filtering them out', async () => {
@@ -179,18 +180,11 @@ describe('CartService', () => {
         },
       ]);
 
-      const expectedCartObject: CartObject = {
-        items: [],
-        discount: 0,
-        subTotal: 0,
-        total: 0,
-      };
-
       const result = await service.myCart(userId);
 
       expect(productCalculatedFieldsService.createCartItemWithPriceSummary).not.toHaveBeenCalled();
 
-      expect(result).toEqual(expectedCartObject);
+      expect(result).toEqual(emptyCart);
     });
 
     it('should handle Prisma errors', async () => {

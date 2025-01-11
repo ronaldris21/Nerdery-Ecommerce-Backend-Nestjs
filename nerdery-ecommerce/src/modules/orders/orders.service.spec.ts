@@ -2,13 +2,8 @@ import { DeepMocked, createMock } from '@golevelup/ts-jest';
 import { ConflictException, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  Order,
-  OrderStatusEnum,
-  Prisma,
-  StripePayment,
-  StripePaymentIntentEnum,
-} from '@prisma/client';
+import { Order, OrderStatusEnum, StripePayment, StripePaymentIntentEnum } from '@prisma/client';
+import Decimal from 'decimal.js';
 import { FrontendConfig, ConfigNames } from 'src/common/modules/config-env/config.interface';
 import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 import {
@@ -24,7 +19,7 @@ import { StockReservationManagementService } from '../../common/services/stock-r
 import { CartService } from '../cart/cart.service';
 import { CartObject } from '../cart/entities/cart.entity';
 
-import { ApprovedStatusPayload } from './entities/approved-status.object';
+import { ApprovedStatusPayload } from './dto/response/approved-status.object';
 import { OrdersService } from './orders.service';
 
 const mockPrismaService = {
@@ -46,6 +41,7 @@ const mockPrismaService = {
 describe('OrdersService', () => {
   let service: OrdersService;
   let prismaService: typeof mockPrismaService;
+  // let prismaService: DeepMocked<PrismaService>;
   let cartService: DeepMocked<CartService>;
   let stockReservationManagementService: DeepMocked<StockReservationManagementService>;
   let stripeService: DeepMocked<StripeService>;
@@ -72,6 +68,7 @@ describe('OrdersService', () => {
         OrdersService,
         { provide: ConfigService, useValue: mockConfigService },
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: PrismaService, useValue: createMock<PrismaService>() },
         { provide: CartService, useValue: createMock<CartService>() },
         {
           provide: StockReservationManagementService,
@@ -102,28 +99,28 @@ describe('OrdersService', () => {
   const orderId = validUUID1;
 
   const mockCart: CartObject = {
-    subTotal: 287.07,
-    discount: 21.72,
-    total: 265.35,
+    subTotal: new Decimal(287.07),
+    discount: new Decimal(21.72),
+    total: new Decimal(265.35),
     items: [
       {
         userId: '2e30d6d3-2986-4d3d-827d-5771ad836fba',
         productVariationId: '67062ffa-b66b-4b3e-ba09-342e0b9ebb80',
         quantity: 2,
-        unitPrice: 73.65,
-        subTotal: 147.3,
-        discount: 14.73,
-        total: 132.57,
+        unitPrice: new Decimal(73.65),
+        subTotal: new Decimal(147.3),
+        discount: new Decimal(14.73),
+        total: new Decimal(132.57),
         productVariation: null,
       },
       {
         userId: '2e30d6d3-2986-4d3d-827d-5771ad836fba',
         productVariationId: 'aefff0c5-04f7-49eb-ab6d-1ab34d1bef53',
         quantity: 3,
-        unitPrice: 46.59,
-        subTotal: 139.77,
-        discount: 6.99,
-        total: 132.78,
+        unitPrice: new Decimal(46.59),
+        subTotal: new Decimal(139.77),
+        discount: new Decimal(6.99),
+        total: new Decimal(132.78),
         productVariation: null,
       },
     ],
@@ -133,9 +130,9 @@ describe('OrdersService', () => {
     id: orderId,
     userId: userId,
     status: OrderStatusEnum.PAYMENT_APPROVED,
-    subTotal: new Prisma.Decimal(287.07),
-    discount: new Prisma.Decimal(21.72),
-    total: new Prisma.Decimal(265.35),
+    subTotal: new Decimal(287.07),
+    discount: new Decimal(21.72),
+    total: new Decimal(265.35),
     currency: 'usd',
     isDeleted: false,
     isStockReserved: true,
@@ -154,10 +151,10 @@ describe('OrdersService', () => {
           orderId: orderId,
           productVariationId: validUUID4,
           quantity: 2,
-          unitPrice: new Prisma.Decimal(73.65),
-          subTotal: new Prisma.Decimal(147.3),
-          discount: new Prisma.Decimal(14.73),
-          total: new Prisma.Decimal(132.57),
+          unitPrice: new Decimal(73.65),
+          subTotal: new Decimal(147.3),
+          discount: new Decimal(14.73),
+          total: new Decimal(132.57),
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -166,10 +163,10 @@ describe('OrdersService', () => {
           orderId: orderId,
           productVariationId: validUUID4,
           quantity: 3,
-          unitPrice: new Prisma.Decimal(46.59),
-          subTotal: new Prisma.Decimal(139.77),
-          discount: new Prisma.Decimal(6.99),
-          total: new Prisma.Decimal(132.78),
+          unitPrice: new Decimal(46.59),
+          subTotal: new Decimal(139.77),
+          discount: new Decimal(6.99),
+          total: new Decimal(132.78),
           createdAt: new Date(),
           updatedAt: new Date(),
         },

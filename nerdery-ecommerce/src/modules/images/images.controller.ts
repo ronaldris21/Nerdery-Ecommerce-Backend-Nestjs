@@ -8,6 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { VariationImage } from '@prisma/client';
 import { ROLES } from 'src/common/constants';
 import { HttpExceptionFilter } from 'src/common/modules/graphql/exception-filters/http-exception/http-exception.filter';
 import { Roles } from 'src/modules/auth/decoratos/roles.decorator';
@@ -27,7 +28,7 @@ export class ImagesController {
   async uploadFile(
     @Param('productVariationId') id: string,
     @UploadedFile() file: Express.Multer.File,
-  ) {
+  ): Promise<VariationImage> {
     return this.imagesService.uploadFile(id, file);
   }
 }

@@ -1,12 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, Product, ProductVariation } from '@prisma/client';
 import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 
 @Injectable()
 export class IdValidatorService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUniqueProductById(where: Prisma.ProductWhereUniqueInput) {
+  async findUniqueProductById(where: Prisma.ProductWhereUniqueInput): Promise<Product> {
     const product = await this.prisma.product.findUnique({
       where,
     });
@@ -18,7 +18,9 @@ export class IdValidatorService {
     return product;
   }
 
-  async findUniqueProductVariationById(where: Prisma.ProductVariationWhereUniqueInput) {
+  async findUniqueProductVariationById(
+    where: Prisma.ProductVariationWhereUniqueInput,
+  ): Promise<ProductVariation> {
     try {
       const productVariation = await this.prisma.productVariation.findUnique({
         where,

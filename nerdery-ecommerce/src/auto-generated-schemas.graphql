@@ -6,7 +6,6 @@ type ProductVariationImageObject {
   id: String!
   imageUrl: String!
   productVariationId: String!
-  productVariation: ProductVariationObject!
 }
 
 type CategoryObject {
@@ -27,8 +26,8 @@ type ProductObject {
   isEnabled: Boolean!
   isDeleted: Boolean!
   likesCount: Float!
-  minPrice: Float!
-  maxPrice: Float!
+  minPrice: Decimal!
+  maxPrice: Decimal!
   createdAt: DateTime!
   updatedAt: DateTime!
   category: CategoryObject!
@@ -42,20 +41,15 @@ enum Gender {
   KIDS
 }
 
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
-
 type ProductVariationObject {
   id: ID!
-  price: Float!
-  discount: Float
+  price: Decimal!
+  discount: Decimal
   discountType: DiscountType
   size: String!
   color: String!
   stock: Float!
-  stockRefilledAt: String!
+  stockRefilledAt: DateTime!
   isEnabled: Boolean!
   isDeleted: Boolean!
   productId: String!
@@ -73,17 +67,17 @@ type CartItemObject {
   userId: String!
   productVariationId: String!
   quantity: Int!
-  unitPrice: Float!
-  subTotal: Float!
-  discount: Float!
-  total: Float!
+  unitPrice: Decimal!
+  subTotal: Decimal!
+  discount: Decimal!
+  total: Decimal!
   productVariation: ProductVariationObject!
 }
 
 type CartObject {
-  subTotal: Float!
-  discount: Float!
-  total: Float!
+  subTotal: Decimal!
+  discount: Decimal!
+  total: Decimal!
   items: [CartItemObject!]!
 }
 
@@ -96,28 +90,16 @@ type OrderItemObject {
   id: ID!
   orderId: ID!
   productVariationId: ID!
-  unitPrice: Float!
-  subTotal: Float!
-  discount: Float!
-  total: Float!
+  unitPrice: Decimal!
+  subTotal: Decimal!
+  discount: Decimal!
+  total: Decimal!
   productVariation: ProductVariationObject!
 }
 
-type OrderCreatedPayload {
-  id: ID!
-  userId: ID!
-  currency: String!
-  subTotal: Float!
-  discount: Float!
-  total: Float!
+type ApprovedStatusPayload {
+  isApproved: Boolean!
   status: OrderStatus!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  isDeleted: Boolean!
-  isStockReserved: Boolean!
-  orderItems: [OrderItemObject!]!
-  clientSecret: String!
-  paymentUrl: String!
 }
 
 enum OrderStatus {
@@ -128,9 +110,21 @@ enum OrderStatus {
   COMPLETED
 }
 
-type ApprovedStatusPayload {
-  isApproved: Boolean!
+type OrderCreatedPayload {
+  id: ID!
+  userId: ID!
+  currency: String!
+  subTotal: Decimal!
+  discount: Decimal!
+  total: Decimal!
   status: OrderStatus!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  isDeleted: Boolean!
+  isStockReserved: Boolean!
+  orderItems: [OrderItemObject!]!
+  clientSecret: String!
+  paymentUrl: String!
 }
 
 type ClientObject {
@@ -143,7 +137,7 @@ type ClientObject {
 type StripePaymentObject {
   id: ID!
   orderId: String!
-  amount: Float!
+  amount: Decimal!
   currency: String!
   stripePaymentId: String!
   clientSecret: String!
@@ -168,9 +162,9 @@ type OrderObject {
   id: ID!
   userId: ID!
   currency: String!
-  subTotal: Float!
-  discount: Float!
-  total: Float!
+  subTotal: Decimal!
+  discount: Decimal!
+  total: Decimal!
   status: OrderStatus!
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -199,9 +193,15 @@ type ProductsPagination {
   meta: PaginationMeta!
 }
 
+"""Decimal custom scalar type"""
+scalar Decimal
+
+"""DateTime custom scalar type"""
+scalar DateTime
+
 type Query {
-  products(filter: ProductFiltersInput, sortBy: SortingProductInput, pagination: PaginationInput): ProductsPagination!
-  allProducts(filter: ProductFiltersInput, sortBy: SortingProductInput, pagination: PaginationInput): ProductsPagination!
+  products(productInputs: AllProductsNestedInput): ProductsPagination!
+  allProducts(productInputs: AllProductsNestedInput): ProductsPagination!
   productById(id: String!): ProductObject
   categories(search: String): [CategoryObject!]!
   productVariations(productId: String!): [ProductVariationObject!]!
@@ -213,12 +213,18 @@ type Query {
   retryPayment(orderId: String!): RetryPaymentPayload!
 }
 
+input AllProductsNestedInput {
+  filter: ProductFiltersInput
+  sortBy: SortingProductInput
+  pagination: PaginationInput
+}
+
 input ProductFiltersInput {
   gender: Gender
   categoryId: String
   search: String
-  minPrice: Float
-  maxPrice: Float
+  minPrice: Int
+  maxPrice: Float!
 }
 
 input SortingProductInput {
@@ -248,10 +254,10 @@ type Mutation {
   createProduct(input: CreateProductInput!): ProductObject!
   updateProduct(input: UpdateProductInput!): ProductObject!
   deleteProduct(id: String!): ProductObject!
-  toggleProductEnable(id: String!, isEnabled: Boolean!): ProductObject!
+  toggleProductEnable(input: ToggleProductInput!): ProductObject!
   createProductVariation(input: CreateProductVariationInput!): ProductVariationObject!
   updateProductVariation(input: UpdateProductVariationInput!): ProductVariationObject!
-  toggleProductVariation(id: String!, isEnabled: Boolean!): ProductVariationObject!
+  toggleProductVariation(input: ToggleProductVariationInput!): ProductVariationObject!
   deleteProductVariation(id: String!): ProductVariationObject!
   createOrUpdateCartItem(cartItemInput: CartItemInput!): CartItemObject!
   deleteCartItem(productVariationId: String!): GenericResponseObject!
@@ -265,7 +271,7 @@ input CreateProductInput {
   gender: Gender!
   categoryId: String!
   description: String!
-  isEnabled: Boolean! = false
+  isEnabled: Boolean!
 }
 
 input UpdateProductInput {
@@ -273,8 +279,13 @@ input UpdateProductInput {
   gender: Gender
   categoryId: String
   description: String
-  isEnabled: Boolean = false
+  isEnabled: Boolean
   id: String!
+}
+
+input ToggleProductInput {
+  id: String!
+  isEnabled: Boolean!
 }
 
 input CreateProductVariationInput {
@@ -285,7 +296,7 @@ input CreateProductVariationInput {
   discountType: DiscountType = NONE
   size: String!
   color: String!
-  isEnabled: Boolean! = true
+  isEnabled: Boolean!
 }
 
 input UpdateProductVariationInput {
@@ -296,8 +307,13 @@ input UpdateProductVariationInput {
   discountType: DiscountType = NONE
   size: String
   color: String
-  isEnabled: Boolean = true
+  isEnabled: Boolean
   id: String!
+}
+
+input ToggleProductVariationInput {
+  id: String!
+  isEnabled: Boolean!
 }
 
 input CartItemInput {

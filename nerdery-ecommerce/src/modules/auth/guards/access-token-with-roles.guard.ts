@@ -8,7 +8,7 @@ import { Reflector } from '@nestjs/core';
 import { getRequestFromContext } from 'src/common/helpers/context-request';
 
 import { ROLES_KEY } from '../decoratos/roles.decorator';
-import { JwtPayloadDto } from '../dto/jwtPayload.dto';
+import { JwtPayloadDto } from '../dto/response/jwtPayload.dto';
 
 import { AccessTokenGuard } from './access-token.guard';
 
@@ -24,11 +24,10 @@ export class AccessTokenWithRolesGuard extends AccessTokenGuard {
     if (!isAuthenticated) {
       return false;
     }
-    await this.checkRoles(context);
-    return true;
+    return this.checkRoles(context);
   }
 
-  async checkRoles(context: ExecutionContext) {
+  checkRoles(context: ExecutionContext): boolean {
     //Then check if the user has the required role
     const requiredRoles = this.reflector.get<string[]>(ROLES_KEY, context.getHandler());
 

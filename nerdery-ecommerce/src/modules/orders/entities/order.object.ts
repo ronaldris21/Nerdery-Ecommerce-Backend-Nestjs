@@ -1,4 +1,5 @@
-import { Field, Float, ID, ObjectType } from '@nestjs/graphql';
+import { Field, ID, ObjectType } from '@nestjs/graphql';
+import Decimal from 'decimal.js';
 
 import { OrderStatus } from '../dto/order-status.enum';
 
@@ -17,14 +18,14 @@ export class OrderObject {
   @Field()
   currency: string;
 
-  @Field(() => Float)
-  subTotal: number;
+  @Field()
+  subTotal: Decimal;
 
-  @Field(() => Float)
-  discount: number;
+  @Field()
+  discount: Decimal;
 
-  @Field(() => Float)
-  total: number;
+  @Field()
+  total: Decimal;
 
   @Field(() => OrderStatus)
   status: OrderStatus;
@@ -45,9 +46,8 @@ export class OrderObject {
   orderItems: OrderItemObject[];
 
   @Field(() => [StripePaymentObject])
-  stripePayments: StripePaymentObject[];
+  stripePayments?: StripePaymentObject[];
 
-  //Accessible only for admins
   @Field(() => ClientObject, { nullable: true })
   client?: ClientObject;
 }

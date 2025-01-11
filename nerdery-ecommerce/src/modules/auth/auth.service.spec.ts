@@ -16,10 +16,10 @@ import {
 } from 'src/common/testing-mocks/helper-data';
 
 import { AuthService } from './auth.service';
-import { AuthResponseDto } from './dto/authResponse.dto';
-import { JwtPayloadDto } from './dto/jwtPayload.dto';
-import { LoginDto } from './dto/login.dto';
-import { SignUpDto } from './dto/signup.dto';
+import { LoginDto } from './dto/request/login.dto';
+import { AuthResponseDto } from './dto/response/authResponse.dto';
+import { JwtPayloadDto } from './dto/response/jwtPayload.dto';
+import { SignUpDto } from './dto/response/signup.dto';
 import { PasswordService } from './services/password/password.service';
 import { TokenService } from './services/token/token.service';
 import { UsersService } from './services/users/users.service';
@@ -154,7 +154,7 @@ describe('AuthService', () => {
         where: { name: ROLES.CLIENT },
       });
       expect(prismaService.userRole.create).toHaveBeenCalled();
-      expect(result.statusCode).toEqual(201);
+      expect(result.statusCode).toBe(201);
     });
 
     it('should throw ConflictException if the user email already exists', async () => {
@@ -311,7 +311,7 @@ describe('AuthService', () => {
       expect(userService.getUserByEmail).toHaveBeenCalledWith(email);
       expect(prismaService.passwordReset.create).toHaveBeenCalled();
       expect(mailService.sendPasswordResetEmail).toHaveBeenCalled();
-      expect(result.statusCode).toEqual(200);
+      expect(result.statusCode).toBe(200);
     });
 
     it('should throw NotFoundException if the user does not exist', async () => {
@@ -359,7 +359,7 @@ describe('AuthService', () => {
         passwordReset2.userId,
       );
       expect(mailService.sendPasswordChangedNotification).toHaveBeenCalled();
-      expect(result.statusCode).toEqual(200);
+      expect(result.statusCode).toBe(200);
     });
 
     it('should throw NotFoundException if the token does not exist', async () => {

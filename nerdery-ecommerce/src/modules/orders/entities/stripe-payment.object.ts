@@ -1,4 +1,5 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
+import Decimal from 'decimal.js';
 
 import { StripePaymentIntent } from '../dto/webhook-payment-intent.enum';
 
@@ -10,8 +11,8 @@ export class StripePaymentObject {
   @Field()
   orderId: string;
 
-  @Field(() => Number)
-  amount: number;
+  @Field()
+  amount: Decimal;
 
   @Field()
   currency: string;

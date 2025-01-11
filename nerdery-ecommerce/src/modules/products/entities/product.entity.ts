@@ -1,4 +1,5 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
+import Decimal from 'decimal.js';
 
 import { Gender } from '../../../common/data/enums/gender.enum';
 import { CategoryObject } from '../../categories/entities/category.entity';
@@ -15,13 +16,13 @@ export class ProductObject {
   @Field(() => Gender)
   gender: Gender;
 
-  @Field(() => String, { nullable: true })
+  @Field({ nullable: true })
   thumbnailUrl?: string;
 
   @Field(() => ID)
   categoryId: string;
 
-  @Field(() => String, { nullable: true })
+  @Field({ nullable: true })
   description?: string;
 
   @Field()
@@ -34,10 +35,10 @@ export class ProductObject {
   likesCount: number;
 
   @Field()
-  minPrice: number;
+  minPrice: Decimal;
 
   @Field()
-  maxPrice: number;
+  maxPrice: Decimal;
 
   @Field()
   createdAt: Date;
@@ -46,7 +47,7 @@ export class ProductObject {
   updatedAt: Date;
 
   @Field(() => CategoryObject)
-  category: CategoryObject;
+  category?: CategoryObject;
 
   @Field(() => [ProductVariationObject], { nullable: true })
   productVariations?: ProductVariationObject[];

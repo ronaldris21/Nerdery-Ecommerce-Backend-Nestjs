@@ -3,7 +3,7 @@ import { Resolver, Query } from '@nestjs/graphql';
 import { ROLES } from 'src/common/constants';
 import { GetUser } from 'src/modules/auth/decoratos/get-user.decorator';
 import { Roles } from 'src/modules/auth/decoratos/roles.decorator';
-import { JwtPayloadDto } from 'src/modules/auth/dto/jwtPayload.dto';
+import { JwtPayloadDto } from 'src/modules/auth/dto/response/jwtPayload.dto';
 import { AccessTokenWithRolesGuard } from 'src/modules/auth/guards/access-token-with-roles.guard';
 
 import { CartService } from './cart.service';
@@ -16,7 +16,7 @@ export class CartResolver {
   @Query(() => CartObject)
   @UseGuards(AccessTokenWithRolesGuard)
   @Roles([ROLES.CLIENT])
-  cart(@GetUser() user: JwtPayloadDto) {
+  cart(@GetUser() user: JwtPayloadDto): Promise<CartObject> {
     return this.CartService.myCart(user.userId);
   }
 }

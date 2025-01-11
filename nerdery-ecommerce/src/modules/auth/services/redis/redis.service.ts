@@ -19,7 +19,7 @@ export class RedisService {
       host: redisHost.host,
       port: redisHost.port,
 
-      retryStrategy: (times) => {
+      retryStrategy: (times): number => {
         const delay = 3000;
         this.logger.error(`Retrying to connect to Redis... Attempt: ${times}, Delay: ${delay}s`);
         return delay;

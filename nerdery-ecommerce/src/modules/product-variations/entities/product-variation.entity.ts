@@ -1,4 +1,5 @@
-import { ObjectType, Field, ID, Float } from '@nestjs/graphql';
+import { ObjectType, Field, ID } from '@nestjs/graphql';
+import Decimal from 'decimal.js';
 import { DiscountType } from 'src/common/data/enums/discount-type.enum';
 import { ProductVariationImageObject } from 'src/modules/product-variation-images/entities/product-variation-image.entity';
 import { ProductObject } from 'src/modules/products/entities/product.entity';
@@ -8,11 +9,11 @@ export class ProductVariationObject {
   @Field(() => ID)
   id: string;
 
-  @Field(() => Float)
-  price: number;
+  @Field()
+  price: Decimal;
 
-  @Field(() => Float, { nullable: true })
-  discount?: number;
+  @Field({ nullable: true })
+  discount?: Decimal;
 
   @Field(() => DiscountType, { nullable: true })
   discountType?: DiscountType;
@@ -26,8 +27,8 @@ export class ProductVariationObject {
   @Field(() => Number)
   stock: number;
 
-  @Field(() => String)
-  stockRefilledAt: string;
+  @Field(() => Date)
+  stockRefilledAt: Date;
 
   @Field(() => Boolean)
   isEnabled: boolean;

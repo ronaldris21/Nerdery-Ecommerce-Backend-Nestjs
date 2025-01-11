@@ -7,39 +7,39 @@ export class CreateProductVariationInput {
   @Field()
   @IsUUID()
   @IsNotEmpty()
-  productId: string;
+  readonly productId: string;
 
   @Field(() => Number)
   @Min(0)
   @IsInt()
-  stock: number;
+  readonly stock: number;
 
   @Field(() => Float)
   @IsNumber()
   @IsPositive()
   @IsNotIn([0, 0.0], { message: 'Price cannot be zero' })
   @Min(0.01)
-  price: number;
+  readonly price: number;
 
   @Field(() => Float, { nullable: true, defaultValue: 0.0 })
   @IsNumber()
   @Min(0)
-  discount?: number;
+  readonly discount?: number;
 
   @Field(() => DiscountType, {
     nullable: true,
     defaultValue: DiscountType.NONE,
   })
-  discountType: DiscountType;
+  readonly discountType: DiscountType;
 
   @Field(() => String)
   @IsNotEmpty()
-  size: string;
+  readonly size: string;
 
   @Field(() => String)
   @IsNotEmpty()
-  color: string;
+  readonly color: string;
 
-  @Field(() => Boolean, { defaultValue: true })
-  isEnabled: boolean;
+  @Field(() => Boolean)
+  readonly isEnabled: boolean;
 }

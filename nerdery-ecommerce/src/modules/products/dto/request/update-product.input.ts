@@ -8,5 +8,5 @@ export class UpdateProductInput extends PartialType(CreateProductInput) {
   @Field()
   @IsString()
   @IsUUID()
-  id: string;
+  readonly id: string;
 }

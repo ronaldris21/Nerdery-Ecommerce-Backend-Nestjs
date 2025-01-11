@@ -6,6 +6,7 @@ import { ProductCalculatedFieldsService } from 'src/common/services/product-calc
 
 import { CreateProductVariationInput } from './dto/request/create-product-variation.input';
 import { UpdateProductVariationInput } from './dto/request/update-product-variation.input';
+import { ProductVariationObject } from './entities/product-variation.entity';
 
 @Injectable()
 export class ProductVariationsService {
@@ -15,23 +16,25 @@ export class ProductVariationsService {
     private readonly idValidatorService: IdValidatorService,
   ) {}
 
-  async findAll(productId: string) {
+  async findAll(productId: string): Promise<ProductVariationObject[]> {
     const where = { isDeleted: false, isEnabled: true };
 
-    return await this.prisma.productVariation.findMany({
+    const productVariations = await this.prisma.productVariation.findMany({
       where: { ...where, productId },
     });
+    return productVariations;
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<ProductVariationObject> {
     const where = { isDeleted: false, isEnabled: true };
-    return await this.idValidatorService.findUniqueProductVariationById({
+    const prodVariation = await this.idValidatorService.findUniqueProductVariationById({
       id,
       ...where,
     });
+    return prodVariation;
   }
 
-  async create(input: CreateProductVariationInput) {
+  async create(input: CreateProductVariationInput): Promise<ProductVariationObject> {
     await this.idValidatorService.findUniqueProductById({ id: input.productId });
     const { productId, price, ...rest } = input;
 
@@ -51,12 +54,10 @@ export class ProductVariationsService {
     });
 
     await this.productCalculatedFieldsService.recalculateProductMinMaxPrices([productId]);
-    return await this.idValidatorService.findUniqueProductVariationById({
-      id: prodVariation.id,
-    });
+    return prodVariation;
   }
 
-  async update(input: UpdateProductVariationInput) {
+  async update(input: UpdateProductVariationInput): Promise<ProductVariationObject> {
     const prodVariation = await this.idValidatorService.findUniqueProductVariationById({
       id: input.id,
     });
@@ -77,7 +78,7 @@ export class ProductVariationsService {
       rest.price = Math.round(input.price * 100) / 100;
     }
 
-    await this.prisma.productVariation.update({
+    const productVariationUpdated = await this.prisma.productVariation.update({
       where: { id: input.id },
       data: {
         ...rest,
@@ -88,17 +89,15 @@ export class ProductVariationsService {
     });
 
     await this.productCalculatedFieldsService.recalculateProductMinMaxPrices([
-      productId ?? prodVariation.productId,
+      productVariationUpdated.productId,
     ]);
-    return await this.idValidatorService.findUniqueProductVariationById({
-      id: input.id,
-    });
+    return productVariationUpdated;
   }
 
-  async toggleIsEnabled(id: string, isEnabled: boolean) {
+  async toggleIsEnabled(id: string, isEnabled: boolean): Promise<ProductVariationObject> {
     const prodVariation = await this.idValidatorService.findUniqueProductVariationById({ id });
 
-    await this.prisma.productVariation.update({
+    const productVariationDeleted = await this.prisma.productVariation.update({
       where: { id },
       data: { isEnabled },
     });
@@ -106,13 +105,14 @@ export class ProductVariationsService {
     await this.productCalculatedFieldsService.recalculateProductMinMaxPrices([
       prodVariation.productId,
     ]);
-    return await this.idValidatorService.findUniqueProductVariationById({ id });
+    return productVariationDeleted;
   }
 
-  async delete(id: string) {
+  //TODO TEST: 1 query less
+  async delete(id: string): Promise<ProductVariationObject> {
     const prodVariation = await this.idValidatorService.findUniqueProductVariationById({ id });
 
-    await this.prisma.productVariation.update({
+    const productVariationUpdated = await this.prisma.productVariation.update({
       where: { id },
       data: { isDeleted: true, isEnabled: false },
     });
@@ -120,7 +120,7 @@ export class ProductVariationsService {
     await this.productCalculatedFieldsService.recalculateProductMinMaxPrices([
       prodVariation.productId,
     ]);
-    return await this.idValidatorService.findUniqueProductVariationById({ id });
+    return productVariationUpdated;
   }
 
   validateDiscount({

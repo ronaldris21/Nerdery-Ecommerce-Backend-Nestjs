@@ -5,12 +5,12 @@ import { OrderStatusEnum } from '@prisma/client';
 @InputType()
 export class OrderFilterInput {
   @Field(() => OrderStatusEnum, { nullable: true })
-  status?: OrderStatusEnum;
+  readonly status?: OrderStatusEnum;
 
   //TODO: how to filter by date??
   @Field({ nullable: true })
-  afterDate?: string;
+  readonly afterDate?: Date;
 
   @Field({ nullable: true })
-  beforeDate?: string;
+  readonly beforeDate?: Date;
 }

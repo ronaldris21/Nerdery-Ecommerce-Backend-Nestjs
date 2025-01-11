@@ -4,7 +4,7 @@ import { getRequestFromContext } from 'src/common/helpers/context-request';
 
 @Injectable()
 export class AccessTokenGuard extends AuthGuard('jwt') {
-  getRequest(context: ExecutionContext) {
+  getRequest(context: ExecutionContext): any {
     return getRequestFromContext(context);
   }
 }

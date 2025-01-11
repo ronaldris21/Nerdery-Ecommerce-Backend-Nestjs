@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtModule, JwtService } from '@nestjs/jwt';
+import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigNames, JwtConfig } from 'src/common/modules/config-env/config.interface';
 import { MailModule } from 'src/common/modules/mail/mail.module';
@@ -20,6 +20,7 @@ import { AccessTokenStrategy } from './strategies/access-token.strategy';
     MailModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
+      global: true,
       useFactory: async (configService: ConfigService) => {
         const jwtConfig = configService.get<JwtConfig>(ConfigNames.jwt);
         return {
@@ -40,6 +41,6 @@ import { AccessTokenStrategy } from './strategies/access-token.strategy';
     RedisService,
     TokenService,
   ],
-  exports: [AccessTokenStrategy, JwtService],
+  exports: [AccessTokenStrategy],
 })
 export class AuthModule {}

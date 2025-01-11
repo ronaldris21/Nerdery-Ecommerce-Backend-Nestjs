@@ -11,7 +11,7 @@ export class UserByOrderLoader extends DataLoader<string, User> {
     super((keys: string[]) => this.batchLoadFunction(keys));
   }
 
-  async batchLoadFunction(orderIds: string[]) {
+  async batchLoadFunction(orderIds: string[]): Promise<User[]> {
     const users = await this.dataloadersService.listUserByOrder(orderIds);
 
     return this.mapResults(orderIds, users);

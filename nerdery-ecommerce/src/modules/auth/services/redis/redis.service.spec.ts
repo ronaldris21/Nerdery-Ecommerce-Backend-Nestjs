@@ -289,7 +289,7 @@ describe('RedisService', () => {
 
       expect(mockRedisClient.keys).toHaveBeenLastCalledWith(pattern);
       expect(mockRedisClient.del).toHaveBeenCalledTimes(0); // Ensure `del` is NOT called
-      expect(result.length).toEqual(0);
+      expect(result).toHaveLength(0);
     });
   });
 });

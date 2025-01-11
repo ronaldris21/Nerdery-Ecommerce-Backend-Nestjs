@@ -13,7 +13,7 @@ export class ProductByProductVariationLoader extends DataLoader<string, Product>
     super((keys: string[]) => this.batchLoadFunction(keys));
   }
 
-  async batchLoadFunction(productVariationIds: string[]) {
+  async batchLoadFunction(productVariationIds: string[]): Promise<Product[]> {
     const details =
       await this.dataloadersService.listProductByProductVariation(productVariationIds);
     return this.mapResults(productVariationIds, details as ProductByProductVariation[]);

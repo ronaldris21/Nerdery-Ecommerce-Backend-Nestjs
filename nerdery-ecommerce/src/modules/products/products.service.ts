@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { Product } from '@prisma/client';
 import { Gender } from 'src/common/data/enums/gender.enum';
 import { PaginationMeta } from 'src/common/data/pagination/pagination-meta.object';
 import { PaginationInput } from 'src/common/data/pagination/pagination.input';
@@ -7,10 +8,15 @@ import { IdValidatorService } from 'src/common/services/id-validator/id-validato
 import { ProductCalculatedFieldsService } from 'src/common/services/product-calculations/product-calculated-fields.service';
 
 import { CategoriesService } from './../categories/categories.service';
+import { AllProductsNestedInput } from './dto/request/all-products/all-products-nested.input';
+import { ProductFiltersInput } from './dto/request/all-products/product-filters.input';
+import {
+  ProductSortableField,
+  SortingProductInput,
+} from './dto/request/all-products/sorting-product.input';
 import { CreateProductInput } from './dto/request/create-product.input';
-import { ProductFiltersInput } from './dto/request/product-filters.input';
-import { ProductSortableField, SortingProductInput } from './dto/request/sorting-product.input';
 import { UpdateProductInput } from './dto/request/update-product.input';
+import { ProductsPagination } from './dto/response/products-pagination.object';
 
 @Injectable()
 //TODO: remove include and use ResolveFields
@@ -24,13 +30,19 @@ export class ProductsService {
   ) {}
 
   async findAll(
-    filters?: ProductFiltersInput,
-    sorting?: SortingProductInput,
-    pagination?: PaginationInput,
+    productInputs: AllProductsNestedInput,
     isManagerOrSimilar: boolean = false,
-  ) {
-    const page = pagination?.page ?? 1;
-    const limit = pagination?.limit ?? 20;
+  ): Promise<ProductsPagination> {
+    if (!productInputs) {
+      throw new UnprocessableEntityException('Product inputs are required');
+    }
+
+    const filters: ProductFiltersInput = productInputs?.filter;
+    const sorting: SortingProductInput = productInputs?.sortBy;
+    const pagination: PaginationInput = productInputs?.pagination;
+
+    const page: number = pagination?.page ?? 1;
+    const limit: number = pagination?.limit ?? 20;
 
     const where = { isDeleted: false, isEnabled: true };
     if (isManagerOrSimilar) {
@@ -101,31 +113,11 @@ export class ProductsService {
     };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<Product> {
     return this.idValidatorService.findUniqueProductById({ id });
   }
 
-  async findByIds(ids: string[]) {
-    return await this.prisma.product.findMany({
-      where: {
-        id: {
-          in: ids,
-        },
-      },
-    });
-  }
-
-  async findByCategoryIds(categoryIds: string[]) {
-    return await this.prisma.product.findMany({
-      where: {
-        categoryId: {
-          in: categoryIds,
-        },
-      },
-    });
-  }
-
-  async create(input: CreateProductInput) {
+  async create(input: CreateProductInput): Promise<Product> {
     const { categoryId, ...rest } = input;
 
     if (!categoryId) {
@@ -148,7 +140,7 @@ export class ProductsService {
     });
   }
 
-  async update(input: UpdateProductInput) {
+  async update(input: UpdateProductInput): Promise<Product> {
     const { categoryId, ...rest } = input;
 
     if (categoryId) {
@@ -175,7 +167,7 @@ export class ProductsService {
     });
   }
 
-  async delete(id: string) {
+  async delete(id: string): Promise<Product> {
     await this.idValidatorService.findUniqueProductById({ id });
 
     await this.prisma.productVariation.updateMany({
@@ -188,7 +180,7 @@ export class ProductsService {
     });
   }
 
-  async toggleIsEnabled(id: string, isEnabled: boolean) {
+  async toggleIsEnabled(id: string, isEnabled: boolean): Promise<Product> {
     await this.idValidatorService.findUniqueProductById({ id });
 
     await this.prisma.productVariation.updateMany({

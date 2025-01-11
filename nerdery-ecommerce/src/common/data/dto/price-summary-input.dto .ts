@@ -1,7 +1,8 @@
+import Decimal from 'decimal.js';
 import { DiscountType } from 'src/common/data/enums/discount-type.enum';
 export interface PriceSummaryInput {
-  unitPrice: number;
+  unitPrice: Decimal;
   discountType: DiscountType;
-  discount: number;
+  discount: Decimal;
   quantity: number;
 }

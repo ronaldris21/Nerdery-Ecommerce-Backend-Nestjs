@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CartItem, ProductVariation } from '@prisma/client';
+import Decimal from 'decimal.js';
 import { PriceSummaryInput } from 'src/common/data/dto/price-summary-input.dto ';
 import { PriceSummary } from 'src/common/data/dto/price-summary.dto';
 import { DiscountType } from 'src/common/data/enums/discount-type.enum';
@@ -50,7 +51,7 @@ export class ProductCalculatedFieldsService {
     }
   }
 
-  async recalculateProductLikesCount(productIds: string[]) {
+  async recalculateProductLikesCount(productIds: string[]): Promise<void> {
     const products: ProductWithLikes[] = await this.prisma.product.findMany({
       where: {
         id: {
@@ -74,33 +75,39 @@ export class ProductCalculatedFieldsService {
     const { unitPrice, discount } = input;
     const { discountType, quantity } = input;
 
-    const subTotal = unitPrice * quantity;
+    const subTotal = unitPrice.times(quantity);
 
-    let calculatedDiscount = 0;
+    let calculatedDiscount = new Decimal(0);
     if (discountType === DiscountType.PERCENTAGE) {
-      calculatedDiscount = (subTotal * discount) / 100;
+      // calculatedDiscount = (subTotal * discount) / 100;
+      calculatedDiscount = subTotal.times(discount).dividedBy(100);
     } else if (discountType === DiscountType.FIXED) {
-      calculatedDiscount = discount * quantity;
+      // calculatedDiscount = discount * quantity;
+      calculatedDiscount = discount.times(quantity);
     }
 
     if (calculatedDiscount > subTotal) {
       calculatedDiscount = subTotal;
     }
 
-    if (calculatedDiscount < 0 || discount < 0) {
-      calculatedDiscount = 0;
+    if (calculatedDiscount.isNegative() || discount.isNegative()) {
+      calculatedDiscount = new Decimal(0);
     }
 
     // round prices to 2 decimal places
     const result: PriceSummary = {
-      unitPrice: Number(unitPrice.toFixed(2)),
-      subTotal: Number(subTotal.toFixed(2)),
-      discount: Number(calculatedDiscount.toFixed(2)),
-      total: Number((subTotal - calculatedDiscount).toFixed(2)),
+      // unitPrice: Number(unitPrice.toFixed(2)),
+      // subTotal: Number(subTotal.toFixed(2)),
+      // discount: Number(calculatedDiscount.toFixed(2)),
+      // total: Number((subTotal - calculatedDiscount).toFixed(2)),
+      unitPrice: unitPrice,
+      subTotal: subTotal,
+      discount: calculatedDiscount,
+      total: subTotal.minus(calculatedDiscount),
     };
 
-    if (result.total < result.subTotal - result.discount) {
-      result.discount = Number((result.subTotal - result.total).toFixed(2));
+    if (result.total.lessThan(result.subTotal.minus(result.discount))) {
+      result.discount = result.subTotal.minus(result.total);
     }
 
     return result;
@@ -111,10 +118,12 @@ export class ProductCalculatedFieldsService {
     prodVariation: ProductVariation,
   ): CartItemObject {
     const priceSummary = this.calculatePriceSummary({
-      discount: Number(prodVariation.discount.toFixed(2)),
+      // discount: Number(prodVariation.discount.toFixed(2)),
+      discount: prodVariation.discount,
       discountType: prodVariation.discountType,
       quantity: cartItem.quantity,
-      unitPrice: Number(prodVariation.price.toFixed(2)),
+      // unitPrice: Number(prodVariation.price.toFixed(2)),
+      unitPrice: prodVariation.price,
     });
 
     return {

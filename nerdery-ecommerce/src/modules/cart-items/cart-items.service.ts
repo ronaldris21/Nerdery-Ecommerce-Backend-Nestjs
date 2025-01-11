@@ -1,20 +1,22 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { GenericResponseDto } from 'src/common/data/dto/generic-response.dto';
 import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 import { IdValidatorService } from 'src/common/services/id-validator/id-validator.service';
 import { ProductCalculatedFieldsService } from 'src/common/services/product-calculations/product-calculated-fields.service';
 
-import { CartItemInput } from './dto/cart-item.input';
+import { CartItemInput } from './dto/request/cart-item.input';
+import { CartItemObject } from './entities/cart-item.object';
 
 @Injectable()
 export class CartItemsService {
+  logger = new Logger(CartItemsService.name);
   constructor(
     private readonly prisma: PrismaService,
     private readonly idValidatorService: IdValidatorService,
     private readonly productCalculatedFieldsService: ProductCalculatedFieldsService,
   ) {}
 
-  async createOrUpdate(input: CartItemInput, userId: string) {
+  async createOrUpdate(input: CartItemInput, userId: string): Promise<CartItemObject> {
     //TODO: test TryCatch
     const prodVariation = await this.prisma.productVariation.findUnique({
       where: {
@@ -75,6 +77,7 @@ export class CartItemsService {
       });
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
+      this.logger.error(error);
       throw new NotFoundException('Cart item not found.');
     }
 

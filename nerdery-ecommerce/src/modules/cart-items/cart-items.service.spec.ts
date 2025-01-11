@@ -1,7 +1,8 @@
 import { DeepMocked, createMock } from '@golevelup/ts-jest';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { CartItem, Prisma } from '@prisma/client';
+import { CartItem } from '@prisma/client';
+import Decimal from 'decimal.js';
 import { DiscountType } from 'src/common/data/enums/discount-type.enum';
 import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 import { ProductVariationWithProductAndImages } from 'src/common/prisma-types';
@@ -16,7 +17,7 @@ import {
 } from 'src/common/testing-mocks/helper-data';
 
 import { CartItemsService } from './cart-items.service';
-import { CartItemInput } from './dto/cart-item.input';
+import { CartItemInput } from './dto/request/cart-item.input';
 
 const mockPrismaServiceInit = {
   cartItem: {
@@ -80,8 +81,8 @@ describe('CartItemsService', () => {
 
   const productVariationWithDetails: ProductVariationWithProductAndImages = {
     ...validProductVariation1,
-    price: new Prisma.Decimal(100),
-    discount: new Prisma.Decimal(10),
+    price: new Decimal(100),
+    discount: new Decimal(10),
     discountType: DiscountType.PERCENTAGE,
     product: {
       ...validProduct1,
@@ -103,10 +104,10 @@ describe('CartItemsService', () => {
       prismaService.cartItem.upsert.mockResolvedValue(createdCartItem);
       const cartItemWithSummary = {
         ...createdCartItem,
-        unitPrice: 100,
-        subTotal: 300,
-        discount: 30,
-        total: 270,
+        unitPrice: new Decimal(100),
+        subTotal: new Decimal(300),
+        discount: new Decimal(30),
+        total: new Decimal(270),
       };
       productCalculatedFieldsService.createCartItemWithPriceSummary.mockReturnValue(
         cartItemWithSummary,
@@ -155,11 +156,11 @@ describe('CartItemsService', () => {
       prismaService.cartItem.upsert.mockResolvedValue(existingCartItem);
       const updatedCartItemWithSummary = {
         ...existingCartItem,
-        quantity: createInput.quantity,
-        unitPrice: 100,
-        subTotal: 400,
-        discount: 40,
-        total: 360,
+        quantity: updateInput.quantity,
+        unitPrice: new Decimal(100),
+        subTotal: new Decimal(400),
+        discount: new Decimal(40),
+        total: new Decimal(360),
       };
       productCalculatedFieldsService.createCartItemWithPriceSummary.mockReturnValue(
         updatedCartItemWithSummary,
@@ -260,7 +261,7 @@ describe('CartItemsService', () => {
         },
       });
 
-      expect(result.statusCode).toEqual(204);
+      expect(result.statusCode).toBe(204);
     });
 
     it('should throw NotFoundException if cart item does not exist or database error', async () => {

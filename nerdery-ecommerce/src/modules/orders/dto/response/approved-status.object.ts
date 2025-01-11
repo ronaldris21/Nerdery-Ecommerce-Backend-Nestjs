@@ -1,6 +1,6 @@
 import { ObjectType, Field } from '@nestjs/graphql';
 
-import { OrderStatus } from '../dto/order-status.enum';
+import { OrderStatus } from '../order-status.enum';
 
 @ObjectType()
 export class ApprovedStatusPayload {

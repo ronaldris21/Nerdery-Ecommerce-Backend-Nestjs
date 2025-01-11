@@ -8,7 +8,9 @@ import { StripeService } from 'src/modules/stripe/stripe.service';
 import { StockReservationManagementService } from '../../common/services/stock-reservation-management/stock-reservation-management.service';
 import { CartService } from '../cart/cart.service';
 
-import { ApprovedStatusPayload } from './entities/approved-status.object';
+import { ApprovedStatusPayload } from './dto/response/approved-status.object';
+import { OrderCreatedPayload } from './dto/response/order-created-payload.object';
+import { OrderObject } from './entities/order.object';
 import { RetryPaymentPayload } from './entities/retry-payment.object';
 
 @Injectable()
@@ -41,7 +43,7 @@ export class OrdersService {
     };
   }
 
-  async createOrder(userId: string) {
+  async createOrder(userId: string): Promise<OrderCreatedPayload> {
     const cart = await this.cartService.myCart(userId);
     if (!cart.items.length) {
       throw new NotFoundException(
@@ -110,8 +112,8 @@ export class OrdersService {
     };
   }
 
-  async getOrders(userId: string) {
-    return await this.prisma.order.findMany({
+  async getOrders(userId: string): Promise<OrderObject[]> {
+    const orders = await this.prisma.order.findMany({
       where: {
         userId: userId,
       },
@@ -119,6 +121,22 @@ export class OrdersService {
         orderItems: true,
       },
     });
+    return orders;
+    // return orders.map((order) => {
+    //   const plainOrder = plainToInstance(OrderDTO, order, { enableImplicitConversion: true });
+    //   plainOrder.orderItems = order.orderItems.map((orderItem) =>
+    //     plainToInstance(OrderItemDTO, orderItem, { enableImplicitConversion: true }),
+    //   );
+    //   return plainOrder;
+    // });
+
+    //TODO: borrar console.log
+    // const plainOrder = plainToClass(OrderObject, order);
+    // plainOrder.orderItems = order.orderItems.map((orderItem) =>
+    //   plainToInstance(OrderItemObject, orderItem),
+    // );
+    // // TODO: apply class validator to parse Prisma Decimal Objects
+    // return orders.map((order) => plainToClass(OrderObject, order));
   }
 
   async retryPayment(orderId: string): Promise<RetryPaymentPayload> {

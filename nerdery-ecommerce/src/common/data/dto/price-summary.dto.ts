@@ -1,6 +1,8 @@
+import Decimal from 'decimal.js';
+
 export interface PriceSummary {
-  unitPrice: number;
-  subTotal: number;
-  discount: number;
-  total: number;
+  unitPrice: Decimal;
+  subTotal: Decimal;
+  discount: Decimal;
+  total: Decimal;
 }

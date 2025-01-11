@@ -11,7 +11,7 @@ export class ProductVariationByOrderItemLoader extends DataLoader<string, Produc
   }
 
   // THIS IS A 1 TO 1 RELATIONSHIP
-  async batchLoadFunction(orderProductVariationIds: string[]) {
+  async batchLoadFunction(orderProductVariationIds: string[]): Promise<ProductVariation[]> {
     const details =
       await this.dataloadersService.listProductVariationByOrderItem(orderProductVariationIds);
 

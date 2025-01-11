@@ -5,14 +5,14 @@ import { AfterLoadersService } from 'src/common/modules/dataloaders/after-loader
 import { StripePaymentsByOrderLoader } from 'src/common/modules/dataloaders/orders/stripe-payments-by-order.loader/stripe-payments-by-order.loader';
 import { UserByOrderLoader } from 'src/common/modules/dataloaders/orders/user-by-order.loader/user-by-order.loader';
 import { Roles } from 'src/modules/auth/decoratos/roles.decorator';
-import { JwtPayloadDto } from 'src/modules/auth/dto/jwtPayload.dto';
+import { JwtPayloadDto } from 'src/modules/auth/dto/response/jwtPayload.dto';
 import { AccessTokenWithRolesGuard } from 'src/modules/auth/guards/access-token-with-roles.guard';
 
 import { GetAccessToken } from '../auth/decoratos/get-jwtPayload.decorator';
 import { GetUser } from '../auth/decoratos/get-user.decorator';
 
+import { ApprovedStatusPayload } from './dto/response/approved-status.object';
 import { OrderCreatedPayload } from './dto/response/order-created-payload.object';
-import { ApprovedStatusPayload } from './entities/approved-status.object';
 import { ClientObject } from './entities/client.object';
 import { OrderObject } from './entities/order.object';
 import { RetryPaymentPayload } from './entities/retry-payment.object';
@@ -33,14 +33,16 @@ export class OrdersResolver {
   @Query(() => [OrderObject])
   @UseGuards(AccessTokenWithRolesGuard)
   @Roles([ROLES.CLIENT])
-  myOrders(@GetUser() user: JwtPayloadDto) {
+  myOrders(@GetUser() user: JwtPayloadDto): Promise<OrderObject[]> {
     return this.ordersService.getOrders(user.userId);
   }
 
   @Query(() => [OrderObject])
   @UseGuards(AccessTokenWithRolesGuard)
   @Roles([ROLES.MANAGER])
-  ordersAsManager(@Args('userId', { type: () => String }, ParseUUIDPipe) userId: string) {
+  ordersAsManager(
+    @Args('userId', { type: () => String }, ParseUUIDPipe) userId: string,
+  ): Promise<OrderObject[]> {
     return this.ordersService.getOrders(userId);
   }
 
@@ -50,7 +52,7 @@ export class OrdersResolver {
   orderPaymentApprovedStatus(
     @Args('orderId', { type: () => String }, ParseUUIDPipe)
     orderId: string,
-  ) {
+  ): Promise<ApprovedStatusPayload> {
     return this.ordersService.getPaymentApprovedStatus(orderId);
   }
 
@@ -60,25 +62,28 @@ export class OrdersResolver {
   retryPayment(
     @Args('orderId', { type: () => String }, ParseUUIDPipe)
     orderId: string,
-  ) {
+  ): Promise<RetryPaymentPayload> {
     return this.ordersService.retryPayment(orderId);
   }
 
   @Mutation(() => OrderCreatedPayload)
   @UseGuards(AccessTokenWithRolesGuard)
   @Roles([ROLES.CLIENT])
-  createOrder(@GetUser() user: JwtPayloadDto) {
+  createOrder(@GetUser() user: JwtPayloadDto): Promise<OrderCreatedPayload> {
     return this.ordersService.createOrder(user.userId);
   }
 
   @ResolveField(() => [StripePaymentObject])
-  async stripePayments(@Parent() order: OrderObject) {
+  async stripePayments(@Parent() order: OrderObject): Promise<StripePaymentObject[]> {
     return this.stripePaymentsByOrderLoader.load(order.id);
   }
 
   //Accessible only for admins
   @ResolveField(() => ClientObject)
-  async client(@Parent() order: OrderObject, @GetAccessToken() accessToken: string) {
+  async client(
+    @Parent() order: OrderObject,
+    @GetAccessToken() accessToken: string,
+  ): Promise<ClientObject> {
     const hasAccess = await this.afterLoadersService.hasAnyRequiredRoles(accessToken, [
       ROLES.MANAGER,
     ]);

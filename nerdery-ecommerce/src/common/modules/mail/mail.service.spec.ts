@@ -2,14 +2,8 @@ import { DeepMocked, createMock } from '@golevelup/ts-jest';
 import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MailerService } from '@nestjs-modules/mailer';
-import {
-  Prisma,
-  Product,
-  ProductLike,
-  ProductVariation,
-  User,
-  VariationImage,
-} from '@prisma/client';
+import { Product, ProductLike, ProductVariation, User, VariationImage } from '@prisma/client';
+import Decimal from 'decimal.js';
 import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 import {
   validUUID1,
@@ -261,8 +255,8 @@ describe('MailService', () => {
     const mockProductVariation: ProductVariation = {
       id: productVariationId,
       productId: productId,
-      price: new Prisma.Decimal('78.69'),
-      discount: new Prisma.Decimal('15'),
+      price: new Decimal('78.69'),
+      discount: new Decimal('15'),
       discountType: 'PERCENTAGE',
       size: 'XL',
       color: 'indigo',
@@ -282,8 +276,8 @@ describe('MailService', () => {
       isEnabled: true,
       isDeleted: false,
       likesCount: 0,
-      minPrice: new Prisma.Decimal('73.65'),
-      maxPrice: new Prisma.Decimal('79.29'),
+      minPrice: new Decimal('73.65'),
+      maxPrice: new Decimal('79.29'),
       createdAt: new Date('2025-01-03T22:58:00.265Z'),
       updatedAt: new Date('2025-01-03T22:58:00.756Z'),
     };
@@ -419,8 +413,8 @@ describe('MailService', () => {
     const mockProductVariation: ProductVariation = {
       id: productVariationId,
       productId: productId,
-      price: new Prisma.Decimal('78.69'),
-      discount: new Prisma.Decimal('15'),
+      price: new Decimal('78.69'),
+      discount: new Decimal('15'),
       discountType: 'PERCENTAGE',
       size: 'XL',
       color: 'indigo',

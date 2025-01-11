@@ -11,9 +11,12 @@ import { ProductCalculatedFieldsService } from 'src/common/services/product-calc
 import { validProduct1, validProduct2, validUUID1 } from 'src/common/testing-mocks/helper-data';
 
 import { CategoriesService } from './../categories/categories.service';
+import { ProductFiltersInput } from './dto/request/all-products/product-filters.input';
+import {
+  SortingProductInput,
+  ProductSortableField,
+} from './dto/request/all-products/sorting-product.input';
 import { CreateProductInput } from './dto/request/create-product.input';
-import { ProductFiltersInput } from './dto/request/product-filters.input';
-import { SortingProductInput, ProductSortableField } from './dto/request/sorting-product.input';
 import { UpdateProductInput } from './dto/request/update-product.input';
 import { ProductsService } from './products.service';
 
@@ -118,73 +121,12 @@ describe('ProductsService', () => {
     });
   });
 
-  describe('findByIds', () => {
-    it('should return products by their IDs', async () => {
-      prismaService.product.findMany.mockResolvedValue(mockProducts);
-
-      const result = await service.findByIds(['prod-1', 'prod-2']);
-
-      expect(prismaService.product.findMany).toHaveBeenCalledWith({
-        where: {
-          id: {
-            in: ['prod-1', 'prod-2'],
-          },
-        },
-      });
-      expect(result).toEqual(mockProducts);
-    });
-
-    it('should return an empty array if no products match the IDs', async () => {
-      prismaService.product.findMany.mockResolvedValue([]);
-
-      const result = await service.findByIds(['nonexistent-id']);
-
-      expect(prismaService.product.findMany).toHaveBeenCalledWith({
-        where: {
-          id: {
-            in: ['nonexistent-id'],
-          },
-        },
-      });
-      expect(result).toEqual([]);
-    });
-  });
-
-  describe('findByCategoryIds', () => {
-    it('should return products by category IDs', async () => {
-      prismaService.product.findMany.mockResolvedValue(mockProducts);
-
-      const result = await service.findByCategoryIds([validUUID1]);
-
-      expect(prismaService.product.findMany).toHaveBeenCalledWith({
-        where: {
-          categoryId: {
-            in: [validUUID1],
-          },
-        },
-      });
-
-      expect(result).toEqual(mockProducts);
-    });
-
-    it('should return an empty array if no products match the category IDs', async () => {
-      prismaService.product.findMany.mockResolvedValue([]);
-
-      const result = await service.findByCategoryIds(['nonexistent-cat']);
-
-      expect(prismaService.product.findMany).toHaveBeenCalledWith({
-        where: {
-          categoryId: {
-            in: ['nonexistent-cat'],
-          },
-        },
-      });
-
-      expect(result).toEqual([]);
-    });
-  });
-
   describe('findAll', () => {
+    beforeEach(() => {
+      prismaService.product.count.mockReset();
+      prismaService.product.findMany.mockReset();
+    });
+
     it('should return paginated products with meta', async () => {
       const filters: ProductFiltersInput = {
         gender: Gender.KIDS,
@@ -217,7 +159,7 @@ describe('ProductsService', () => {
         },
       };
 
-      const result = await service.findAll(filters, sorting, pagination);
+      const result = await service.findAll({ filter: filters, sortBy: sorting, pagination });
 
       expect(prismaService.product.count).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -246,42 +188,67 @@ describe('ProductsService', () => {
       });
     });
 
-    it('should handle default pagination and no filters', async () => {
-      const expectedData = [mockProducts[0], mockProducts[1]];
-      prismaService.product.count.mockResolvedValue(2);
-      prismaService.product.findMany.mockResolvedValue(expectedData);
+    it.each([[undefined], [null]])(
+      'should throw error when no inputs are provided',
+      async (input: any) => {
+        //Clean mocks for it.each
+        prismaService.product.count.mockReset();
+        prismaService.product.findMany.mockReset();
 
-      const result = await service.findAll(undefined, undefined, undefined);
+        await expect(service.findAll(input)).rejects.toThrow(UnprocessableEntityException);
 
-      expect(prismaService.product.count).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: {
-            isDeleted: false,
-            isEnabled: true,
+        expect(prismaService.product.count).not.toHaveBeenCalled();
+        expect(prismaService.product.findMany).not.toHaveBeenCalled();
+      },
+    );
+
+    it.each([[undefined], [null]])(
+      'should handle query with null or undefine inputs',
+      async (notValidaInput: any) => {
+        //Clean mocks for it.each
+        prismaService.product.count.mockReset();
+        prismaService.product.findMany.mockReset();
+
+        const expectedData = [mockProducts[0], mockProducts[1]];
+        prismaService.product.count.mockResolvedValue(2);
+        prismaService.product.findMany.mockResolvedValue(expectedData);
+
+        const result = await service.findAll({
+          filter: notValidaInput,
+          sortBy: notValidaInput,
+          pagination: notValidaInput,
+        });
+
+        expect(prismaService.product.count).toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: {
+              isDeleted: false,
+              isEnabled: true,
+            },
+          }),
+        );
+        expect(prismaService.product.findMany).toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: {
+              isDeleted: false,
+              isEnabled: true,
+            },
+            orderBy: {},
+            skip: expect.any(Number),
+            take: expect.any(Number),
+          }),
+        );
+        expect(result).toEqual({
+          meta: {
+            page: 1,
+            limit: 20,
+            totalItems: expect.any(Number),
+            totalPages: expect.any(Number),
           },
-        }),
-      );
-      expect(prismaService.product.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: {
-            isDeleted: false,
-            isEnabled: true,
-          },
-          orderBy: {},
-          skip: expect.any(Number),
-          take: expect.any(Number),
-        }),
-      );
-      expect(result).toEqual({
-        meta: {
-          page: 1,
-          limit: 20,
-          totalItems: expect.any(Number),
-          totalPages: expect.any(Number),
-        },
-        collection: expectedData,
-      });
-    });
+          collection: expectedData,
+        });
+      },
+    );
 
     it('should adjust filters based on isManagerOrSimilar flag as true', async () => {
       const isManagerOrSimilar = true;
@@ -290,7 +257,10 @@ describe('ProductsService', () => {
       prismaService.product.count.mockResolvedValue(2);
       prismaService.product.findMany.mockResolvedValue(expectedData);
 
-      const result = await service.findAll(undefined, undefined, undefined, isManagerOrSimilar);
+      const result = await service.findAll(
+        { filter: undefined, pagination: undefined, sortBy: undefined },
+        isManagerOrSimilar,
+      );
 
       expect(prismaService.product.count).toHaveBeenCalledWith({
         where: {},

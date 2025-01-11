@@ -3,7 +3,7 @@ import { ROLES } from 'src/common/constants';
 import { getRequestFromContext } from 'src/common/helpers/context-request';
 import { validUUID7 } from 'src/common/testing-mocks/helper-data';
 
-import { JwtPayloadDto } from '../dto/jwtPayload.dto';
+import { JwtPayloadDto } from '../dto/response/jwtPayload.dto';
 
 import { AccessTokenGuard } from './access-token.guard';
 
@@ -26,7 +26,7 @@ describe('AccessTokenGuard', () => {
     expect(guard).toBeDefined();
   });
 
-  function createMockExecutionContext(user: any) {
+  function createMockExecutionContext(user: any): ExecutionContext {
     return {
       switchToHttp: () => ({
         getRequest: () => ({ user }),
@@ -63,7 +63,7 @@ describe('AccessTokenGuard', () => {
 
       const result = await guard.getRequest(executionContext);
 
-      expect(result.user).toBe(null);
+      expect(result.user).toBeNull();
     });
   });
 });
