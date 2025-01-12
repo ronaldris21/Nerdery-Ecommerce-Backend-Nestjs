@@ -1,4 +1,4 @@
-import { ParseUUIDPipe, UseGuards } from '@nestjs/common';
+import { NotFoundException, ParseUUIDPipe, UseGuards } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation, Parent, ResolveField } from '@nestjs/graphql';
 import { ROLES } from 'src/common/constants';
 import { AfterLoadersService } from 'src/common/modules/dataloaders/after-loaders.service';
@@ -30,25 +30,25 @@ export class ProductsResolver {
 
   @Query(() => ProductsPagination)
   products(
+    @GetAccessToken() accessToken: string,
     @Args('productInputs', { nullable: true }) productInputs?: AllProductsNestedInput,
   ): Promise<ProductsPagination> {
-    return this.productsService.findAll(productInputs);
-  }
-
-  @Query(() => ProductsPagination)
-  @UseGuards(AccessTokenWithRolesGuard)
-  @Roles([ROLES.MANAGER])
-  allProducts(
-    @Args('productInputs', { nullable: true }) productInputs?: AllProductsNestedInput,
-  ): Promise<ProductsPagination> {
-    return this.productsService.findAll(productInputs, true);
+    const hasAccess = this.afterLoadersService.hasAnyRequiredRoles(accessToken, [ROLES.MANAGER]);
+    return this.productsService.findAll(productInputs, hasAccess);
   }
 
   @Query(() => ProductObject, { nullable: true })
-  productById(
+  async productById(
+    @GetAccessToken() accessToken: string,
     @Args('id', { type: () => String }, ParseUUIDPipe) id: string,
   ): Promise<ProductObject> {
-    return this.productsService.findOne(id);
+    const product = await this.productsService.findOne(id);
+    const hasAccess = this.afterLoadersService.hasAnyRequiredRoles(accessToken, [ROLES.MANAGER]);
+
+    if (product.isDeleted || !product.isEnabled) {
+      if (hasAccess) return product;
+      throw new NotFoundException('Product not found');
+    }
   }
 
   @Mutation(() => ProductObject)
