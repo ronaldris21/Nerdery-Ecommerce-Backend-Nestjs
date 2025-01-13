@@ -19,8 +19,6 @@ import { UpdateProductInput } from './dto/request/update-product.input';
 import { ProductsPagination } from './dto/response/products-pagination.object';
 
 @Injectable()
-//TODO: remove include and use ResolveFields
-//TODO: add DataLoaders to avoid N+1 problem on ResolveFields
 export class ProductsService {
   constructor(
     private readonly prisma: PrismaService,

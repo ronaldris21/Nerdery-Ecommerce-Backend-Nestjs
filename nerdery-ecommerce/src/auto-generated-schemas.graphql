@@ -201,7 +201,6 @@ scalar DateTime
 
 type Query {
   products(productInputs: AllProductsNestedInput): ProductsPagination!
-  allProducts(productInputs: AllProductsNestedInput): ProductsPagination!
   productById(id: String!): ProductObject
   categories(search: String): [CategoryObject!]!
   productVariations(productId: String!): [ProductVariationObject!]!
