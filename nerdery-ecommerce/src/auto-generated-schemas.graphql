@@ -104,10 +104,10 @@ type ApprovedStatusPayload {
 
 enum OrderStatus {
   WAITING_PAYMENT
-  RETRY_PAYMENT
   PAYMENT_APPROVED
   CANCELED
   COMPLETED
+  RETRY_PAYMENT
 }
 
 type OrderCreatedPayload {

@@ -1,12 +1,12 @@
 import { faker } from '@faker-js/faker';
 import { GenderEnum, Prisma } from '@prisma/client';
 
-function generateFakeImage() {
+function generateFakeImage(): string {
   //   return faker.image.url({ width: 200, height: 300 });
   return 'https://upload.wikimedia.org/wikipedia/en/c/cb/Monkey_D_Luffy.png';
 }
 
-export function generateFakeProduct() {
+export function generateFakeProduct(): Prisma.ProductCreateInput[] {
   const productData: Prisma.ProductCreateInput[] = [
     {
       name: faker.commerce.productName(),
