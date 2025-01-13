@@ -88,7 +88,6 @@ export class ProductsResolver {
     @Parent() product: ProductObject,
     @GetAccessToken() accessToken: string,
   ): Promise<ProductVariationObject[]> {
-    //FILTER BY ROLE
     const loaderResults = await this.productVariationByProductLoader.load(product.id);
     return this.afterLoadersService.filterProductVariationsIfNoRequiredRole(
       loaderResults,
