@@ -42,7 +42,7 @@ export class AfterLoadersService {
   getRolesFromAccessToken(accessToken: string): string[] {
     try {
       const payload = this.jwtService.decode(accessToken) as JwtPayloadDto;
-      return payload.roles ?? [];
+      return payload?.roles ?? [];
       // eslint-disable-next-line unused-imports/no-unused-vars, @typescript-eslint/no-unused-vars
     } catch (error) {
       return [];
