@@ -148,14 +148,14 @@ type StripePaymentObject {
 }
 
 enum StripePaymentIntent {
-  canceled
-  processing
-  requires_action
-  requires_capture
-  requires_confirmation
-  requires_payment_method
-  succeeded
-  payment_failed
+  CANCELED
+  PROCESSING
+  REQUIRES_ACTION
+  REQUIRES_CAPTURE
+  REQUIRES_CONFIRMATION
+  REQUIRES_PAYMENT_METHOD
+  SUCCEEDED
+  PAYMENT_FAILED
 }
 
 type OrderObject {
