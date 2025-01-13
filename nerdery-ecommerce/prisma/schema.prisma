@@ -46,10 +46,10 @@ model User {
   lastName                String
   password                String
   createdAt               DateTime        @default(now())
-  CartItem                CartItem[]
+  cartItems               CartItem[]
   orders                  Order[]
-  OrderIncidents          OrderIncident[] @relation("ClientIncidents")
-  OrderIncidentsAsManager OrderIncident[] @relation("ManagerIncidents")
+  orderIncidents          OrderIncident[] @relation("ClientIncidents")
+  orderIncidentsAsManager OrderIncident[] @relation("ManagerIncidents")
   passwordResets          PasswordReset[]
   likes                   ProductLike[]
   refreshTokens           RefreshToken[]
@@ -122,7 +122,7 @@ model ProductVariation {
   stockRefilledAt DateTime?        @updatedAt
   isEnabled       Boolean          @default(false)
   isDeleted       Boolean          @default(false)
-  cartItem        CartItem[]
+  cartItems       CartItem[]
   orderItems      OrderItem[]
   product         Product          @relation(fields: [productId], references: [id])
   variationImages VariationImage[]
@@ -194,7 +194,7 @@ model StripePayment {
   amount               Decimal                 @db.Decimal(10, 2)
   currency             String                  @db.VarChar(3)
   stripePaymentId      String                  @db.VarChar(255)
-  webhookPaymentIntent StripePaymentIntentEnum
+  webhookPaymentIntent StripePaymentIntentEnum @default(REQUIRES_PAYMENT_METHOD)
   webhookData          Json
   createdAt            DateTime                @default(now())
   updatedAt            DateTime                @updatedAt
@@ -239,12 +239,12 @@ enum OrderStatusEnum {
 }
 
 enum StripePaymentIntentEnum {
-  canceled
-  processing
-  requires_action
-  requires_capture
-  requires_confirmation
-  requires_payment_method
-  succeeded
-  payment_failed
+  CANCELED
+  PROCESSING
+  REQUIRES_ACTION
+  REQUIRES_CAPTURE
+  REQUIRES_CONFIRMATION
+  REQUIRES_PAYMENT_METHOD
+  SUCCEEDED
+  PAYMENT_FAILED
 }
