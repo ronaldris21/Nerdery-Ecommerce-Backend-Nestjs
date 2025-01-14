@@ -104,10 +104,10 @@ type ApprovedStatusPayload {
 
 enum OrderStatus {
   WAITING_PAYMENT
-  RETRY_PAYMENT
   PAYMENT_APPROVED
   CANCELED
   COMPLETED
+  RETRY_PAYMENT
 }
 
 type OrderCreatedPayload {
@@ -148,14 +148,14 @@ type StripePaymentObject {
 }
 
 enum StripePaymentIntent {
-  canceled
-  processing
-  requires_action
-  requires_capture
-  requires_confirmation
-  requires_payment_method
-  succeeded
-  payment_failed
+  CANCELED
+  PROCESSING
+  REQUIRES_ACTION
+  REQUIRES_CAPTURE
+  REQUIRES_CONFIRMATION
+  REQUIRES_PAYMENT_METHOD
+  SUCCEEDED
+  PAYMENT_FAILED
 }
 
 type OrderObject {
@@ -201,7 +201,6 @@ scalar DateTime
 
 type Query {
   products(productInputs: AllProductsNestedInput): ProductsPagination!
-  allProducts(productInputs: AllProductsNestedInput): ProductsPagination!
   productById(id: String!): ProductObject
   categories(search: String): [CategoryObject!]!
   productVariations(productId: String!): [ProductVariationObject!]!

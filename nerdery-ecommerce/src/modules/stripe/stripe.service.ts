@@ -57,7 +57,10 @@ export class StripeService {
       );
 
       const paymentIntent = event.data.object as Stripe.PaymentIntent;
-      await this.updatePaymentStatus(paymentIntent.id, paymentIntent.status);
+      await this.updatePaymentStatus(
+        paymentIntent.id,
+        paymentIntent.status.toUpperCase() as StripePaymentIntentEnum,
+      );
 
       switch (event.type) {
         case 'payment_intent.succeeded':

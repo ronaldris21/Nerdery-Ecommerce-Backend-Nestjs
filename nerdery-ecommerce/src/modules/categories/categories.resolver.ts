@@ -1,7 +1,10 @@
 import { Resolver, Query, Args, Parent, ResolveField } from '@nestjs/graphql';
 import { Product } from '@prisma/client';
+import { ROLES } from 'src/common/constants';
+import { AfterLoadersService } from 'src/common/modules/dataloaders/after-loaders.service';
 import { ProductsBycategoryLoader } from 'src/common/modules/dataloaders/categories/products-bycategory.loader/products-by-category.loader';
 
+import { GetAccessToken } from '../auth/decoratos/get-jwtPayload.decorator';
 import { ProductObject } from '../products/entities/product.entity';
 
 import { CategoriesService } from './categories.service';
@@ -12,6 +15,7 @@ export class CategoriesResolver {
   constructor(
     private readonly categoriesService: CategoriesService,
     private readonly productsBycategoryLoader: ProductsBycategoryLoader,
+    private readonly afterLoadersService: AfterLoadersService,
   ) {}
 
   @Query(() => [CategoryObject])
@@ -20,7 +24,13 @@ export class CategoriesResolver {
   }
 
   @ResolveField(() => [ProductObject])
-  async products(@Parent() category: CategoryObject): Promise<Product[]> {
-    return this.productsBycategoryLoader.load(category.id);
+  async products(
+    @Parent() category: CategoryObject,
+    @GetAccessToken() accessToken: string,
+  ): Promise<Product[]> {
+    const products = await this.productsBycategoryLoader.load(category.id);
+    return this.afterLoadersService.filterProductsIfNoRequiredRole(products, accessToken, [
+      ROLES.MANAGER,
+    ]);
   }
 }

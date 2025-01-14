@@ -1,4 +1,5 @@
 import { DeepMocked, createMock } from '@golevelup/ts-jest';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Product } from '@prisma/client';
 import { PrismaService } from 'src/common/modules/prisma/prisma.service';
@@ -55,6 +56,10 @@ describe('ProductLikesService', () => {
   const mockProduct: Product = validProduct1;
 
   describe('like', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
     it('should like a product successfully when the user has not liked it before', async () => {
       prismaService.productLike.upsert.mockResolvedValue({
         userId,
@@ -85,6 +90,7 @@ describe('ProductLikesService', () => {
         productId,
       ]);
       expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith({ id: productId });
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledTimes(2);
       expect(result).toEqual(mockProduct);
     });
 
@@ -118,14 +124,51 @@ describe('ProductLikesService', () => {
         productId,
       ]);
       expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith({ id: productId });
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledTimes(2);
       expect(result).toEqual(mockProduct);
     });
 
+    it('should throw a error if product does not exist', async () => {
+      idValidatorService.findUniqueProductById.mockRejectedValue(
+        new NotFoundException('product not found'),
+      );
+
+      await expect(service.like(userId, productId)).rejects.toThrow(NotFoundException);
+
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledTimes(1);
+      expect(prismaService.productLike.upsert).not.toHaveBeenCalled();
+      expect(productCalculatedFieldsService.recalculateProductLikesCount).not.toHaveBeenCalled();
+    });
+
+    it('should throw a error if product is deleted', async () => {
+      const deletedProduct = { ...validProduct1, isDeleted: true };
+      idValidatorService.findUniqueProductById.mockResolvedValue(deletedProduct);
+
+      await expect(service.like(userId, productId)).rejects.toThrow(ConflictException);
+
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledTimes(1);
+      expect(prismaService.productLike.upsert).not.toHaveBeenCalled();
+      expect(productCalculatedFieldsService.recalculateProductLikesCount).not.toHaveBeenCalled();
+    });
+
+    it('should throw a error if product is disable', async () => {
+      const disabledProduct = { ...validProduct1, isEnabled: false };
+      idValidatorService.findUniqueProductById.mockResolvedValue(disabledProduct);
+
+      await expect(service.like(userId, productId)).rejects.toThrow(ConflictException);
+
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledTimes(1);
+      expect(prismaService.productLike.upsert).not.toHaveBeenCalled();
+      expect(productCalculatedFieldsService.recalculateProductLikesCount).not.toHaveBeenCalled();
+    });
+
     it('should handle Prisma errors by throwing the error', async () => {
+      idValidatorService.findUniqueProductById.mockResolvedValue(validProduct1);
       prismaService.productLike.upsert.mockRejectedValue(new Error('Database error'));
 
       await expect(service.like(userId, productId)).rejects.toThrow('Database error');
 
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledTimes(1);
       expect(prismaService.productLike.upsert).toHaveBeenCalledWith({
         where: {
           userId_productId: {
@@ -143,11 +186,14 @@ describe('ProductLikesService', () => {
         },
       });
       expect(productCalculatedFieldsService.recalculateProductLikesCount).not.toHaveBeenCalled();
-      expect(idValidatorService.findUniqueProductById).not.toHaveBeenCalled();
     });
   });
 
   describe('dislike', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
     it('should dislike a product successfully when the user has liked it before', async () => {
       prismaService.productLike.delete.mockResolvedValue({
         userId,
@@ -170,6 +216,7 @@ describe('ProductLikesService', () => {
         productId,
       ]);
       expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith({ id: productId });
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledTimes(2);
       expect(result).toEqual(mockProduct);
     });
 
@@ -190,7 +237,42 @@ describe('ProductLikesService', () => {
       });
       expect(productCalculatedFieldsService.recalculateProductLikesCount).not.toHaveBeenCalled();
       expect(idValidatorService.findUniqueProductById).toHaveBeenCalledWith({ id: productId });
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledTimes(2);
       expect(result).toEqual(mockProduct);
+    });
+
+    it('should throw a error if product does not exist', async () => {
+      idValidatorService.findUniqueProductById.mockRejectedValue(
+        new NotFoundException('product not found'),
+      );
+
+      await expect(service.dislike(userId, productId)).rejects.toThrow(NotFoundException);
+
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledTimes(1);
+      expect(prismaService.productLike.delete).not.toHaveBeenCalled();
+      expect(productCalculatedFieldsService.recalculateProductLikesCount).not.toHaveBeenCalled();
+    });
+
+    it('should throw a error if product is deleted', async () => {
+      const deletedProduct = { ...validProduct1, isDeleted: true };
+      idValidatorService.findUniqueProductById.mockResolvedValue(deletedProduct);
+
+      await expect(service.dislike(userId, productId)).rejects.toThrow(ConflictException);
+
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledTimes(1);
+      expect(prismaService.productLike.delete).not.toHaveBeenCalled();
+      expect(productCalculatedFieldsService.recalculateProductLikesCount).not.toHaveBeenCalled();
+    });
+
+    it('should throw a error if product is disable', async () => {
+      const disabledProduct = { ...validProduct1, isEnabled: false };
+      idValidatorService.findUniqueProductById.mockResolvedValue(disabledProduct);
+
+      await expect(service.dislike(userId, productId)).rejects.toThrow(ConflictException);
+
+      expect(idValidatorService.findUniqueProductById).toHaveBeenCalledTimes(1);
+      expect(prismaService.productLike.delete).not.toHaveBeenCalled();
+      expect(productCalculatedFieldsService.recalculateProductLikesCount).not.toHaveBeenCalled();
     });
 
     it('should handle Prisma errors during dislike operation, just ignore the error', async () => {

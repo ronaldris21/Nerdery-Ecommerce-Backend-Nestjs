@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/common/modules/prisma/prisma.service';
 import { IdValidatorService } from 'src/common/services/id-validator/id-validator.service';
 import { ProductCalculatedFieldsService } from 'src/common/services/product-calculations/product-calculated-fields.service';
@@ -13,6 +13,11 @@ export class ProductLikesService {
     private readonly productCalculatedFieldsService: ProductCalculatedFieldsService,
   ) {}
   async like(userId: string, productId: string): Promise<ProductObject> {
+    const productLike = await this.idValidatorService.findUniqueProductById({ id: productId });
+    if (productLike.isDeleted || !productLike.isEnabled) {
+      throw new ConflictException('Product is not available');
+    }
+
     await this.prisma.productLike.upsert({
       create: {
         productId: productId,
@@ -35,6 +40,11 @@ export class ProductLikesService {
     return product;
   }
   async dislike(userId: string, productId: string): Promise<ProductObject> {
+    //TODO: test
+    const productLike = await this.idValidatorService.findUniqueProductById({ id: productId });
+    if (productLike.isDeleted || !productLike.isEnabled) {
+      throw new ConflictException('Product is not available');
+    }
     try {
       await this.prisma.productLike.delete({
         where: {

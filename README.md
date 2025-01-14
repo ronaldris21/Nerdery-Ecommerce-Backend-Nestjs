@@ -151,9 +151,9 @@ docker-compose up --build
 ```bash
 cd nerdery-ecommerce
 nvm use 20
-npm install -g @nestjs/cli
+npm install -g @nestjs/cli prisma
 npm i
-npx prisma migrate dev --name init
+npx prisma migrate deploy
 npm run seed
 npm run start:dev
 ```

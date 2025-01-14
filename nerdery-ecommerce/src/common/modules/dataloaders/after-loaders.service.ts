@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ProductVariation } from '@prisma/client';
+import { Product, ProductVariation } from '@prisma/client';
 import { checkAnyRequiredRoles } from 'src/common/helpers/utils';
 import { JwtPayloadDto } from 'src/modules/auth/dto/response/jwtPayload.dto';
 
@@ -21,6 +21,19 @@ export class AfterLoadersService {
     return productVariations.filter((p) => p.isEnabled && !p.isDeleted);
   }
 
+  filterProductsIfNoRequiredRole(
+    products: Product[],
+    accessToken: string,
+    requiredRoles: string[],
+  ): Product[] {
+    const userRoles = this.getRolesFromAccessToken(accessToken);
+    const hasRequiredRoles = checkAnyRequiredRoles(userRoles, requiredRoles);
+    if (hasRequiredRoles) {
+      return products;
+    }
+    return products.filter((p) => p.isEnabled && !p.isDeleted);
+  }
+
   hasAnyRequiredRoles(accessToken: string, requiredRoles: string[]): boolean {
     const userRoles = this.getRolesFromAccessToken(accessToken);
     return checkAnyRequiredRoles(userRoles, requiredRoles);
@@ -29,7 +42,7 @@ export class AfterLoadersService {
   getRolesFromAccessToken(accessToken: string): string[] {
     try {
       const payload = this.jwtService.decode(accessToken) as JwtPayloadDto;
-      return payload.roles ?? [];
+      return payload?.roles ?? [];
       // eslint-disable-next-line unused-imports/no-unused-vars, @typescript-eslint/no-unused-vars
     } catch (error) {
       return [];

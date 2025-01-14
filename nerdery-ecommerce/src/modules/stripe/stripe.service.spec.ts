@@ -162,7 +162,7 @@ describe('StripeService', () => {
       );
       expect(prismaService.stripePayment.updateMany).toHaveBeenCalledWith({
         where: { stripePaymentId: paymentIntentId },
-        data: { webhookPaymentIntent: webhookPaymentIntent.succeeded },
+        data: { webhookPaymentIntent: webhookPaymentIntent.SUCCEEDED },
       });
       expect(prismaService.order.update).toHaveBeenCalledWith({
         where: { id: orderId },
@@ -177,7 +177,7 @@ describe('StripeService', () => {
         data: {
           object: {
             ...stripePaymentIntent,
-            status: webhookPaymentIntent.payment_failed,
+            status: webhookPaymentIntent.PAYMENT_FAILED,
           },
         },
       } as any;
@@ -203,7 +203,7 @@ describe('StripeService', () => {
       );
       expect(prismaService.stripePayment.updateMany).toHaveBeenCalledWith({
         where: { stripePaymentId: paymentIntentId },
-        data: { webhookPaymentIntent: webhookPaymentIntent.payment_failed },
+        data: { webhookPaymentIntent: webhookPaymentIntent.PAYMENT_FAILED },
       });
       expect(prismaService.order.update).toHaveBeenCalledWith({
         where: { id: orderId },

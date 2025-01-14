@@ -1,4 +1,4 @@
-import { ParseUUIDPipe, UseGuards } from '@nestjs/common';
+import { NotFoundException, ParseUUIDPipe, UseGuards } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation, Parent, ResolveField } from '@nestjs/graphql';
 import { ROLES } from 'src/common/constants';
 import { AfterLoadersService } from 'src/common/modules/dataloaders/after-loaders.service';
@@ -29,26 +29,28 @@ export class ProductsResolver {
   ) {}
 
   @Query(() => ProductsPagination)
-  products(
+  async products(
+    @GetAccessToken() accessToken: string,
     @Args('productInputs', { nullable: true }) productInputs?: AllProductsNestedInput,
   ): Promise<ProductsPagination> {
-    return this.productsService.findAll(productInputs);
-  }
-
-  @Query(() => ProductsPagination)
-  @UseGuards(AccessTokenWithRolesGuard)
-  @Roles([ROLES.MANAGER])
-  allProducts(
-    @Args('productInputs', { nullable: true }) productInputs?: AllProductsNestedInput,
-  ): Promise<ProductsPagination> {
-    return this.productsService.findAll(productInputs, true);
+    const hasAccess = await this.afterLoadersService.hasAnyRequiredRoles(accessToken, [
+      ROLES.MANAGER,
+    ]);
+    return this.productsService.findAll(productInputs, hasAccess);
   }
 
   @Query(() => ProductObject, { nullable: true })
-  productById(
+  async productById(
+    @GetAccessToken() accessToken: string,
     @Args('id', { type: () => String }, ParseUUIDPipe) id: string,
   ): Promise<ProductObject> {
-    return this.productsService.findOne(id);
+    const product = await this.productsService.findOne(id);
+    const hasAccess = await this.afterLoadersService.hasAnyRequiredRoles(accessToken, [
+      ROLES.MANAGER,
+    ]);
+    if (hasAccess) return product;
+    if (product.isEnabled && !product.isDeleted) return this.productsService.findOne(id);
+    throw new NotFoundException('Product not found');
   }
 
   @Mutation(() => ProductObject)
@@ -86,7 +88,6 @@ export class ProductsResolver {
     @Parent() product: ProductObject,
     @GetAccessToken() accessToken: string,
   ): Promise<ProductVariationObject[]> {
-    //FILTER BY ROLE
     const loaderResults = await this.productVariationByProductLoader.load(product.id);
     return this.afterLoadersService.filterProductVariationsIfNoRequiredRole(
       loaderResults,

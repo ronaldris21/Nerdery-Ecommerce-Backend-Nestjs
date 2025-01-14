@@ -266,7 +266,7 @@ export const mockStripePayment: StripePayment = {
   orderId: validUUID6,
   amount: new Decimal(300),
   currency: 'usd',
-  webhookPaymentIntent: StripePaymentIntentEnum.requires_payment_method,
+  webhookPaymentIntent: StripePaymentIntentEnum.REQUIRES_PAYMENT_METHOD,
   stripePaymentId: 'stripe-pi-2',
   clientSecret: 'client_secret_2',
   webhookData: null,

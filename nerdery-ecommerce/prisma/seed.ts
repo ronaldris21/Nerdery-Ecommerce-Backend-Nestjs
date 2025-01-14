@@ -414,7 +414,7 @@ const productDataWomen: Prisma.ProductCreateInput[] = [
     gender: GenderEnum.FEMALE,
     thumbnailUrl: createImageURL(),
     description: 'Cozy sweatshirt with a trendy design.',
-    isEnabled: true,
+    isEnabled: false,
     isDeleted: false,
     likesCount: 0,
     minPrice: 49.99,
@@ -436,8 +436,8 @@ const productDataWomen: Prisma.ProductCreateInput[] = [
           size: 'S',
           color: 'White',
           stock: 70,
-          isEnabled: true,
-          isDeleted: false,
+          isEnabled: false,
+          isDeleted: true,
           variationImages: {
             create: [
               { imageUrl: createImageURL() },

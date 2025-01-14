@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -12,41 +6,6 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
-// ENUM
-enum GenderEnum {
-  MALE
-  FEMALE
-  UNISEX
-  KIDS
-}
-
-enum DiscountTypeEnum {
-  NONE
-  PERCENTAGE
-  FIXED
-}
-
-enum OrderStatusEnum {
-  WAITING_PAYMENT
-  RETRY_PAYMENT
-  PAYMENT_APPROVED
-  CANCELED
-  COMPLETED
-}
-
-enum StripePaymentIntentEnum {
-  canceled
-  processing
-  requires_action
-  requires_capture
-  requires_confirmation
-  requires_payment_method
-  succeeded
-  payment_failed
-}
-
-// PERMISSION RELATED MODELS
 
 model Permission {
   id         String           @id @default(uuid()) @db.Uuid
@@ -65,8 +24,8 @@ model Role {
 model RolePermission {
   roleId       String     @db.Uuid
   permissionId String     @db.Uuid
-  role         Role       @relation(fields: [roleId], references: [id])
   permission   Permission @relation(fields: [permissionId], references: [id])
+  role         Role       @relation(fields: [roleId], references: [id])
 
   @@id([roleId, permissionId])
 }
@@ -74,13 +33,11 @@ model RolePermission {
 model UserRole {
   userId String @db.Uuid
   roleId String @db.Uuid
-  user   User   @relation(fields: [userId], references: [id])
   role   Role   @relation(fields: [roleId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 
   @@id([userId, roleId])
 }
-
-//USER RELATED MODELS
 
 model User {
   id                      String          @id @default(uuid()) @db.Uuid
@@ -89,17 +46,15 @@ model User {
   lastName                String
   password                String
   createdAt               DateTime        @default(now())
-  refreshTokens           RefreshToken[]
-  passwordResets          PasswordReset[]
-  userRoles               UserRole[]
+  cartItems               CartItem[]
   orders                  Order[]
+  orderIncidents          OrderIncident[] @relation("ClientIncidents")
+  orderIncidentsAsManager OrderIncident[] @relation("ManagerIncidents")
+  passwordResets          PasswordReset[]
   likes                   ProductLike[]
-  CartItem                CartItem[]
-  OrderIncidentsAsManager OrderIncident[] @relation("ManagerIncidents")
-  OrderIncidents          OrderIncident[] @relation("ClientIncidents")
+  refreshTokens           RefreshToken[]
+  userRoles               UserRole[]
 }
-
-// Auth related models
 
 model RefreshToken {
   id           String   @id @default(uuid()) @db.Uuid
@@ -118,8 +73,6 @@ model PasswordReset {
   alreadyUsed Boolean  @default(false)
   user        User     @relation(fields: [userId], references: [id])
 }
-
-// PRODUCT RELATED MODELS
 
 model Category {
   id               String     @id @default(uuid()) @db.Uuid
@@ -147,14 +100,12 @@ model Product {
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   category          Category           @relation(fields: [categoryId], references: [id])
-  productVariations ProductVariation[]
   productLikes      ProductLike[]
+  productVariations ProductVariation[]
 
-  //Sort search indexes
-  @@index([likesCount], type: BTree)
-  @@index([minPrice], type: BTree)
-  @@index([maxPrice], type: BTree)
-  //Exact search indexes
+  @@index([likesCount])
+  @@index([minPrice])
+  @@index([maxPrice])
   @@index([name], type: Hash)
   @@index([gender], type: Hash)
 }
@@ -171,10 +122,10 @@ model ProductVariation {
   stockRefilledAt DateTime?        @updatedAt
   isEnabled       Boolean          @default(false)
   isDeleted       Boolean          @default(false)
+  cartItems       CartItem[]
+  orderItems      OrderItem[]
   product         Product          @relation(fields: [productId], references: [id])
   variationImages VariationImage[]
-  orderItems      OrderItem[]
-  cartItem        CartItem[]
 }
 
 model VariationImage {
@@ -188,8 +139,8 @@ model ProductLike {
   userId    String   @db.Uuid
   productId String   @db.Uuid
   likedAt   DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id])
   product   Product  @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 
   @@id([userId, productId])
 }
@@ -198,13 +149,11 @@ model CartItem {
   userId             String           @db.Uuid
   productVariationId String           @db.Uuid
   quantity           Int
-  user               User             @relation(fields: [userId], references: [id])
   productVariation   ProductVariation @relation(fields: [productVariationId], references: [id])
+  user               User             @relation(fields: [userId], references: [id])
 
   @@id([userId, productVariationId])
 }
-
-// ORDER RELATED MODELS
 
 model Order {
   id              String          @id @default(uuid()) @db.Uuid
@@ -219,9 +168,9 @@ model Order {
   isDeleted       Boolean         @default(false)
   isStockReserved Boolean
   user            User            @relation(fields: [userId], references: [id])
+  orderIncidents  OrderIncident[]
   orderItems      OrderItem[]
   stripePayments  StripePayment[]
-  orderIncidents  OrderIncident[]
 
   @@index([status], type: Hash)
 }
@@ -245,11 +194,11 @@ model StripePayment {
   amount               Decimal                 @db.Decimal(10, 2)
   currency             String                  @db.VarChar(3)
   stripePaymentId      String                  @db.VarChar(255)
-  clientSecret         String                  @db.VarChar(255)
-  webhookPaymentIntent StripePaymentIntentEnum
+  webhookPaymentIntent StripePaymentIntentEnum @default(REQUIRES_PAYMENT_METHOD)
   webhookData          Json
   createdAt            DateTime                @default(now())
   updatedAt            DateTime                @updatedAt
+  clientSecret         String                  @db.VarChar(255)
   order                Order                   @relation(fields: [orderId], references: [id])
 }
 
@@ -263,7 +212,39 @@ model OrderIncident {
   currency    String   @db.VarChar(3)
   totalPrice  Decimal  @db.Decimal(10, 2)
   createdAt   DateTime @default(now())
-  manager     User     @relation("ManagerIncidents", fields: [managerId], references: [id])
   client      User     @relation("ClientIncidents", fields: [clientId], references: [id])
+  manager     User     @relation("ManagerIncidents", fields: [managerId], references: [id])
   order       Order    @relation(fields: [orderId], references: [id])
+}
+
+enum GenderEnum {
+  MALE
+  FEMALE
+  UNISEX
+  KIDS
+}
+
+enum DiscountTypeEnum {
+  NONE
+  PERCENTAGE
+  FIXED
+}
+
+enum OrderStatusEnum {
+  WAITING_PAYMENT
+  PAYMENT_APPROVED
+  CANCELED
+  COMPLETED
+  RETRY_PAYMENT
+}
+
+enum StripePaymentIntentEnum {
+  CANCELED
+  PROCESSING
+  REQUIRES_ACTION
+  REQUIRES_CAPTURE
+  REQUIRES_CONFIRMATION
+  REQUIRES_PAYMENT_METHOD
+  SUCCEEDED
+  PAYMENT_FAILED
 }

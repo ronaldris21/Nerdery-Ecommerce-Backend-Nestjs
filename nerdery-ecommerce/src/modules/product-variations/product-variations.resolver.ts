@@ -2,6 +2,7 @@ import { ParseUUIDPipe, UseGuards } from '@nestjs/common';
 import { Resolver, Query, Mutation, Args, ResolveField, Parent } from '@nestjs/graphql';
 import { VariationImage } from '@prisma/client';
 import { ROLES } from 'src/common/constants';
+import { AfterLoadersService } from 'src/common/modules/dataloaders/after-loaders.service';
 import { VariationImagesByProductVariationLoader } from 'src/common/modules/dataloaders/product-variation/variation-images-by-product-variation.loader/variation-images-by-product-variation.loader';
 import { Roles } from 'src/modules/auth/decoratos/roles.decorator';
 import { AccessTokenWithRolesGuard } from 'src/modules/auth/guards/access-token-with-roles.guard';
@@ -22,6 +23,7 @@ export class ProductVariationsResolver {
     private readonly productVariationsService: ProductVariationsService,
     private readonly variationImagesByProductVariationLoader: VariationImagesByProductVariationLoader,
     private readonly productByProductVariationLoader: ProductByProductVariationLoader,
+    private readonly afterLoadersService: AfterLoadersService,
   ) {}
 
   @Query(() => [ProductVariationObject])
@@ -83,7 +85,7 @@ export class ProductVariationsResolver {
     return this.variationImagesByProductVariationLoader.load(productVariation.id);
   }
 
-  @ResolveField(() => [ProductObject])
+  @ResolveField(() => ProductObject)
   async product(@Parent() productVariation: ProductVariationObject): Promise<ProductObject> {
     return this.productByProductVariationLoader.load(productVariation.id);
   }
